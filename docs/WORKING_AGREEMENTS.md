@@ -108,7 +108,7 @@ The product decisions are tracked as G1 to G9 in [roadmap.md](roadmap.md), secti
 
 ## 12. Next step
 
-Roadmap step **0.2**: commit `package-lock.json`, so that the README's `npm ci` works for a fresh clone.
+Roadmap step **0.3**: close the seven old hackathon pull requests (#13, #29, #30, #37, #48, #64, #84), each with a one-line note.
 
 ## 13. Lessons learned
 
@@ -118,3 +118,4 @@ Roadmap step **0.2**: commit `package-lock.json`, so that the README's `npm ci` 
 - Twenty repetitive manual items is too many. Keep human tasks short.
 - Explain why a feature is worth building before building it.
 - A sandbox reset lost an unexported patch on 9 Nov 2026. Push work to a branch instead of keeping it only in the sandbox.
+- A Git stash on Windows changed the road file's line endings on 9 Nov 2026 (content unchanged). After any stash or branch switch, compare the road file's size with its backup. `.gitattributes` now prevents this for `.geojson` files.
