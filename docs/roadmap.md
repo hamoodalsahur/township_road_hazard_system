@@ -19,6 +19,11 @@ Every step below moves toward that sentence. If a step doesn't, it waits.
 - **Fictional data,** clearly labelled, until there is a real deployment decision.
 - **One step at a time:** each step is one branch and one pull request, merged only after the owner's go-ahead.
 
+### Web first (decided 9 November 2026)
+- **We refine the website first,** both the management side and the resident side. The phone app waits; its steps are collected in section 3A, "Phone app, later".
+- **Residents are still covered.** The resident website works in a phone's browser. The installable web app (phase 7) becomes the phone experience until the Expo app catches up.
+- **The phone app must keep working while it waits.** The API it uses (listing reports, sending reports, adding a photo) keeps its current behaviour, and tests in this repository check that.
+
 ### What changes on purpose
 The hackathon roadmap ruled out three things. This roadmap brings them back, each with a safeguard:
 
@@ -33,16 +38,17 @@ The hackathon roadmap ruled out three things. This roadmap brings them back, eac
 | Phase | Goal | Size | Needs |
 | --- | --- | --- | --- |
 | **0. Clean slate** | Tidy repository, a README that works, design direction merged | Small | Nothing |
-| **1. New look, step one** | New colours, font and shapes everywhere, no layout changes | Small | Phase 0 |
+| **1. New look, step one** | New colours, font and shapes on the website, no layout changes | Small | Phase 0 |
 | **2. Foundations** | Real database, real accounts, hosted, works away from home Wi-Fi | Large | Decision G2 |
-| **3. Map platform** | One modern free map on web and phone | Medium | Phase 2 (roads in database) |
-| **4. Screens revamp** | Every screen rebuilt to the design direction | Large | Phases 1 and 3 |
+| **3. Map platform** | One modern free map on the website | Medium | Phase 2 (roads in database) |
+| **4. Screens revamp** | Every website screen rebuilt to the design direction | Large | Phases 1 and 3 |
 | **5. Closures and report outcomes** | Operators close roads; residents see what happened to their report | Medium | Phase 2, decision G5 |
-| **6. Way home** | Home pin, route check, detour around closures | Large | Phases 3 and 5 |
+| **6. Way home** | Home pin, route check, detour around closures, on the resident website first | Large | Phases 3 and 5 |
 | **7. Alerts** | "Your way home is affected" while the app is closed | Medium | Phase 6, decision G7 |
 | **8. Trust and polish** | Bahasa Malaysia, accessibility, abuse protection, privacy, full end-to-end tests | Medium | Runs alongside from Phase 4 |
+| **Phone app (later)** | Bring the Expo app up to the website: look, map, screens, way home | Large | After phase 6 |
 
-**Critical path:** 0 → 1 → 2 → 3 → 5 → 6 → 7. Phase 4 screens run alongside once the map platform is in. Phase 8 items slot in whenever they fit.
+**Critical path:** 0 → 1 → 2 → 3 → 5 → 6 → 7, then the phone app. Phase 4 screens run alongside once the map platform is in. Phase 8 items slot in whenever they fit.
 
 "Size" is relative. There is no deadline, so there are no dates.
 
@@ -69,7 +75,6 @@ Each numbered step is meant to be one pull request. Every step that changes a sc
 | Step | What |
 | --- | --- |
 | 1.1 | Website: colours, font (Atkinson Hyperlegible), radii and focus styles from `DESIGN.md` |
-| 1.2 | Phone: the same tokens in `src/constants/theme.ts`, replacing the Expo template colours |
 
 **Done when:** before and after screenshots at desktop and phone width are approved, every page still works, and contrast checks pass.
 
@@ -86,21 +91,19 @@ Recommended answer to decision G2: move to **Supabase**, a hosted Postgres datab
 | 2.3 | **Roads into the database.** The road import writes to a database table | Reads the owner's GeoJSON file and never overwrites it |
 | 2.4 | **Photos to private storage.** Approved photos get a public link; others never do | Same privacy rules as today |
 | 2.5 | **Operator accounts.** Real sign-in replaces the shared key, with roles (operator, admin) and audit entries showing who did what | The shared development key is retired |
-| 2.6 | **Hosting.** Website on Vercel's free tier; the phone app points at the hosted address, with local mode kept for development | Writes need sign-in or rate limits; the demo label stays |
-| 2.7 | **Contract check.** A test in the mobile repository that checks categories, limits and labels against the API | Stops the two apps drifting apart without a monorepo |
+| 2.6 | **Hosting.** Website on Vercel's free tier, with local mode kept for development | Writes need sign-in or rate limits; the demo label stays |
+| 2.7 | **Phone app compatibility tests.** Tests in this repository that check the endpoints the phone app uses still behave as they do today | The phone app keeps working while it waits |
 
-**Done when:** the phone app works on mobile data away from the PC, an operator signs in with their own account, and the owner's old reports and photos are in the new database and checked.
+**Done when:** the resident website works in a phone's browser away from the PC, an operator signs in with their own account, the owner's old reports and photos are in the new database and checked, and the phone app still works against the local API.
 
 ### Phase 3: Map platform
 
 | Step | What |
 | --- | --- |
-| 3.1 | **Phone map trial.** MapLibre with OpenFreeMap's quiet "Positron" style, inside an Expo DOM component, run on the owner's iPhone in Expo Go. Decision G4 is made from how it feels. |
-| 3.2 | Website map moves from Leaflet to MapLibre, with the new marker set from `DESIGN.md` |
-| 3.3 | Phone map moves to the approach chosen in 3.1 |
-| 3.4 | Marker clustering, a legend showing only what's on screen, and road-inspection mode |
+| 3.1 | Website map moves from Leaflet to MapLibre, with OpenFreeMap's quiet "Positron" style and the new marker set from `DESIGN.md` |
+| 3.2 | Marker clustering, a legend showing only what's on screen, and road-inspection mode |
 
-**Done when:** web and phone show the same map style and markers, and the map is smooth on the owner's iPhone.
+**Done when:** the new map is smooth on a desktop and in the iPhone's browser.
 
 ### Phase 4: Screens revamp
 
@@ -110,10 +113,8 @@ Order follows `DESIGN.md`, section 15. Each step needs mockups approved first.
 | --- | --- |
 | 4.1 | Management map page: full-screen map, floating filters, side panel |
 | 4.2 | Management overview (decision queue first) and incident review (fixed decision buttons, keyboard shortcuts) |
-| 4.3 | Resident website: map, report, "My reports". The simulation moves to management. |
-| 4.4 | Phone report flow: three steps, review, confirmation |
-| 4.5 | Phone "My reports" and dark mode |
-| 4.6 | Motion pass: only the animations listed in `DESIGN.md` |
+| 4.3 | Resident website: map, report in three steps, "My reports". The simulation moves to management. Checked at phone width in the iPhone's browser. |
+| 4.4 | Motion pass: only the animations listed in `DESIGN.md` |
 
 ### Phase 5: Closures and report outcomes
 
@@ -133,8 +134,8 @@ Recommended answer to decision G6: routes are calculated in the database with **
 | --- | --- |
 | 6.1 | **Road network check.** Build the routable network from the road table. Report and fix data problems such as disconnected pieces and wrong one-way tags. The existing topology research tools are reused here. |
 | 6.2 | **Route API.** Given a start and an end, return a route that avoids active closures, plus whether the usual route was affected. Locations are used for the answer and **not stored**. |
-| 6.3 | **Home pin.** The resident sets home by tapping the map. It is stored on the device only. "Start from where I am" is opt-in and uses the location permission. |
-| 6.4 | **"Your way home" card.** When the app opens, it shows "clear", or "affected" with the detour on the map. |
+| 6.3 | **Home pin.** The resident sets home by tapping the map. It is stored in the browser only, never on the server. "Start from where I am" is opt-in and uses the browser's location permission. |
+| 6.4 | **"Your way home" card.** When the resident opens the site, it shows "clear", or "affected" with the detour on the map. |
 | 6.5 | **Own-area test pack.** Import the owner's area locally, add fictional closures, and work through a checklist. Home coordinates never go into Git. |
 
 **Done when:** at the owner's own location, a fictional closure on the usual route triggers "affected" and a sensible detour, and removing it returns to "clear".
@@ -159,6 +160,21 @@ Decision G7 picks the route here.
 - **Error tracking and database backups.**
 - **An operator guide.**
 
+### 3A. Phone app, later
+
+Picked up after phase 6. The Expo app keeps working against the API in the meantime (step 2.7).
+
+| Step | What |
+| --- | --- |
+| P.1 | New colours, font and shapes in `src/constants/theme.ts`, replacing the Expo template colours |
+| P.2 | Point the app at the hosted website, keeping local mode for development |
+| P.3 | **Map trial:** MapLibre with OpenFreeMap "Positron" inside an Expo DOM component, run on the owner's iPhone in Expo Go. Decision G4 is made from how it feels. |
+| P.4 | Phone map moves to the approach chosen in P.3 |
+| P.5 | Report flow in three steps, with review and confirmation |
+| P.6 | "My reports" with the lifecycle track, and dark mode |
+| P.7 | Way home in the app |
+| P.8 | A check in the mobile repository that its categories, limits and labels match the API |
+
 ---
 
 ## 4. Decisions waiting on the owner
@@ -168,12 +184,12 @@ Decision G7 picks the route here.
 | G1 | Product name | Phase 0 | Pick from a shortlist |
 | G2 | Move to Supabase (Postgres, accounts, storage) | Phase 2 | Yes |
 | G3 | Background map | Phase 3 | OpenFreeMap "Positron" (free, no key, commercial use allowed) |
-| G4 | How the phone shows the map | After trial 3.1 | Decided by how it feels on the iPhone |
+| G4 | How the phone app shows the map | Phone app step P.3 | Decided by how it feels on the iPhone |
 | G5 | Operator-confirmed closures may affect routes | Phase 5 | Yes, operator-only, with an end or review date |
 | G6 | How routes are calculated | Phase 6 | pgRouting in the database |
 | G7 | Alerts while the app is closed | Phase 7 | Installable web app with web push |
 | G8 | When to add Bahasa Malaysia | Phase 8 | Prepare early, translate after the screens settle |
-| G9 | Merge the two repositories into one | Not now | No; the contract check (2.7) is enough for now |
+| G9 | Merge the two repositories into one | Not now | No; the compatibility tests (2.7) and P.8 are enough for now |
 
 ## 5. What we are not doing
 
@@ -190,7 +206,7 @@ Decision G7 picks the route here.
 | --- | --- | --- |
 | The free Supabase project pauses after a week with no activity | Development database asleep after a break | Resume it from the dashboard. It doesn't matter for development. |
 | Expo Go on the App Store lags behind new Expo versions | An SDK upgrade could break iPhone testing | Only upgrade the Expo SDK once Expo Go supports it |
-| A web-based map in the phone app feels slow | Poor map experience | Trial first (3.1). Fallback: keep the native map with the new marker design. |
+| A web-based map in the phone app feels slow | Poor map experience | Trial first (P.3). Fallback: keep the native map with the new marker design. |
 | OpenStreetMap road data has gaps or wrong one-way tags | Odd detours | Data check in 6.1, careful wording, and the owner tests in a familiar area |
 | Moving the owner's data | Losing local reports | Copy-only script, backups first, tested on a copy |
 | Scope creep | Never finishing | One step at a time; a step that doesn't serve section 1 waits |

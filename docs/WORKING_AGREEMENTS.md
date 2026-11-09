@@ -18,6 +18,7 @@ How the owner and Claude work on this project. Read this at the start of every s
 - Plain, casual English. Explain any jargon in one line. Answer first, then details.
 - When a decision is the owner's, ask one or two focused questions, with 2 to 4 options, the recommended one first, and a one-line consequence for each.
 - End each task with: what changed, what the owner needs to do (exact steps and time), and the suggested next step.
+- When pointing to something on GitHub, say where it is (for example "pull request #98"). No links; the owner checks GitHub directly.
 - Be honest about what could not be tested, what failed and what is uncertain. Never invent results.
 
 ## 3. Before building
@@ -96,6 +97,7 @@ These come from the hackathon handoff and still apply:
 | 9 Nov 2026 | Commits are authored as the owner (Ahmad Danish Firas bin Faizol, UiTM email) | Owner's request; matches the rest of the history |
 | 9 Nov 2026 | Stay with Next.js and Expo; no Flutter or other framework switch | Expo Go is the only free, official way to test on the owner's iPhone from Windows |
 | 9 Nov 2026 | Follow `docs/roadmap.md` (phases 0 to 8) | Approved by the owner; it brings back routing, closures and hosting, each with a safeguard |
+| 9 Nov 2026 | Web first; the phone app waits (roadmap section 3A) | Avoid working on two apps at once. The resident website covers phones in the meantime. |
 | Oct 2026 | Mobile app in its own repository, talking to the website only through the API | Simpler to keep separate (hackathon decision) |
 
 ## 11. Open questions

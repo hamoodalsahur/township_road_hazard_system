@@ -81,6 +81,12 @@ These come from that repository's README and docs. I have not re-tested them on 
 
 Newest first. Each entry: what changed, why, and how it was checked.
 
+### 9 November 2026: web first
+- **What:** the roadmap now refines the website first. Mobile steps moved to a "Phone app, later" list (roadmap section 3A). "Way home" is built on the resident website first.
+- **Why:** owner's decision, to avoid working on two apps at once.
+- **Safeguard:** step 2.7 adds tests in this repository that check the API the phone app uses keeps working while the app waits.
+- **Checked:** docs only.
+
 ### 9 November 2026: design direction approved (roadmap step 0.1)
 - **What:** merged `docs/DESIGN.md` into `main` and marked it approved. Its open decisions now point to the roadmap's decision list.
 - **Why:** the owner approved the direction. Every later screen builds on it.

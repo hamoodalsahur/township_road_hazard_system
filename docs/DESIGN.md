@@ -371,4 +371,4 @@ These are tracked in [roadmap.md](roadmap.md), section 4:
 - Background map (G3). Recommended: OpenFreeMap "Positron".
 - When to add Bahasa Malaysia (G8).
 
-If the roadmap and section 15 above disagree about order, the roadmap wins.
+If the roadmap and section 15 above disagree about order, the roadmap wins. In particular, the website comes first and the mobile steps wait (roadmap section 3A).
