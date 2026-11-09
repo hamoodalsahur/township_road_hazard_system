@@ -4,7 +4,8 @@ The running record of what the system can do, what changed and why. Update it wi
 
 **Last updated:** 9 November 2026
 **Rules for working on this project:** [WORKING_AGREEMENTS.md](WORKING_AGREEMENTS.md)
-**Older history:** [progress.md](progress.md) and the `v2*` files in this folder describe the hackathon milestones. Parts of `progress.md` and `roadmap.md` are out of date. Where they disagree with this file, this file and the code are authoritative.
+**Where we are going:** [roadmap.md](roadmap.md) (approved 9 November 2026)
+**Older history:** [progress.md](progress.md), [archive/roadmap-hackathon.md](archive/roadmap-hackathon.md) and the `v2*` files in this folder describe the hackathon milestones. Parts of them are out of date. Where they disagree with this file, this file and the code are authoritative.
 
 ---
 
@@ -79,6 +80,15 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 9 November 2026: new roadmap
+- **What:** replaced `docs/roadmap.md` with the post-hackathon roadmap and moved the old one to `docs/archive/roadmap-hackathon.md`. The roadmap has:
+  - phases 0 to 8, with one pull request per step;
+  - decision points G1 to G9;
+  - a "not doing" list and risks.
+- **Why:** the hackathon roadmap ruled out routing, road closures and deployment. The new direction (the "way home" feature, a hosted system) needs all three, each with a safeguard.
+- **Also decided:** stay with Next.js and Expo. Flutter and other frameworks were compared and rejected, because they need a Mac to test on an iPhone, while Expo Go works from Windows for free.
+- **Checked:** facts cited in the roadmap were checked against the code (the three hard-coded BBR area checks, the `judge-demo/` folder) and against current vendor documentation (Expo, Supabase, OpenFreeMap, Vercel).
 
 ### 9 November 2026: notes and working agreements
 - **What:** added this file and `WORKING_AGREEMENTS.md`.
