@@ -2,7 +2,7 @@
 
 **Status:** approved by the owner on 9 November 2026. The hackathon version is archived at [archive/roadmap-hackathon.md](archive/roadmap-hackathon.md).
 **Written:** 9 November 2026, against `main` at `cbc6972` (web) and `c8dfbdf` (mobile).
-**Related:** [PROJECT_NOTES.md](PROJECT_NOTES.md) (status), [WORKING_AGREEMENTS.md](WORKING_AGREEMENTS.md) (how we work), [DESIGN.md](DESIGN.md) (look and feel, on branch `docs/design-direction`).
+**Related:** [PROJECT_NOTES.md](PROJECT_NOTES.md) (status), [WORKING_AGREEMENTS.md](WORKING_AGREEMENTS.md) (how we work), [DESIGN.md](DESIGN.md) (look and feel).
 
 ---
 

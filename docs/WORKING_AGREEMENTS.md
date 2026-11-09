@@ -46,6 +46,7 @@ How the owner and Claude work on this project. Read this at the start of every s
 - **Commit messages:** short, simple, in the owner's voice (for example "Added a design direction for the revamp"). No technical detail, no numbers, **no `Co-Authored-By` or session trailers**, even if a tool suggests them.
 - **Commit author:** the owner, "Ahmad Danish Firas bin Faizol", with the same UiTM email used across the history.
 - **Secrets:** never commit `.env`, keys, passwords, the SQLite database or private photos. Check before every commit.
+- **Merging:** Claude asks the owner for confirmation, then merges the pull request itself once checks pass.
 - **After a push:** give the commit hash and remind the owner to `git pull` (and reinstall dependencies if they changed).
 
 ## 6. Protect the owner's local data
@@ -69,7 +70,7 @@ These come from the hackathon handoff and still apply:
 
 - **Tests:** a test for every feature and for every bug fixed. The full test suite stays green.
 - **Real checks:** test in a real browser, take screenshots and look at them, and check phone width.
-- **UI consistency:** follow `docs/DESIGN.md` once it is approved, so the product looks like one thing.
+- **UI consistency:** follow `docs/DESIGN.md`, so the product looks like one thing.
 - **Old data keeps working** after upgrades.
 - **Safe by default:** new features don't change the owner's everyday setup unless the owner opts in.
 - **Demo data is labelled as fictional,** and is never used as evidence about the real world.
@@ -105,7 +106,7 @@ The product decisions are tracked as G1 to G9 in [roadmap.md](roadmap.md), secti
 
 ## 12. Next step
 
-Roadmap step **0.1**: merge `docs/DESIGN.md` from branch `docs/design-direction`. The owner approved the design direction on 9 November 2026.
+Roadmap step **0.2**: commit `package-lock.json`, so that the README's `npm ci` works for a fresh clone.
 
 ## 13. Lessons learned
 

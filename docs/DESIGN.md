@@ -1,6 +1,6 @@
 # Design direction
 
-**Status:** proposal, waiting for owner approval. Nothing in the code follows this yet.
+**Status:** approved by the owner on 9 November 2026. The code does not follow it yet; the order of work is in [roadmap.md](roadmap.md), phases 1, 3 and 4.
 **Applies to:** the management website, the resident website (this repository) and the resident mobile app (`township_system_mobile`).
 **Written:** 9 November 2026, against `main` at `71f6b50` (web) and `c8dfbdf` (mobile).
 
@@ -335,9 +335,9 @@ The design needs these behaviours, which do not exist yet:
 4. **Reviewer keyboard shortcuts** on the Incidents page.
 5. **Localisation plumbing:** a string catalogue in each repository.
 
-## 14. Decisions this proposal changes
+## 14. Decisions this direction changes
 
-These were accepted earlier and are replaced here. Each needs the owner's explicit yes:
+These were accepted earlier and are replaced here. The owner approved the replacements with this document on 9 November 2026:
 
 | Earlier decision | Replacement |
 | --- | --- |
@@ -365,7 +365,10 @@ Each step is its own pull request with before and after screenshots at 1440 px a
 
 ## 16. Open decisions
 
-1. Product name (section 4).
-2. Basemap provider (section 10).
-3. Approve the replaced decisions in section 14.
-4. Whether to support Bahasa Malaysia in the first release, or prepare for it and ship English first.
+These are tracked in [roadmap.md](roadmap.md), section 4:
+
+- Product name (G1).
+- Background map (G3). Recommended: OpenFreeMap "Positron".
+- When to add Bahasa Malaysia (G8).
+
+If the roadmap and section 15 above disagree about order, the roadmap wins.
