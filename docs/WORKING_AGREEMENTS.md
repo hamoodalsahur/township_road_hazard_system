@@ -44,7 +44,7 @@ How the owner and Claude work on this project. Read this at the start of every s
   - The owner tests locally and approves before anything is merged to `main`.
   - Never merge untested work.
 - **Commit messages:** short, simple, in the owner's voice (for example "Added a design direction for the revamp"). No technical detail, no numbers, **no `Co-Authored-By` or session trailers**, even if a tool suggests them.
-- **Commit author:** currently "Claude", until the owner gives a name and email to use.
+- **Commit author:** the owner, "Ahmad Danish Firas bin Faizol", with the same UiTM email used across the history.
 - **Secrets:** never commit `.env`, keys, passwords, the SQLite database or private photos. Check before every commit.
 - **After a push:** give the commit hash and remind the owner to `git pull` (and reinstall dependencies if they changed).
 
@@ -92,22 +92,20 @@ These come from the hackathon handoff and still apply:
 | 9 Nov 2026 | The public judge demo is not part of the ongoing work | The hackathon is over |
 | 9 Nov 2026 | Work one step at a time, with the owner's go-ahead each time | No deadline pressure, and it keeps the owner in control |
 | 9 Nov 2026 | Commits carry no co-author or session trailers | Owner's rule |
+| 9 Nov 2026 | Commits are authored as the owner (Ahmad Danish Firas bin Faizol, UiTM email) | Owner's request; matches the rest of the history |
+| 9 Nov 2026 | Stay with Next.js and Expo; no Flutter or other framework switch | Expo Go is the only free, official way to test on the owner's iPhone from Windows |
+| 9 Nov 2026 | Follow `docs/roadmap.md` (phases 0 to 8) | Approved by the owner; it brings back routing, closures and hosting, each with a safeguard |
 | Oct 2026 | Mobile app in its own repository, talking to the website only through the API | Simpler to keep separate (hackathon decision) |
 
 ## 11. Open questions
 
-1. Approve the design direction in `docs/DESIGN.md`, including the earlier decisions it replaces (its section 14).
-2. Product name (it currently appears under three names).
-3. Map basemap provider.
-4. Bahasa Malaysia in the first release, or English first?
-5. What to do with the seven old open pull requests and the `judge-demo/` folder.
-6. Whether to commit a `package-lock.json`, so that `npm ci` in the README works.
-7. Commit author name and email.
-8. Hardware limits, and anything handled outside these sessions.
+The product decisions are tracked as G1 to G9 in [roadmap.md](roadmap.md), section 4. Other open items:
+
+1. Hardware limits, and anything handled outside these sessions.
 
 ## 12. Next step
 
-Owner reviews `docs/DESIGN.md` and the style tile. If approved, the first build step is "tokens only": new colours, font and radii with no layout changes, shown as before and after screenshots first.
+Roadmap step **0.1**: merge `docs/DESIGN.md` from branch `docs/design-direction`. The owner approved the design direction on 9 November 2026.
 
 ## 13. Lessons learned
 

@@ -1,45 +1,203 @@
-# Development roadmap — Township Road & Hazard Intelligence System
+# Roadmap
 
-> **University fictional demonstration only (verified against code merged through 22 October 2026).** No operational road-safety, emergency dispatch, traffic routing, live hazard, validated geographic accessibility or confirmed closures. Local map geometry is OSM-derived and **unverified**; semantic AI is advisory and never changes incident/road status.
+**Status:** approved by the owner on 9 November 2026. The hackathon version is archived at [archive/roadmap-hackathon.md](archive/roadmap-hackathon.md).
+**Written:** 9 November 2026, against `main` at `cbc6972` (web) and `c8dfbdf` (mobile).
+**Related:** [PROJECT_NOTES.md](PROJECT_NOTES.md) (status), [WORKING_AGREEMENTS.md](WORKING_AGREEMENTS.md) (how we work), [DESIGN.md](DESIGN.md) (look and feel, on branch `docs/design-direction`).
 
-## Implemented and previously locally tested
+---
 
-| Milestone | Implemented capability | Verified scope and limits |
+## 1. Where we are going
+
+> **A resident can report a road problem in under a minute, see what happened to it, and know before leaving whether their way home is blocked. A township operator can confirm a problem and mark a road as closed, with a reason, in a few clicks.**
+
+Every step below moves toward that sentence. If a step doesn't, it waits.
+
+### What stays the same
+- **Next.js** for the website, the API and the management dashboard.
+- **Expo** for the phone app, tested on the owner's iPhone through Expo Go.
+- **Two repositories,** connected only through the API.
+- **Fictional data,** clearly labelled, until there is a real deployment decision.
+- **One step at a time:** each step is one branch and one pull request, merged only after the owner's go-ahead.
+
+### What changes on purpose
+The hackathon roadmap ruled out three things. This roadmap brings them back, each with a safeguard:
+
+| Hackathon rule | New position | Safeguard |
 | --- | --- | --- |
-| V1 setup / simulation | Next.js, Prisma SQLite, schematic graph, five-stage fictional flood simulation, connectivity demonstration and basic reports | Schematic coordinates/statuses represent **fictional examples**. Connectivity is not actual drivable routing. |
-| V2 geographic reporting | Resident map/report submissions, locally imported BBR OSM reference lines, seven fictional hazard categories | User's tracked `public/data/bbr-roads.geojson` is locally modified and can differ from GitHub; never overwrite/import without permission. |
-| V2 evidence/privacy | One sample photo per report, private operator inspection, explicit separate public-demo approval | Never use real identifying photos for tests. No production image scanning, secure storage or retention system. |
-| V2 AI research | Optional local Ollama similarity triage, bilingual synthetic evaluation workbench, thresholds and CSV evaluation | AI suggestions are advisory; limited authored test cases do not establish real-world accuracy or fairness. |
-| V2.5 incident management | Human-created `DemoIncident` groups, explicit link/unlink/status change with operator reason and audit | One linked group per report, rejected reports cannot remain grouped, no status change on `RoadSegment` from geographic/AI output. |
-| V2.6 oversight / QA | Incident oversight, read-only fictional consistency checks, research metadata CSV export | Dashboard metrics are descriptive, not incident severity; report descriptions, photo contents, review notes and coordinates are excluded from CSV. Operator-authored incident titles may need review before sharing. |
-| V2.6 geographic QA | Read-only nearby unverified OSM road candidates, source node topology audit | Proximity/shared node IDs do not prove road associations, legal junctions, accessibility, or safe routes. |
-| V2.7 intake / tag diagnostics | Actual streamed JSON byte limits on demo intake; read-only OSM one-way/access/bridge/tunnel/layer summary | Local-development-only intake, not rate limiting, public authentication, or an authoritative OSM road model. |
-| V2.8 provenance / privacy | Raw unverified candidate-tag caveats and metadata-only private evidence inventory with age indicators | Evidence inventory does not retrieve photos or perform deletion/publication. Age count is **not** a retention policy. |
+| No routing | Routing comes back for the "way home" feature | Only routes around **operator-confirmed** closures. Always called "a route that avoids reported closures", never "a safe route". |
+| Nothing changes road status | Operators can mark a road segment as closed | Requires an operator account, a reason, an audit entry and an end or review date. Unverified reports and AI suggestions can never close a road. |
+| No deployment | Hosted, so the phone works away from home Wi-Fi | Real sign-in first, writes locked down, data still labelled fictional, free hosting tiers only |
 
-The implementations above are merged in `main` through PR #54 and were confirmed by the user in combined local sessions. The merged V2.8 tree matched the tested integration tree; always recheck GitHub before further merges.
+## 2. The plan at a glance
 
-## V2.9 proposed, **unmerged / awaiting local approval**
+| Phase | Goal | Size | Needs |
+| --- | --- | --- | --- |
+| **0. Clean slate** | Tidy repository, a README that works, design direction merged | Small | Nothing |
+| **1. New look, step one** | New colours, font and shapes everywhere, no layout changes | Small | Phase 0 |
+| **2. Foundations** | Real database, real accounts, hosted, works away from home Wi-Fi | Large | Decision G2 |
+| **3. Map platform** | One modern free map on web and phone | Medium | Phase 2 (roads in database) |
+| **4. Screens revamp** | Every screen rebuilt to the design direction | Large | Phases 1 and 3 |
+| **5. Closures and report outcomes** | Operators close roads; residents see what happened to their report | Medium | Phase 2, decision G5 |
+| **6. Way home** | Home pin, route check, detour around closures | Large | Phases 3 and 5 |
+| **7. Alerts** | "Your way home is affected" while the app is closed | Medium | Phase 6, decision G7 |
+| **8. Trust and polish** | Bahasa Malaysia, accessibility, abuse protection, privacy, full end-to-end tests | Medium | Runs alongside from Phase 4 |
 
-- **PR #56** — read-only review-age queue for unverified fictional reports and under-review grouped incidents; metadata only, no emergency/road priority.
-- **PR #57** — SHA-256 digest and coverage summary of the **exact local GeoJSON bytes**; byte equality is not source verification or OSM freshness.
-- **PR #58** — temporary combined integration-testing branch for #56–57, **do not merge**.
-- **PR #59** — roadmap, acceptance and demo-safety documentation refresh (this PR), also awaiting explicit approval.
+**Critical path:** 0 → 1 → 2 → 3 → 5 → 6 → 7. Phase 4 screens run alongside once the map platform is in. Phase 8 items slot in whenever they fit.
 
-Pending PRs can pass CI without user acceptance. **Never merge feature PRs into main before explicit local pass and a successful check on the final reconciled head.**
+"Size" is relative. There is no deadline, so there are no dates.
 
-## Future milestones (planning, not implemented)
+---
 
-1. **Structured, human-reviewed road association research**. Draft distinct candidate / reviewed / rejected states, operator reasons and audit history before new database models. Require independently validated, versioned road identifiers. Do not automate real status changes, closures or safety labels. Any eventual Prisma migration requires a **backed-up** local database and explicit user approval; never seed/reset existing data.
-2. **Source integrity and richer topology validation**. Research OSM access restrictions, turn relations, one-way direction, bridges/layers and independently verified road identity. No routing or authoritative conclusions from raw OSM tags.
-3. **Production security and privacy design**, separately gated: true authentication and role separation, storage scanning/transcoding, upload quota/rate limits, photo consent/revocation, retention safeguards and deployment restrictions. Current demo operator key is not real production login.
-4. **End-to-end evaluation and academic methodology**. Reproducible fictional data fixtures, safety/regression tests, documented limitations and demo outcomes; distinguish development-tuned from untouched holdout evaluation.
-5. **Deployment is NOT currently approved.** Requires verified data sources and domain review before anything could be interpreted as live public hazard information.
+## 3. Phases in detail
 
-## Team workflow and local protection rules
+Each numbered step is meant to be one pull request. Every step that changes a screen starts with PNG mockups for approval.
 
-1. Always start feature branches from the verified current `main`; use separate PRs and incremental commits.
-2. Require CI (unit tests, TypeScript, build), then a dedicated integration branch for convenient combined local tests.
-3. Before switching branches, stop the dev server and safely back up local `prisma/dev.db` (including WAL/SHM if present), `public/data/bbr-roads.geojson`, `.env` and local uncommitted work. Use stash carefully.
-4. Never run `npm run db:seed`, `npm run geo:import`, `git reset --hard`, destructive schema pushes or force checkout on the user's working data.
-5. New groupmate setups use their **own new SQLite DB** and independently configured `.env`, and may seed only disposable fresh DBs. Never share private operator keys, real identifying evidence or the user's DB.
-6. Merge approved original PRs separately with conflict reconciliation. Validate final `main` tree against tested integration tree and await post-merge CI. Close temporary testing PRs without merging them.
+### Phase 0: Clean slate
+
+| Step | What | Why |
+| --- | --- | --- |
+| 0.1 | Merge `docs/DESIGN.md` from `docs/design-direction` | The direction was approved; it should be on `main` |
+| 0.2 | Commit `package-lock.json` | The README says `npm ci`, which fails without it |
+| 0.3 | Close the seven old hackathon pull requests (#13, #29, #30, #37, #48, #64, #84), each with a one-line note | They are stale and confusing; nothing in them is needed for this plan |
+| 0.4 | Pick one product name and use it everywhere | Three names today |
+| 0.5 | Retire the public judge demo (`judge-demo/` and its GitHub Pages site) | Not part of the ongoing work; it shows an outdated version |
+
+**Done when:** a fresh clone installs with the README's commands, there is one name everywhere, and the only open pull requests are current work.
+
+### Phase 1: New look, step one
+
+| Step | What |
+| --- | --- |
+| 1.1 | Website: colours, font (Atkinson Hyperlegible), radii and focus styles from `DESIGN.md` |
+| 1.2 | Phone: the same tokens in `src/constants/theme.ts`, replacing the Expo template colours |
+
+**Done when:** before and after screenshots at desktop and phone width are approved, every page still works, and contrast checks pass.
+
+**Why this early:** it is visible, safe and quick, and every later screen builds on it.
+
+### Phase 2: Foundations
+
+Recommended answer to decision G2: move to **Supabase**, a hosted Postgres database with maps support (PostGIS), route calculation (pgRouting), user accounts and file storage, all on a free tier. Prisma stays as the way the code talks to the database.
+
+| Step | What | Protects |
+| --- | --- | --- |
+| 2.1 | **Service area setting.** Replace the BBR rectangle hard-coded in 3 files with one setting. BBR stays the default. | Needed to test at the owner's own location |
+| 2.2 | **Move to Postgres.** New Supabase project, schema moved, plus a one-way copy script that reads the owner's `dev.db` and writes to the new database | The original `dev.db` is only read, never changed. The script is tested on a copy first. |
+| 2.3 | **Roads into the database.** The road import writes to a database table | Reads the owner's GeoJSON file and never overwrites it |
+| 2.4 | **Photos to private storage.** Approved photos get a public link; others never do | Same privacy rules as today |
+| 2.5 | **Operator accounts.** Real sign-in replaces the shared key, with roles (operator, admin) and audit entries showing who did what | The shared development key is retired |
+| 2.6 | **Hosting.** Website on Vercel's free tier; the phone app points at the hosted address, with local mode kept for development | Writes need sign-in or rate limits; the demo label stays |
+| 2.7 | **Contract check.** A test in the mobile repository that checks categories, limits and labels against the API | Stops the two apps drifting apart without a monorepo |
+
+**Done when:** the phone app works on mobile data away from the PC, an operator signs in with their own account, and the owner's old reports and photos are in the new database and checked.
+
+### Phase 3: Map platform
+
+| Step | What |
+| --- | --- |
+| 3.1 | **Phone map trial.** MapLibre with OpenFreeMap's quiet "Positron" style, inside an Expo DOM component, run on the owner's iPhone in Expo Go. Decision G4 is made from how it feels. |
+| 3.2 | Website map moves from Leaflet to MapLibre, with the new marker set from `DESIGN.md` |
+| 3.3 | Phone map moves to the approach chosen in 3.1 |
+| 3.4 | Marker clustering, a legend showing only what's on screen, and road-inspection mode |
+
+**Done when:** web and phone show the same map style and markers, and the map is smooth on the owner's iPhone.
+
+### Phase 4: Screens revamp
+
+Order follows `DESIGN.md`, section 15. Each step needs mockups approved first.
+
+| Step | Screen |
+| --- | --- |
+| 4.1 | Management map page: full-screen map, floating filters, side panel |
+| 4.2 | Management overview (decision queue first) and incident review (fixed decision buttons, keyboard shortcuts) |
+| 4.3 | Resident website: map, report, "My reports". The simulation moves to management. |
+| 4.4 | Phone report flow: three steps, review, confirmation |
+| 4.5 | Phone "My reports" and dark mode |
+| 4.6 | Motion pass: only the animations listed in `DESIGN.md` |
+
+### Phase 5: Closures and report outcomes
+
+| Step | What |
+| --- | --- |
+| 5.1 | **Road closure records.** An operator links a confirmed report or incident to one or more road segments, with a reason, a start time and an end or review time. The closure shows on the map and is audited. |
+| 5.2 | **Report outcome in the public API:** received, being checked, confirmed or not, resolved. Operator notes are never included. |
+| 5.3 | **Lifecycle track** on web and phone, and "My reports" showing live status |
+
+**Done when:** a resident sees their report move through every stage, and a closure appears and disappears on the map at the right times.
+
+### Phase 6: Way home
+
+Recommended answer to decision G6: routes are calculated in the database with **pgRouting**, so we don't write our own routing maths.
+
+| Step | What |
+| --- | --- |
+| 6.1 | **Road network check.** Build the routable network from the road table. Report and fix data problems such as disconnected pieces and wrong one-way tags. The existing topology research tools are reused here. |
+| 6.2 | **Route API.** Given a start and an end, return a route that avoids active closures, plus whether the usual route was affected. Locations are used for the answer and **not stored**. |
+| 6.3 | **Home pin.** The resident sets home by tapping the map. It is stored on the device only. "Start from where I am" is opt-in and uses the location permission. |
+| 6.4 | **"Your way home" card.** When the app opens, it shows "clear", or "affected" with the detour on the map. |
+| 6.5 | **Own-area test pack.** Import the owner's area locally, add fictional closures, and work through a checklist. Home coordinates never go into Git. |
+
+**Done when:** at the owner's own location, a fictional closure on the usual route triggers "affected" and a sensible detour, and removing it returns to "clear".
+
+### Phase 7: Alerts
+
+Decision G7 picks the route here.
+
+| Option | Cost | Notes |
+| --- | --- | --- |
+| **(Recommended) Installable web app with web push** | Free | iPhone supports push for web apps added to the home screen (iOS 16.4 and later). Privacy: the phone subscribes to small map areas, not an exact home. |
+| Native push in the Expo app | Apple Developer Program, USD 99 a year | Needed for push from the native app |
+| No alerts while closed | Free | The check runs when the app is opened (Phase 6) |
+
+### Phase 8: Trust and polish (alongside)
+
+- **Bahasa Malaysia** (decision G8): first move all text into string files, then translate.
+- **Accessibility:** keyboard, screen reader and text-size pass on the main flows.
+- **Abuse protection:** rate limits and duplicate detection on public report submission.
+- **Privacy notice:** what is collected, why, and how long it is kept, written with Malaysia's PDPA in mind.
+- **End-to-end browser tests** for the main flows (report, review, close, route).
+- **Error tracking and database backups.**
+- **An operator guide.**
+
+---
+
+## 4. Decisions waiting on the owner
+
+| ID | Decision | When it's needed | Recommended |
+| --- | --- | --- | --- |
+| G1 | Product name | Phase 0 | Pick from a shortlist |
+| G2 | Move to Supabase (Postgres, accounts, storage) | Phase 2 | Yes |
+| G3 | Background map | Phase 3 | OpenFreeMap "Positron" (free, no key, commercial use allowed) |
+| G4 | How the phone shows the map | After trial 3.1 | Decided by how it feels on the iPhone |
+| G5 | Operator-confirmed closures may affect routes | Phase 5 | Yes, operator-only, with an end or review date |
+| G6 | How routes are calculated | Phase 6 | pgRouting in the database |
+| G7 | Alerts while the app is closed | Phase 7 | Installable web app with web push |
+| G8 | When to add Bahasa Malaysia | Phase 8 | Prepare early, translate after the screens settle |
+| G9 | Merge the two repositories into one | Not now | No; the contract check (2.7) is enough for now |
+
+## 5. What we are not doing
+
+- **Switching frameworks** (Flutter, Kotlin, MAUI). Expo Go is the only free official way to test on the iPhone from Windows.
+- **Paid services,** unless the owner decides otherwise at a decision point.
+- **Closing roads automatically** from unverified reports or AI suggestions.
+- **Storing residents' home locations on the server.**
+- **Tracking location in the background.**
+- **Presenting anything as real emergency information** while the data is fictional. The report flow always says "For emergencies call 999".
+
+## 6. Risks
+
+| Risk | Effect | What we do |
+| --- | --- | --- |
+| The free Supabase project pauses after a week with no activity | Development database asleep after a break | Resume it from the dashboard. It doesn't matter for development. |
+| Expo Go on the App Store lags behind new Expo versions | An SDK upgrade could break iPhone testing | Only upgrade the Expo SDK once Expo Go supports it |
+| A web-based map in the phone app feels slow | Poor map experience | Trial first (3.1). Fallback: keep the native map with the new marker design. |
+| OpenStreetMap road data has gaps or wrong one-way tags | Odd detours | Data check in 6.1, careful wording, and the owner tests in a familiar area |
+| Moving the owner's data | Losing local reports | Copy-only script, backups first, tested on a copy |
+| Scope creep | Never finishing | One step at a time; a step that doesn't serve section 1 waits |
+| Vercel's free tier is for personal, non-commercial use | Not suitable for a paid service later | Fine for now; revisit if there is a real deployment |
+
+## 7. How progress is tracked
+
+- **Status:** every step updates the status table and change log in `PROJECT_NOTES.md`.
+- **Order:** this file says what comes next, and changes only with the owner's agreement.
+- **Pull requests:** each one names its step, for example "Step 2.1: service area setting".
