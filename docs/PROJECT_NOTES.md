@@ -47,7 +47,7 @@ The two are connected only through the website's API over the local network. The
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
 | Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 173 tests pass on `main`; checks for `71f6b50` are green on GitHub |
 | Public browser-only judge demo (`judge-demo/`, GitHub Pages) | ✅ | Built for the hackathon; not part of the ongoing work. Keep or remove is an open question. |
-| Design revamp | ⏳ | Direction proposed in `docs/DESIGN.md` on branch `docs/design-direction`, waiting for approval |
+| Design revamp | ⏳ | Direction approved and recorded in `docs/DESIGN.md`. Building starts at roadmap phase 1. |
 | Residents can see the full outcome of a report (including "Resolved") | ❌ | The public reports API does not expose incident status |
 | "My reports" on the resident website | ❌ | |
 | Real user accounts and sign-in | ❌ | |
@@ -80,6 +80,17 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 9 November 2026: web first
+- **What:** the roadmap now refines the website first. Mobile steps moved to a "Phone app, later" list (roadmap section 3A). "Way home" is built on the resident website first.
+- **Why:** owner's decision, to avoid working on two apps at once.
+- **Safeguard:** step 2.7 adds tests in this repository that check the API the phone app uses keeps working while the app waits.
+- **Checked:** docs only.
+
+### 9 November 2026: design direction approved (roadmap step 0.1)
+- **What:** merged `docs/DESIGN.md` into `main` and marked it approved. Its open decisions now point to the roadmap's decision list.
+- **Why:** the owner approved the direction. Every later screen builds on it.
+- **Checked:** docs only. Links between `DESIGN.md`, `roadmap.md` and these notes checked.
 
 ### 9 November 2026: new roadmap
 - **What:** replaced `docs/roadmap.md` with the post-hackathon roadmap and moved the old one to `docs/archive/roadmap-hackathon.md`. The roadmap has:
