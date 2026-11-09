@@ -122,7 +122,7 @@ Order follows `DESIGN.md`, section 15. Each step needs mockups approved first.
 | --- | --- |
 | 5.1 | **Road closure records.** An operator links a confirmed report or incident to one or more road segments, with a reason, a start time and an end or review time. The closure shows on the map and is audited. |
 | 5.2 | **Report outcome in the public API:** received, being checked, confirmed or not, resolved. Operator notes are never included. |
-| 5.3 | **Lifecycle track** on web and phone, and "My reports" showing live status |
+| 5.3 | **Lifecycle track** on the website, and "My reports" showing live status |
 
 **Done when:** a resident sees their report move through every stage, and a closure appears and disappears on the map at the right times.
 
