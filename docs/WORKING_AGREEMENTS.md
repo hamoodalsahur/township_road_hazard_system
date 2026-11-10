@@ -122,4 +122,5 @@ The Overview (the other half of 4.2) followed the same day. Next is:
 - Twenty repetitive manual items is too many. Keep human tasks short.
 - Explain why a feature is worth building before building it.
 - A sandbox reset lost an unexported patch on 9 Nov 2026. Push work to a branch instead of keeping it only in the sandbox.
+- On 10 Nov 2026 the owner's sign-in failed after `npm ci`, because the update steps left out `npm run db:generate` and `npm ci` had removed the generated Prisma client. Installing now runs it automatically (`postinstall`). Copy setup steps from the README instead of writing them from memory.
 - A Git stash on Windows changed the road file's line endings on 9 Nov 2026 (content unchanged). After any stash or branch switch, compare the road file's size with its backup. `.gitattributes` now prevents this for `.geojson` files.

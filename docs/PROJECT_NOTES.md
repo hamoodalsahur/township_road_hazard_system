@@ -45,7 +45,7 @@ The two are connected only through the website's API over the local network. The
 | Resident web page (map, simulation, practice reports) | ✅ | To be restructured by the design revamp |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 224 tests pass on the Overview branch |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 225 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
 | Design revamp | ⏳ | Direction in `docs/DESIGN.md`. Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
 | Residents can see the full outcome of a report (including "Resolved") | ❌ | The public reports API does not expose incident status |
@@ -99,6 +99,12 @@ Newest first. Each entry: what changed, why, and how it was checked.
   - The typecheck has no new errors.
   - On the real page with stand-in data at 1440×900 and 390×844: all four states, the Advanced panel, clicking a queue row (it opened that report in Incidents) and a group link. No page errors.
   - Not checked: a production build (GitHub checks run it) and a real phone.
+
+### 10 November 2026: installing prepares the database code
+- **What:** `package.json` now has `"postinstall": "prisma generate"`, so `npm ci` and `npm install` rebuild the Prisma client every time. The README setup steps drop the separate `npm run db:generate` line and explain the one-command fix if sign-in fails.
+- **Why:** after PR #104 the owner ran `npm ci` without `npm run db:generate` (left out of the update steps). That removed the Prisma client, so sign-in could not reach the database and failed. The key had not changed.
+- **Safety:** `prisma generate` reads only `prisma/schema.prisma` and writes inside `node_modules`. It never touches `dev.db`, the road file or `.env`.
+- **Checked:** a test confirms the script stays in `package.json`. GitHub checks already ran `prisma generate`, so CI is unchanged.
 
 ### 10 November 2026: Incidents screen rebuilt (roadmap step 4.2, first half)
 - **Why now:** colours alone looked too subtle, so the owner brought the Incidents rebuild forward to see the new style on a real screen. Seven mockups of every state were approved before building; two are saved in `docs/design/`.
