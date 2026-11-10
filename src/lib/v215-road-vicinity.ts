@@ -1,5 +1,6 @@
 import type {RoadFeature} from "./bbr-roads";
 import type {HazardImpact} from "./v2-hazard-validation";
+import {DEFAULT_SERVICE_AREA,isInsideServiceArea,type ServiceArea} from "./service-area";
 
 /** A fiction-only visual comparison, never a measured or verified road status. */
 export type ReviewedDemoReport={
@@ -36,7 +37,7 @@ function clippedSegment(a:[number,number],b:[number,number],t:number,length:numb
  * Suppress ambiguous nearest road ways (including duplicated source way IDs).
  */
 export function reviewedDemoVicinityStrokes(
- roads:readonly RoadFeature[],reports:readonly ReviewedDemoReport[]
+ roads:readonly RoadFeature[],reports:readonly ReviewedDemoReport[],area:ServiceArea=DEFAULT_SERVICE_AREA
 ):CandidateVicinityStroke[]{
  const duplicates=new Set<string>(),seen=new Set<string>();
  for(const road of roads){
@@ -46,8 +47,7 @@ export function reviewedDemoVicinityStrokes(
  const result:CandidateVicinityStroke[]=[];
  for(const report of reports.slice(0,100)){
   if(report.reviewState!=="corroborated"||!permitted.has(report.impact)||
-    !Number.isFinite(report.longitude)||!Number.isFinite(report.latitude)||
-    report.longitude<101.40||report.longitude>101.47||report.latitude<3.06||report.latitude>3.11)continue;
+    !isInsideServiceArea(area,report.longitude,report.latitude))continue;
   const point=[report.longitude,report.latitude] as const;
   const candidates: {road:RoadFeature;distance:number;t:number;length:number;segment:number}[]=[];
   for(const road of roads){

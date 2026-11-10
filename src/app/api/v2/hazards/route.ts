@@ -2,6 +2,7 @@ import {mayAcceptDemoSubmission,checkDemoJsonSize,readBoundedDemoJson,DemoBodyTo
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { validateHazardSubmission } from "@/lib/v2-hazard-validation";
+import { loadServiceArea } from "@/lib/service-area-server";
 
 export const dynamic = "force-dynamic";
 export async function GET() {
@@ -18,7 +19,7 @@ export async function POST(request:Request) {
   if(!checkDemoJsonSize(request,8192))return NextResponse.json({error:"Demo report payload is too large"},{status:413});
   try {
     const body: unknown = await readBoundedDemoJson(request,8192);
-    const data=validateHazardSubmission(body);
+    const data=validateHazardSubmission(body,loadServiceArea().area);
     const record=await prisma.hazardReport.create({data:{category:data.category,description:data.description,longitude:data.coordinates[0],latitude:data.coordinates[1],impact:data.impact,sourceMode:"simulation",reviewState:"unverified"}});
     return NextResponse.json({report:record,disclaimer:"Fictional report recorded. It does not change any road status."},{status:201});
   } catch(error) {

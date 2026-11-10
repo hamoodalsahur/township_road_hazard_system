@@ -1,0 +1,12 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "local",
+    "name": "My test area",
+    "note": "Copy this file to local.geojson (never committed), replace the corners with an area around where you want to test, then set SERVICE_AREA=local in .env and restart npm run dev. Points are [longitude, latitude]; the last point repeats the first. Keep it under 60 km across."
+  },
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [[[101.40, 3.06], [101.47, 3.06], [101.47, 3.11], [101.40, 3.11], [101.40, 3.06]]]
+  }
+}
