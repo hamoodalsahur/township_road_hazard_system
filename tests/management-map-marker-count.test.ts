@@ -1,6 +1,7 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
+import {readCompactSource} from "./source-helpers";
 
 test("map defaults to submitted reports without authored example markers",()=>{
  const src=readFileSync("src/components/maps/GeographicReferenceWorkspace.tsx","utf8");
@@ -11,7 +12,7 @@ test("map defaults to submitted reports without authored example markers",()=>{
 });
 test("rejected reports are excluded from map but retained in the review workflow",()=>{
  const map=readFileSync("src/components/maps/GeographicReferenceWorkspace.tsx","utf8");
- const review=readFileSync("src/components/management/V2HazardManager.tsx","utf8");
+ const review=readCompactSource("src/components/management/V2HazardManager.tsx");
  assert.match(map,/reviewState==="rejected"/);
  assert.match(map,/storedHazards\.filter\(item=>!rejectedIds\.has\(item\.id\)\)/);
  assert.match(review,/visibleItems=filterReviewReports\(items/);

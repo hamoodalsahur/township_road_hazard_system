@@ -1,8 +1,8 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {readFileSync} from "node:fs";
+import {readCompactSource} from "./source-helpers";
 test("incident list displays actionable load-error and retry without a false empty state",()=>{
- const s=readFileSync("src/components/management/IncidentManager.tsx","utf8");
+ const s=readCompactSource("src/components/management/IncidentManager.tsx");
  assert.match(s,/setLoadError\(/);
  assert.match(s,/role="alert"/);
  assert.match(s,/Retry loading/);

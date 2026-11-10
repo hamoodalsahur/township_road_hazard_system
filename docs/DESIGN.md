@@ -1,7 +1,7 @@
 # Design direction
 
 **Status:** approved by the owner on 9 November 2026. Style updated on 10 November 2026: the owner chose **Crisp Modern** for the light theme and **Night Ops** for dark mode, from four mockup options. The order of work is in [roadmap.md](roadmap.md), phases 1, 3 and 4.
-**Reference mockups:** [design/reference-crisp-modern.png](design/reference-crisp-modern.png) (light) and [design/reference-night-ops-dark.png](design/reference-night-ops-dark.png) (dark). When this file and a mockup disagree, this file wins.
+**Reference mockups:** [design/reference-crisp-modern.png](design/reference-crisp-modern.png) (light) and [design/reference-night-ops-dark.png](design/reference-night-ops-dark.png) (dark). Incidents screen, approved 10 November 2026: [desktop](design/incidents-review-desktop.png) and [phone](design/incidents-review-phone.png). When this file and a mockup disagree, this file wins.
 **Applies to:** the management website, the resident website (this repository) and the resident mobile app (`township_system_mobile`).
 **Written:** 9 November 2026, against `main` at `71f6b50` (web) and `c8dfbdf` (mobile).
 
@@ -180,7 +180,7 @@ Packages, all checked on npm:
 | Storm damage | `CloudLightning` | Literal weather, not decoration |
 | Other | `WarningCircle` | Generic, so it is used only for "other" |
 
-**Known issue from the style tile:** at marker size in the bold weight, `TrafficCone` and `RoadHorizon` look alike, and `CloudLightning` reads as a balloon. Before building the marker component, test alternatives at 18 px on a real phone, for example `Barricade` for roadworks with a different glyph for blocked road, or `Lightning` on its own for storm damage.
+**Known issue from the style tile (still open; the Incidents screen uses the table above as is):** at marker size in the bold weight, `TrafficCone` and `RoadHorizon` look alike, and `CloudLightning` reads as a balloon. Before building the marker component, test alternatives at 18 px on a real phone, for example `Barricade` for roadworks with a different glyph for blocked road, or `Lightning` on its own for storm damage.
 
 ### Marker spec
 
@@ -220,7 +220,9 @@ Packages, all checked on npm:
 - **Incidents:** keep the list-and-detail review layout from #85, which already fits the job.
   - Add the lifecycle track to the detail panel.
   - Move the decision buttons into a fixed footer of the detail panel, so they never scroll away.
-  - Keyboard shortcuts: J/K to move through the list, C to corroborate and R to reject. Both decision shortcuts open the reason field first.
+  - Keyboard shortcuts: J/K to move through the list, A to approve and R to reject (A matches the "Approve report" button). A and R never decide on their own: they move focus to the reason box when the reason is too short, otherwise to the matching button, and Enter confirms.
+  - Report review and incident groups are tabs. After a decision the next report waiting for review opens, and an empty queue says "All caught up".
+  - On phones the list and the detail take turns filling the screen, and the decision bar stays pinned to the bottom.
 - **Maps:** the map fills the screen below the header.
   - **Filters:** a compact toolbar floating at the top left.
   - **Legend:** collapsible, at the bottom left.
