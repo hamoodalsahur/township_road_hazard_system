@@ -78,6 +78,12 @@ These come from that repository's README and docs. I have not re-tested them on 
 
 Newest first. Each entry: what changed, why, and how it was checked.
 
+### 10 November 2026: installing prepares the database code
+- **What:** `package.json` now has `"postinstall": "prisma generate"`, so `npm ci` and `npm install` rebuild the Prisma client every time. The README setup steps drop the separate `npm run db:generate` line and explain the one-command fix if sign-in fails.
+- **Why:** after PR #104 the owner ran `npm ci` without `npm run db:generate` (left out of the update steps). That removed the Prisma client, so sign-in could not reach the database and failed. The key had not changed.
+- **Safety:** `prisma generate` reads only `prisma/schema.prisma` and writes inside `node_modules`. It never touches `dev.db`, the road file or `.env`.
+- **Checked:** a test confirms the script stays in `package.json`. GitHub checks already ran `prisma generate`, so CI is unchanged.
+
 ### 10 November 2026: Incidents screen rebuilt (roadmap step 4.2, first half)
 - **Why now:** colours alone looked too subtle, so the owner brought the Incidents rebuild forward to see the new style on a real screen. Seven mockups of every state were approved before building; two are saved in `docs/design/`.
 - **What:**
