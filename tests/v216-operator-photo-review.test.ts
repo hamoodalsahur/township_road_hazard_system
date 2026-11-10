@@ -1,8 +1,8 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {readFileSync} from "node:fs";
+import {readCompactSource} from "./source-helpers";
 test("approved and operator-only attached images use separate endpoints",()=>{
- const s=readFileSync("src/components/management/V2HazardManager.tsx","utf8");
+ const s=readCompactSource("src/components/management/V2HazardManager.tsx");
  assert.match(s,/selectedPhotoMode==="approved_inline"/);
  assert.match(s,/selectedPhotoMode==="inspect_private"/);
  assert.match(s,/\/evidence\/approved/);
@@ -12,7 +12,7 @@ test("approved and operator-only attached images use separate endpoints",()=>{
  assert.doesNotMatch(s,/Rule-based triage \(not AI\)/);
 });
 test("automatic operator preview checks selection, revokes blob URLs, and fails closed",()=>{
- const s=readFileSync("src/components/management/V2HazardManager.tsx","utf8");
+ const s=readCompactSource("src/components/management/V2HazardManager.tsx");
  assert.match(s,/activeSelectionRef\.current!==id/);
  assert.match(s,/URL\.revokeObjectURL/);
  assert.match(s,/selectedPhotoMode==="unavailable"/);

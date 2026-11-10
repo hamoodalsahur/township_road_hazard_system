@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import {usePathname} from "next/navigation";
-import {createContext,useContext,useState,type FormEvent,type ReactNode} from "react";
-import {ArrowUpRight,LockKeyhole,LogOut,Waves,LayoutDashboard,ClipboardList,MapPinned,Images,BrainCircuit,Settings2} from "lucide-react";
+import {createContext,useContext,useEffect,useState,type FormEvent,type ReactNode} from "react";
+import {ArrowUpRightIcon,ClipboardTextIcon,GearSixIcon,ImagesIcon,InfoIcon,LockKeyIcon,MapTrifoldIcon,PathIcon,SignOutIcon,SquaresFourIcon,BrainIcon} from "@phosphor-icons/react";
 import {MANAGEMENT_SECTIONS,managementSectionFromPath} from "@/lib/management-sections";
 import {PRODUCT_NAME} from "@/lib/product";
 
@@ -49,36 +49,54 @@ export default function ManagementShell({children}:{children:ReactNode}){
     setError("");
   }
 
-  const sectionIcons={overview:LayoutDashboard,incidents:ClipboardList,maps:MapPinned,evidence:Images,research:BrainCircuit,system:Settings2};
+  // Reports waiting for a decision, shown as a badge on Incidents. Refreshed after every review.
+  const [needsReview,setNeedsReview]=useState<number|null>(null);
+  useEffect(()=>{
+    if(!operatorKey){setNeedsReview(null);return;}
+    let live=true;
+    const refresh=()=>{
+      fetch("/api/v2/hazards",{cache:"no-store"})
+        .then(r=>r.ok?r.json() as Promise<{reports:{reviewState:string}[]}>:null)
+        .then(data=>{if(live)setNeedsReview(data?data.reports.filter(r=>r.reviewState==="unverified").length:null);})
+        .catch(()=>{if(live)setNeedsReview(null);});
+    };
+    refresh();
+    window.addEventListener("township-hazards-updated",refresh);
+    return ()=>{live=false;window.removeEventListener("township-hazards-updated",refresh);};
+  },[operatorKey]);
+
+  const sectionIcons={overview:SquaresFourIcon,incidents:ClipboardTextIcon,maps:MapTrifoldIcon,evidence:ImagesIcon,research:BrainIcon,system:GearSixIcon};
   return <div className="min-h-screen bg-slate-50 text-slate-900">
     {operatorKey ? <OperatorKeyContext.Provider value={operatorKey}>
       <div className="lg:flex">
-        <aside className="border-b border-slate-200 bg-white lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:shrink-0 lg:border-b-0 lg:border-r">
-          <Link href="/management" className="flex items-center gap-3 px-5 py-5 text-slate-900" aria-label={`${PRODUCT_NAME} management overview`}>
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-800 text-white"><Waves size={23} aria-hidden="true"/></span>
-            <span><strong className="block text-sm leading-5">{PRODUCT_NAME}</strong><span className="text-xs text-slate-500">Management workspace</span></span>
+        <aside className="border-b border-slate-200 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-60 lg:shrink-0 lg:flex-col lg:border-b-0 lg:border-r">
+          <Link href="/management" className="flex items-center gap-3 px-4 py-5 text-slate-900" aria-label={`${PRODUCT_NAME} management overview`}>
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-800 text-white"><PathIcon size={22} aria-hidden="true"/></span>
+            <span><strong className="block text-[17px] font-semibold leading-5">{PRODUCT_NAME}</strong><span className="whitespace-nowrap text-[13px] text-slate-500">Management workspace</span></span>
           </Link>
-          <nav aria-label="Management sections" className="flex gap-1 overflow-x-auto px-3 pb-3 lg:mt-4 lg:flex-col lg:gap-2 lg:overflow-visible">
+          <nav aria-label="Management sections" className="flex gap-1 overflow-x-auto px-3 pb-3 lg:mt-2 lg:flex-col lg:gap-0.5 lg:overflow-visible">
             {MANAGEMENT_SECTIONS.map(section=>{
               const Icon=sectionIcons[section.id];
+              const badge=section.id==="incidents"&&needsReview?needsReview:null;
               return <Link key={section.id} href={section.href} aria-current={active===section.id?"page":undefined}
-                className={"flex min-h-11 shrink-0 items-center gap-3 whitespace-nowrap rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors "+
-                (active===section.id?"bg-teal-50 text-teal-900 ring-1 ring-teal-100":"text-slate-600 hover:bg-slate-50 hover:text-slate-900")}>
-                <Icon size={18} aria-hidden="true"/>{section.label}
+                className={"flex min-h-11 shrink-0 items-center gap-3 whitespace-nowrap rounded-xl px-3 py-2.5 text-[15px] font-semibold transition-colors "+
+                (active===section.id?"bg-teal-100 text-teal-900":"text-slate-600 hover:bg-slate-50 hover:text-slate-900")}>
+                <Icon size={20} aria-hidden="true"/><span className="flex-1">{section.label}</span>
+                {badge?<span className="flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-slate-900 px-1.5 text-xs font-semibold text-white" aria-label={`${badge} ${badge===1?"report needs":"reports need"} review`}>{badge}</span>:null}
               </Link>;
             })}
           </nav>
-          <p className="mx-4 mb-5 hidden rounded-xl bg-slate-50 px-3 py-4 text-xs leading-5 text-slate-500 lg:absolute lg:bottom-0 lg:block">
-            Academic demonstration. Incident records are fictional; OSM roads are unverified reference data.
+          <p className="mx-4 mb-5 mt-auto hidden px-1 text-xs leading-5 text-slate-500 lg:block">
+            Demo service. Reports are fictional; OSM roads are unverified reference data.
           </p>
         </aside>
         <div className="min-w-0 flex-1">
-          <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-4 sm:px-8">
-            <p className="text-sm font-semibold text-slate-700">Township management</p>
-            <div className="flex items-center gap-3">
-              <Link href="/resident" className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50">Resident view <ArrowUpRight size={13}/></Link>
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-900 text-xs font-bold text-white" aria-label="Local demo operator">OP</span>
-              <button type="button" onClick={logout} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"><LogOut size={14}/> Log out</button>
+          <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-2.5 sm:px-8">
+            <p className="flex items-center gap-2 text-[13px] text-slate-600"><InfoIcon size={16} aria-hidden="true"/>Demo service: fictional reports, not live road conditions.</p>
+            <div className="flex items-center gap-2">
+              <Link href="/resident" className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-slate-100 px-3.5 text-[13px] font-semibold text-slate-900 hover:bg-slate-200">Resident view <ArrowUpRightIcon size={14} aria-hidden="true"/></Link>
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-900" aria-label="Local demo operator">OP</span>
+              <button type="button" onClick={logout} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-slate-100 px-3.5 text-[13px] font-semibold text-slate-900 hover:bg-slate-200"><SignOutIcon size={15} aria-hidden="true"/> Log out</button>
             </div>
           </header>
           <main className="mx-auto max-w-7xl px-5 pb-20 pt-7 sm:px-8">{children}</main>
@@ -88,8 +106,8 @@ export default function ManagementShell({children}:{children:ReactNode}){
       <div className="mx-auto max-w-md px-4 pb-20 pt-16">
         <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm" aria-label="Management login">
           <div className="mb-6 flex flex-col items-center gap-2 text-center">
-            <div className="rounded-full bg-teal-50 p-3"><LockKeyhole size={25} className="text-teal-700"/></div>
-            <h1 className="text-2xl font-bold">Management sign in</h1>
+            <div className="rounded-full bg-teal-50 p-3"><LockKeyIcon size={25} className="text-teal-700" aria-hidden="true"/></div>
+            <h1 className="text-2xl font-semibold">Management sign in</h1>
             <p className="text-sm text-slate-600">Local demonstration operator access</p>
           </div>
           <form onSubmit={event=>void login(event)} className="space-y-4">

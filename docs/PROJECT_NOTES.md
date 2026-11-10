@@ -2,7 +2,7 @@
 
 The running record of what the system can do, what changed and why. Update it with every change. Other people and other AIs work from this file.
 
-**Last updated:** 9 November 2026
+**Last updated:** 10 November 2026
 **Rules for working on this project:** [WORKING_AGREEMENTS.md](WORKING_AGREEMENTS.md)
 **Where we are going:** [roadmap.md](roadmap.md) (approved 9 November 2026)
 **Older history:** [progress.md](progress.md), [archive/roadmap-hackathon.md](archive/roadmap-hackathon.md) and the `v2*` files in this folder describe the hackathon milestones. Parts of them are out of date. Where they disagree with this file, this file and the code are authoritative.
@@ -36,18 +36,18 @@ The two are connected only through the website's API over the local network. The
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Management website: six pages (Overview, Incidents, Maps & Simulation, Evidence, AI & Research, System & Audit) | ✅ | Final hackathon layout from PR #85 |
+| Management website: six pages (Overview, Incidents, Maps & Simulation, Evidence, AI & Research, System & Audit) | ✅ | Incidents rebuilt in the new style (roadmap step 4.2, first half). The other pages keep the hackathon layout from PR #85 with the new colours. |
 | Management sign-in | ✅ | A shared development key only. **Not real accounts.** |
-| Report review: list and detail, corroborate or reject with a reason | ✅ | |
+| Report review: list and detail, approve or reject with a reason | ✅ | Pinned decision bar, keyboard shortcuts (J/K, A, R, then Enter), next report opens after a decision, works at phone width |
 | Private sample photos with separate approval before anything is public | ✅ | |
 | Incident grouping with required operator reasons and an audit log | ✅ | |
 | Geographic map with BBR road lines and report markers | ✅ | The real 1,269-line road file lives only on the owner's PC. The GitHub copy of `public/data/bbr-roads.geojson` is empty. |
 | Resident web page (map, simulation, practice reports) | ✅ | To be restructured by the design revamp |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 173 tests pass on `main`; checks for `71f6b50` are green on GitHub |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 215 tests pass on the Incidents branch |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
-| Design revamp | ⏳ | Direction in `docs/DESIGN.md`. Step 1.1 done (new colours, font and corners, no layout changes). Screens follow in phases 3 and 4. |
+| Design revamp | ⏳ | Direction in `docs/DESIGN.md`. Step 1.1 done (colours, font, corners). Incidents screen rebuilt (half of 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
 | Residents can see the full outcome of a report (including "Resolved") | ❌ | The public reports API does not expose incident status |
 | "My reports" on the resident website | ❌ | |
 | Real user accounts and sign-in | ❌ | |
@@ -77,6 +77,48 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 10 November 2026: Incidents screen rebuilt (roadmap step 4.2, first half)
+- **Why now:** colours alone looked too subtle, so the owner brought the Incidents rebuild forward to see the new style on a real screen. Seven mockups of every state were approved before building; two are saved in `docs/design/`.
+- **What:**
+  - **Tabs:** "Review reports", "Incident groups" and "Older simulator reports". Old links such as `/management/incidents#report-review` still open the right tab.
+  - **Report review:**
+    - Cards with a hazard marker, severity chip and review chip.
+    - A detail panel with the photo, a small road map, the lifecycle track and the optional AI check.
+    - The reason box and the Approve and Reject buttons sit in a bar pinned to the bottom of the panel.
+  - **New behaviour:**
+    - After a decision, the next report waiting for review opens, with a short confirmation.
+    - An empty queue shows "All caught up".
+    - Keyboard shortcuts: J/K move through the list, and A or R move focus to the reason box or the button, so Enter is always needed to confirm.
+  - **Incident groups:**
+    - The same list and detail layout, with the group's severity taken from its linked reports.
+    - A status switch and the justification bar pinned at the bottom.
+    - A "New incident group" form in the detail panel.
+  - **Phone width:** the list and the detail take turns on screen, with a back link and a pinned decision bar.
+  - **Shared pieces** in `src/components/hazards/`: Phosphor glyph markers (outlined while being checked, solid once approved), severity and review chips, the lifecycle track and the mini map. Logic is in `src/lib/hazard-presentation.ts`, `src/lib/incident-review-queue.ts` and `src/lib/mini-map.ts`.
+  - **Management shell:**
+    - Phosphor icons.
+    - A badge on Incidents with the number of reports waiting.
+    - The demo notice in the top bar.
+    - Page titles at weight 600 per `DESIGN.md`.
+    - The Incidents title is now "Incidents".
+  - **API:** the incident list now also returns each linked report's `impact` (read-only).
+- **Kept as before:**
+  - Every action, rule and safeguard: reasons of at least 8 characters, separate photo approval, private photo handling, operator key headers, and hiding old data after a failed load.
+  - The test-protected labels.
+- **Not done:**
+  - No "Undo", because there is no way to reverse a decision yet.
+  - The marker glyph issue in `DESIGN.md` section 7 (TrafficCone and RoadHorizon look alike) is still open.
+  - The mini map shows "Road lines not loaded" where the local road file is the empty GitHub copy.
+- **Tests:**
+  - 215 pass, with 17 new ones for the helpers and the screen.
+  - Five older source checks now ignore spacing (`tests/source-helpers.ts`) because the files were reformatted. One check moved from the old accordion to the list and detail layout. The rules they check are unchanged.
+- **Checked:**
+  - The typecheck has no new errors (the same 20 Prisma-only ones).
+  - Every state was clicked through on the real page with stand-in data at desktop and phone width, including the A then Enter shortcut and J.
+  - No page errors.
+  - Not checked here: a production build (the sandbox can't generate the Prisma client; GitHub checks run it) and a real phone.
+- **After pulling:** run `npm ci` (new package `@phosphor-icons/react`).
 
 ### 10 November 2026: new look, step one (roadmap step 1.1)
 - **Style chosen:** after a first version (warm paper and Atkinson Hyperlegible), the owner asked for something more modern. Four styles were mocked up on the same two screens: Calm Civic, Crisp Modern, Night Ops and Bold Signal. The owner chose **Crisp Modern** for the light theme, with **Night Ops** as the future dark mode. The two chosen mockups are saved in `docs/design/`.

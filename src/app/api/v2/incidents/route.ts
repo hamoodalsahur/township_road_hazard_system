@@ -6,7 +6,7 @@ export const dynamic="force-dynamic";
 export async function GET(request:Request){
  if(!canUseDemoOperatorApi(request))return NextResponse.json({error:"Development operator access required"},{status:403});
  const incidents=await prisma.demoIncident.findMany({where:{sourceMode:"simulation"},orderBy:{createdAt:"desc"},take:70,
-  include:{reports:{select:{reportId:true,linkedAt:true,report:{select:{category:true,description:true,reviewState:true,createdAt:true}}}}}});
+  include:{reports:{select:{reportId:true,linkedAt:true,report:{select:{category:true,description:true,reviewState:true,createdAt:true,impact:true}}}}}});
  return NextResponse.json({incidents,disclaimer:"Fictional incident groups only. No verified road impacts."},{headers:{"Cache-Control":"no-store"}});
 }
 export async function POST(request:Request){
