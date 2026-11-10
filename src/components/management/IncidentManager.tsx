@@ -6,6 +6,7 @@ import { filterIncidentGroups, incidentStatusCounts } from "@/lib/v212-incident-
 import { AI_REVIEW_REMINDER, similarityLabel, canManuallyLinkSuggestion } from "@/lib/v214-ai-review-guidance";
 import { categoryLabel, formatAge, formatAgeLong, highestSeverity, incidentStatusLabel } from "@/lib/hazard-presentation";
 import { reasonIsValid } from "@/lib/incident-review-queue";
+import { requestedId } from "@/lib/overview-queue";
 import HazardMarker from "@/components/hazards/HazardMarker";
 import { SeverityChip, StatusChip } from "@/components/hazards/HazardChips";
 
@@ -39,6 +40,7 @@ export default function IncidentManager({ operatorKey, onCountsChange }: { opera
   const [suggestBusy, setSuggestBusy] = useState<string | null>(null);
   const [phoneView, setPhoneView] = useState<"list" | "detail">("list");
   const rootRef = useRef<HTMLElement>(null);
+  const firstLoadRef = useRef(true);
   async function suggest(id: string) {
     setSuggestBusy(id); setError("");
     try {
@@ -56,7 +58,11 @@ export default function IncidentManager({ operatorKey, onCountsChange }: { opera
       if (!a.ok || !b.ok) throw Error("Unable to load incident groups. Check that the local server and database are running.");
       const incidentsData = await a.json() as { incidents: Incident[] }, reportsData = await b.json() as { reports: Report[] };
       setIncidents(incidentsData.incidents); setReports(reportsData.reports.filter(r => r.reviewState !== "rejected"));
-      setSelectedIncidentId(old => incidentsData.incidents.some(i => i.id === old) ? old : incidentsData.incidents[0]?.id ?? null);
+      // A link such as ?incident=<id> (from the Overview) opens that group once, on the first load.
+      const requested = firstLoadRef.current ? requestedId(window.location.search, "incident") : null;
+      firstLoadRef.current = false;
+      if (requested && incidentsData.incidents.some(i => i.id === requested)) { setSelectedIncidentId(requested); setPhoneView("detail"); }
+      else setSelectedIncidentId(old => incidentsData.incidents.some(i => i.id === old) ? old : incidentsData.incidents[0]?.id ?? null);
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : "Unable to refresh incident groups");
     } finally { setLoading(false); }

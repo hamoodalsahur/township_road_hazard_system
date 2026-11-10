@@ -36,7 +36,7 @@ The two are connected only through the website's API over the local network. The
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Management website: six pages (Overview, Incidents, Maps & Simulation, Evidence, AI & Research, System & Audit) | ✅ | Incidents rebuilt in the new style (roadmap step 4.2, first half). The other pages keep the hackathon layout from PR #85 with the new colours. |
+| Management website: six pages (Overview, Incidents, Maps & Simulation, Evidence, AI & Research, System & Audit) | ✅ | Overview and Incidents rebuilt in the new style (roadmap step 4.2). The other pages keep the hackathon layout from PR #85 with the new colours. |
 | Management sign-in | ✅ | A shared development key only. **Not real accounts.** |
 | Report review: list and detail, approve or reject with a reason | ✅ | Pinned decision bar, keyboard shortcuts (J/K, A, R, then Enter), next report opens after a decision, works at phone width |
 | Private sample photos with separate approval before anything is public | ✅ | |
@@ -45,9 +45,9 @@ The two are connected only through the website's API over the local network. The
 | Resident web page (map, simulation, practice reports) | ✅ | To be restructured by the design revamp |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 215 tests pass on the Incidents branch |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 225 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
-| Design revamp | ⏳ | Direction in `docs/DESIGN.md`. Step 1.1 done (colours, font, corners). Incidents screen rebuilt (half of 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
+| Design revamp | ⏳ | Direction in `docs/DESIGN.md`. Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
 | Residents can see the full outcome of a report (including "Resolved") | ❌ | The public reports API does not expose incident status |
 | "My reports" on the resident website | ❌ | |
 | Real user accounts and sign-in | ❌ | |
@@ -77,6 +77,28 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 10 November 2026: Overview rebuilt, queue first (roadmap step 4.2, second half)
+- **Design:** four mockups (normal, all caught up, load error, phone) approved by the owner. One is saved as `docs/design/overview-desktop.png`.
+- **What:**
+  - **Title and summary:** the page title is now "Overview". The four number boxes became one summary line, for example "3 reports need your decision · 1 incident group under review · 5 reports in total · 1 group resolved".
+  - **"Needs your decision"** comes first:
+    - Waiting reports, oldest first (up to 5, with "N more waiting").
+    - Each shows its marker, severity, photo indicator and wait time. Waits over a day are in bold.
+    - "Start reviewing" opens the oldest one.
+    - When nothing is waiting, it shows "All caught up".
+  - **Right column:** incident groups under review, and the four most recent reports.
+  - **Links into Incidents:** every row opens that exact report or group, through `?report=<id>` or `?incident=<id>`. Incidents reads these once, on the first load, and accepts only plain IDs.
+  - **Removed:** "Quick actions", because it repeated the sidebar (`DESIGN.md` section 9).
+  - **Advanced:** the review-age and activity panels are kept, folded under "Advanced", and restyled without amber.
+  - **Load errors:** when loading fails, nothing old is shown and "Try again" appears. A missing photo-state response only hides the photo indicators.
+  - **Page titles:** `ManagementSectionHeading` gained an optional `subtitle`, used for the live summary line.
+  - **Logic:** `src/lib/overview-queue.ts`.
+- **Tests:** 224 pass, with 9 new ones.
+- **Checked:**
+  - The typecheck has no new errors.
+  - On the real page with stand-in data at 1440×900 and 390×844: all four states, the Advanced panel, clicking a queue row (it opened that report in Incidents) and a group link. No page errors.
+  - Not checked: a production build (GitHub checks run it) and a real phone.
 
 ### 10 November 2026: installing prepares the database code
 - **What:** `package.json` now has `"postinstall": "prisma generate"`, so `npm ci` and `npm install` rebuild the Prisma client every time. The README setup steps drop the separate `npm run db:generate` line and explain the one-command fix if sign-in fails.

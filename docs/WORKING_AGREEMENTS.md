@@ -111,8 +111,7 @@ The product decisions are tracked as G1 to G9 in [roadmap.md](roadmap.md), secti
 
 Phases 0 and 1 are done. The incident review half of roadmap step 4.2 was brought forward at the owner's request on 10 November 2026, so the new look shows on a real screen early.
 
-Next, the owner chooses between:
-- **The other half of 4.2:** the Overview page, queue first, reusing the new markers and chips.
+The Overview (the other half of 4.2) followed the same day. Next is:
 - **Step 2.1:** replace the BBR rectangle hard-coded in 3 files with one service-area setting (BBR stays the default). Small, no visual change, and needed later for testing at the owner's own location.
 
 ## 13. Lessons learned
