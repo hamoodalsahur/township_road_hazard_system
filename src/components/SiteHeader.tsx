@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight, Waves } from "lucide-react";
+import { PRODUCT_NAME } from "@/lib/product";
 
 type Page = "home" | "resident" | "management";
 const links: { href: string; label: string; page: Page }[] = [
@@ -17,7 +18,7 @@ export default function SiteHeader({ current }: { current: Page }) {
             <Waves size={21} strokeWidth={2} aria-hidden="true" />
           </span>
           <span>
-            <span className="block text-sm font-extrabold tracking-tight sm:text-base">Township Flood Intelligence</span>
+            <span className="block text-sm font-extrabold tracking-tight sm:text-base">{PRODUCT_NAME}</span>
             <span className="block text-[11px] font-medium text-slate-500">Bandar Bukit Raja · Research prototype</span>
           </span>
         </Link>

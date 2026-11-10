@@ -181,7 +181,7 @@ Picked up after phase 6. The Expo app keeps working against the API in the meant
 
 | ID | Decision | When it's needed | Recommended |
 | --- | --- | --- | --- |
-| G1 | Product name | Phase 0 | Pick from a shortlist |
+| G1 | Product name | Before any public release | Placeholder "Laluan" in use since 10 Nov 2026 (`src/lib/product.ts`); final name still open |
 | G2 | Move to Supabase (Postgres, accounts, storage) | Phase 2 | Yes |
 | G3 | Background map | Phase 3 | OpenFreeMap "Positron" (free, no key, commercial use allowed) |
 | G4 | How the phone app shows the map | Phone app step P.3 | Decided by how it feels on the iPhone |
