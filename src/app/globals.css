@@ -4,21 +4,21 @@
 
 :root {
   color-scheme: light;
-  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  font-family: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
 }
 html { scroll-behavior: smooth; }
 body {
   min-height: 100vh;
-  background: #f6f8f9;
-  color: #172c3a;
+  background: #F5F3EE;
+  color: #1B2420;
   -webkit-font-smoothing: antialiased;
 }
 a { text-decoration: none; }
 :where(a, button, input, select, textarea):focus-visible {
-  outline: 3px solid #0f766e;
+  outline: 3px solid #17573F;
   outline-offset: 3px;
 }
-::selection { background: #c7ede6; color: #134e4a; }
+::selection { background: #E5EFEA; color: #0F3F2D; }
 .leaflet-container { font-family: inherit; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -35,5 +35,5 @@ a { text-decoration: none; }
   color: #fff; font-size: 22px; line-height: 1; transform: rotate(-7deg);
   transition: transform .15s ease;
 }
-.hazard-map-marker__symbol--selected { outline: 3px solid #0f766e; outline-offset: 2px; transform: scale(1.12) rotate(-7deg); }
-.leaflet-marker-icon.hazard-map-marker:focus-visible { outline: 3px solid #0f766e; outline-offset: 3px; }
+.hazard-map-marker__symbol--selected { outline: 3px solid #17573F; outline-offset: 2px; transform: scale(1.12) rotate(-7deg); }
+.leaflet-marker-icon.hazard-map-marker:focus-visible { outline: 3px solid #17573F; outline-offset: 3px; }

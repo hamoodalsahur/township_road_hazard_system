@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 import "leaflet/dist/leaflet.css";
+import "@fontsource/atkinson-hyperlegible-next/400.css";
+import "@fontsource/atkinson-hyperlegible-next/600.css";
+import "@fontsource/atkinson-hyperlegible-next/700.css";
+import "@fontsource/atkinson-hyperlegible-mono/400.css";
 import "./globals.css";
 import { PRODUCT_NAME, PRODUCT_TAGLINE } from "@/lib/product";
 

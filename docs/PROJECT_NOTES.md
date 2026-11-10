@@ -47,7 +47,7 @@ The two are connected only through the website's API over the local network. The
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
 | Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 173 tests pass on `main`; checks for `71f6b50` are green on GitHub |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
-| Design revamp | ⏳ | Direction approved and recorded in `docs/DESIGN.md`. Building starts at roadmap phase 1. |
+| Design revamp | ⏳ | Direction in `docs/DESIGN.md`. Step 1.1 done (new colours, font and corners, no layout changes). Screens follow in phases 3 and 4. |
 | Residents can see the full outcome of a report (including "Resolved") | ❌ | The public reports API does not expose incident status |
 | "My reports" on the resident website | ❌ | |
 | Real user accounts and sign-in | ❌ | |
@@ -77,6 +77,23 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 10 November 2026: new look, step one (roadmap step 1.1)
+- **What:**
+  - **Colours:** warm neutrals and the calm expressway green from `docs/DESIGN.md`, in `src/lib/design-tokens.ts`. Tailwind remaps the existing `slate` and `teal` class names onto them, so every page changed without layout edits.
+  - **Font:** Atkinson Hyperlegible Next, plus Mono, self-hosted through Fontsource packages.
+  - **Corners:** small controls 6 px, panels 12 px.
+  - **Global styles:** focus ring, text selection and page background updated. The four map highlight colours that hard-coded the old teal now use the new green.
+- **Not changed yet:**
+  - Warning colours (amber, orange, red, rose), the AI panels (indigo, violet) and the blue road lines. They get their meaning in phases 3 and 4.
+  - Emoji map markers.
+- **Why:** first visible step of the design direction. Every later screen builds on it.
+- **Checked:**
+  - 16 new tests check the token anchors and the contrast of every text and background pair in use (WCAG AA). 191 tests pass in total.
+  - The two decorative arrow icons that use `slate-400` reach 3.72:1, which is enough for icons (3:1).
+  - The typecheck shows no new errors.
+  - Before and after screenshots of five pages at desktop width, and two at phone width, showed no page errors and no layout changes.
+- **After pulling:** run `npm ci` (new font packages).
 
 ### 10 November 2026: judge demo retired (roadmap step 0.5)
 - **What:**
