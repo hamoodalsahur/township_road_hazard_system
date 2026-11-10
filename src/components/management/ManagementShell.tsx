@@ -5,6 +5,7 @@ import {usePathname} from "next/navigation";
 import {createContext,useContext,useState,type FormEvent,type ReactNode} from "react";
 import {ArrowUpRight,LockKeyhole,LogOut,Waves,LayoutDashboard,ClipboardList,MapPinned,Images,BrainCircuit,Settings2} from "lucide-react";
 import {MANAGEMENT_SECTIONS,managementSectionFromPath} from "@/lib/management-sections";
+import {PRODUCT_NAME} from "@/lib/product";
 
 const OperatorKeyContext=createContext<string|null>(null);
 
@@ -53,9 +54,9 @@ export default function ManagementShell({children}:{children:ReactNode}){
     {operatorKey ? <OperatorKeyContext.Provider value={operatorKey}>
       <div className="lg:flex">
         <aside className="border-b border-slate-200 bg-white lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:shrink-0 lg:border-b-0 lg:border-r">
-          <Link href="/management" className="flex items-center gap-3 px-5 py-5 text-slate-900" aria-label="Township management overview">
+          <Link href="/management" className="flex items-center gap-3 px-5 py-5 text-slate-900" aria-label={`${PRODUCT_NAME} management overview`}>
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-800 text-white"><Waves size={23} aria-hidden="true"/></span>
-            <span><strong className="block text-sm leading-5">Township Road &amp;<br/>Hazard Intelligence</strong><span className="text-xs text-slate-500">Management workspace</span></span>
+            <span><strong className="block text-sm leading-5">{PRODUCT_NAME}</strong><span className="text-xs text-slate-500">Management workspace</span></span>
           </Link>
           <nav aria-label="Management sections" className="flex gap-1 overflow-x-auto px-3 pb-3 lg:mt-4 lg:flex-col lg:gap-2 lg:overflow-visible">
             {MANAGEMENT_SECTIONS.map(section=>{

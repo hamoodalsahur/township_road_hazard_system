@@ -73,11 +73,22 @@ These come from that repository's README and docs. I have not re-tested them on 
 | Problem | Effect | Source |
 | --- | --- | --- |
 | The typecheck needs the generated Prisma client | It cannot pass in an environment that blocks Prisma's engine download. It passes in GitHub checks. | Local run on 9 Nov 2026: 20 errors, all inside Prisma callbacks |
-| The product appears under three names | Confusing for users | `src/app/layout.tsx`, `ManagementShell.tsx`, repository name |
 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 10 November 2026: one placeholder name (roadmap step 0.4)
+- **What:** the product now shows one name, **"Laluan"** (Malay for "route"), everywhere it appears: the browser tab title, the resident site header, the management sidebar and the README heading.
+  - It is a **placeholder, not decided**.
+  - It lives in one place, `src/lib/product.ts`, so the final name is a one-line change.
+  - The repository name is unchanged.
+- **Why:** the product appeared under three different names.
+- **Checked:**
+  - Two new tests check that pages use the shared name and that the old names are gone. All 175 tests pass.
+  - The typecheck shows no errors in the changed files.
+  - Before and after screenshots were taken of every place the name appears, at desktop and phone width.
+  - A web search found no well-known app called "Laluan". That is not a trademark check.
 
 ### 10 November 2026: old pull requests closed (roadmap step 0.3)
 - **What:** closed the seven hackathon pull requests that were still open (#13, #29, #30, #37, #48, #64, #84). Each has a one-line note saying what replaced it. Their branches were kept.

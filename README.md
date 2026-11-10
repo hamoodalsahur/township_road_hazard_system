@@ -1,4 +1,6 @@
-# Township Road & Hazard Intelligence System
+# Laluan: township road and hazard reports
+
+*"Laluan" (Malay for "route") is a placeholder name, not final. It is set in `src/lib/product.ts`.*
 
 **Sime Darby Property University Hackathon · Bandar Bukit Raja (BBR) · Working prototype**
 

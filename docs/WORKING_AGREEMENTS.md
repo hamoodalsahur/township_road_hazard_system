@@ -97,6 +97,7 @@ These come from the hackathon handoff and still apply:
 | 9 Nov 2026 | Commits are authored as the owner (Ahmad Danish Firas bin Faizol, UiTM email) | Owner's request; matches the rest of the history |
 | 9 Nov 2026 | Stay with Next.js and Expo; no Flutter or other framework switch | Expo Go is the only free, official way to test on the owner's iPhone from Windows |
 | 9 Nov 2026 | Follow `docs/roadmap.md` (phases 0 to 8) | Approved by the owner; it brings back routing, closures and hosting, each with a safeguard |
+| 10 Nov 2026 | Placeholder product name "Laluan", set in `src/lib/product.ts` | One name everywhere; the final name is not decided |
 | 9 Nov 2026 | Web first; the phone app waits (roadmap section 3A) | Avoid working on two apps at once. The resident website covers phones in the meantime. |
 | Oct 2026 | Mobile app in its own repository, talking to the website only through the API | Simpler to keep separate (hackathon decision) |
 
@@ -108,7 +109,7 @@ The product decisions are tracked as G1 to G9 in [roadmap.md](roadmap.md), secti
 
 ## 12. Next step
 
-Roadmap step **0.4**: pick one product name (decision G1) and use it everywhere.
+Roadmap step **0.5**: retire the public judge demo (`judge-demo/` and its GitHub Pages site).
 
 ## 13. Lessons learned
 
