@@ -109,7 +109,7 @@ The product decisions are tracked as G1 to G9 in [roadmap.md](roadmap.md), secti
 
 ## 12. Next step
 
-Phase 0 is done once the owner unpublishes the GitHub Pages site. Next is roadmap step **1.1**: new colours, font and shapes on the website, with no layout changes. Before and after screenshots come first, for the owner's approval.
+Phase 0 is done. Next is roadmap step **1.1**: new colours, font and shapes on the website, with no layout changes. Before and after screenshots come first, for the owner's approval.
 
 ## 13. Lessons learned
 

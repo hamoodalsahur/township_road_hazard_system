@@ -88,7 +88,7 @@ Newest first. Each entry: what changed, why, and how it was checked.
   - The moved road file has the same Git fingerprint as before and 1,269 features.
   - All tests pass.
   - No remaining references to `judge-demo/` outside the archive.
-- **Still to do by the owner:** unpublish the live GitHub Pages site in the repository settings. Removing the workflow stops new deployments but does not take the existing site down.
+- **Pages site:** the owner unpublished the live GitHub Pages site in the repository settings on 10 November 2026. Removing the workflow alone would not have taken it down.
 
 ### 10 November 2026: one placeholder name (roadmap step 0.4)
 - **What:** the product now shows one name, **"Laluan"** (Malay for "route"), everywhere it appears: the browser tab title, the resident site header, the management sidebar and the README heading.
