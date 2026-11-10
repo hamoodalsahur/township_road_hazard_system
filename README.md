@@ -47,6 +47,8 @@ npm run dev
 
 `npm ci` also prepares the database code (`prisma generate`) automatically. It reads only `prisma/schema.prisma` and never touches the database. If sign-in ever says "Could not verify the local demo key", stop the server and run `npm run db:generate`.
 
+The service area (where reports are accepted) is Bandar Bukit Raja by default. To test somewhere else, see `config/service-areas/README.md`.
+
 Use `npm run db:seed` **only when intentionally creating a fresh fictional demo database**; do not reseed or reset an existing local database. Never commit `.env`, the private local operator key, SQLite database files, or report photos.
 
 Open:

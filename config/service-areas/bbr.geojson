@@ -1,0 +1,12 @@
+{
+  "type": "Feature",
+  "properties": {
+    "id": "bbr",
+    "name": "Bandar Bukit Raja (demo area)",
+    "note": "Research rectangle used since the hackathon, not the official township boundary. Can be replaced by a real outline later."
+  },
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [[[101.40, 3.06], [101.47, 3.06], [101.47, 3.11], [101.40, 3.11], [101.40, 3.06]]]
+  }
+}

@@ -78,6 +78,39 @@ These come from that repository's README and docs. I have not re-tested them on 
 
 Newest first. Each entry: what changed, why, and how it was checked.
 
+### 10 November 2026: service area setting (roadmap step 2.1)
+- **Design:**
+  - The first plan was a rectangle in `.env`. After the owner asked whether that was the best way, especially for the alternative-route feature, it was replaced by a polygon file per area.
+  - The owner chose whole-trip rerouting (option 2), so the roadmap's phase 6 now uses a routing provider instead of township-only pgRouting.
+- **What:**
+  - **Area files:**
+    - `config/service-areas/bbr.geojson` holds the BBR area as a polygon. It is the exact old rectangle, so behaviour is unchanged.
+    - `local.example.geojson` is a template, with a README explaining how to use it.
+    - Any other area file (for example `local.geojson`) is gitignored, so an area near home never reaches GitHub.
+  - **Setting:** the server-only `SERVICE_AREA` picks the area (default `bbr`). It is not `NEXT_PUBLIC`, so nothing is built into the page.
+  - **Library:** `src/lib/service-area.ts` (point-in-polygon, holes, edges count as inside, size limits) and `src/lib/service-area-server.ts` (reads the file once per server start, and falls back to BBR with a reason).
+  - **API:** `GET /api/service-area` gives browsers the area, its bounds and centre.
+  - **The three checks:** the report form, the server report check and the nearby-roads check all use the area. The messages now say "inside the service area (name)".
+  - **Map:**
+    - It opens showing the whole area, with a faint dashed outline.
+    - Picking a spot outside the area shows the error straight away instead of only on submit.
+  - **System & Audit:** shows the active area, its size, and why it fell back to BBR if the file had a problem.
+  - **Roadmap:** step 2.1 is marked done. Phase 6 and decision G6 are rewritten for whole-trip routing through OpenRouteService or a self-hosted Valhalla.
+- **Not changed:**
+  - The road import script (its own bounds; never run on the owner's copy).
+  - The road file and the database.
+  - The mobile app, which has its own copy of the rectangle and stays parked.
+  - Road lines for a new area come with step 2.3.
+  - **Hosting follow-up:** when the site is hosted (phase 2), the area file must be bundled with the server, for example through Next's `outputFileTracingIncludes`. This has not been needed or tested yet.
+- **Tests:**
+  - 233 pass, with 8 new ones. They cover: identical answers to the old rectangle (edges included), holes, broken files, fallbacks, unsafe names, both report checks, no leftover copies of the rectangle in `src/`, and the gitignore rules.
+  - One older test now checks the new message wording.
+- **Checked:**
+  - The typecheck has no new errors.
+  - On the real pages, with the default area, with `SERVICE_AREA=local` and no file (System & Audit showed the fallback reason), and with a test area elsewhere: the map opened on it, a click outside showed the error, and a click inside cleared it.
+  - Not checked: submitting a report end to end (the sandbox has no database), and a real phone.
+- **After pulling:** nothing to install. To try your own area, follow `config/service-areas/README.md`.
+
 ### 10 November 2026: Overview rebuilt, queue first (roadmap step 4.2, second half)
 - **Design:** four mockups (normal, all caught up, load error, phone) approved by the owner. One is saved as `docs/design/overview-desktop.png`.
 - **What:**

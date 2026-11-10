@@ -14,6 +14,7 @@ import { CATEGORY_LABELS, DEMO_HAZARDS, HAZARD_CATEGORIES, filterDemoHazards, ty
 import { HAZARD_SYMBOLS } from "@/lib/hazard-symbols";
 import { prepareDemoPhoto } from "@/lib/demo-photo-client";
 import {inspectDemoReportDraft} from "@/lib/v213-report-draft";
+import {useServiceArea} from "@/hooks/useServiceArea";
 
 const GeographicReferenceMap = dynamic(() => import("./GeographicReferenceMap"), {
   ssr: false,
@@ -49,7 +50,8 @@ export default function GeographicReferenceWorkspace() {
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
   const [photoInputKey,setPhotoInputKey] = useState(0);
   const [reportPhase,setReportPhase] = useState<"idle"|"saving"|"attaching">("idle");
-  const hints=inspectDemoReportDraft(reportDescription,draftPosition,evidenceFile);
+  const serviceArea=useServiceArea().data;
+  const hints=inspectDemoReportDraft(reportDescription,draftPosition,evidenceFile,serviceArea.area);
   const [photoApprovedIds, setPhotoApprovedIds] = useState<string[]>([]);
   const [reviewedReports,setReviewedReports]=useState<ReviewedDemoReport[]>([]);
   const [showVicinityStrokes,setShowVicinityStrokes]=useState(true);
@@ -151,7 +153,7 @@ export default function GeographicReferenceWorkspace() {
     const ids = new Set(activeGroup.ways.map(road => road.id));
     return byCategory.filter(road => ids.has(road.properties.id));
   }, [roads, filter, activeGroup]);
-  const vicinityStrokes=useMemo(()=>reviewedDemoVicinityStrokes(roads,reviewedReports),[roads,reviewedReports]);
+  const vicinityStrokes=useMemo(()=>reviewedDemoVicinityStrokes(roads,reviewedReports,serviceArea.area),[roads,reviewedReports,serviceArea.area]);
   const selectedRoad = roads.find(road => road.properties.id === selectedRoadId) ?? null;
   const reviewFlags = selectedRoad ? roadReviewFlags(selectedRoad) : [];
   const counts = useMemo(() => ({
@@ -264,7 +266,7 @@ export default function GeographicReferenceWorkspace() {
             {evidenceFile&&!hints.photoError?<span className="mt-1 block text-xs text-teal-800">Selected: {evidenceFile.name} · {(evidenceFile.size/1_000_000).toFixed(2)} MB (private until reviewed).</span>:null}
           </label>
           <div className="flex flex-wrap items-center justify-between gap-3 sm:col-span-2">
-            <p className="text-xs text-slate-600">{draftPosition ? `Selected demo coordinate: ${draftPosition[1].toFixed(5)}, ${draftPosition[0].toFixed(5)}` : hints.locationError}</p>
+            <p className="text-xs text-slate-600">{draftPosition && !hints.locationError ? `Selected demo coordinate: ${draftPosition[1].toFixed(5)}, ${draftPosition[0].toFixed(5)}` : hints.locationError}</p>
             <button type="button" disabled={sendingReport||!hints.canSubmit} onClick={()=>void submitDemoHazard()} className="rounded-lg bg-teal-800 px-4 py-2 text-sm font-bold text-white disabled:opacity-40">{reportPhase==="saving"?"Saving fictional report…":reportPhase==="attaching"?"Attaching private sample…":"Submit fictional report"}</button>
           </div>
           {reportMessage?<p role="status" className="text-sm text-teal-900 sm:col-span-2">{reportMessage}</p>:null}
@@ -272,7 +274,7 @@ export default function GeographicReferenceWorkspace() {
       </details>
       {hazardError?<p role="status" className="mt-2 text-xs text-amber-900">{hazardError}</p>:null}
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <GeographicReferenceMap roads={visibleRoads} vicinityStrokes={showVicinityStrokes?vicinityStrokes.filter(s=>visibleRoads.some(road=>road.properties.id===s.wayId)):[]} selectedRoadId={selectedRoadId} onSelectRoad={id => { setSelectedRoadId(id); setSelectedHazardId(null); }} focusGroup={groupNumber} selectedNodePosition={selectedNodePosition} hazards={visibleHazards} approvedPhotoIds={photoApprovedIds} onSelectHazard={id => { setSelectedHazardId(id); setSelectedRoadId(null); }} selectedHazardId={selectedHazardId} selectedLocation={draftPosition} onChooseLocation={position=>{setDraftPosition(position);setReportMessage("");}} />
+        <GeographicReferenceMap serviceArea={serviceArea} roads={visibleRoads} vicinityStrokes={showVicinityStrokes?vicinityStrokes.filter(s=>visibleRoads.some(road=>road.properties.id===s.wayId)):[]} selectedRoadId={selectedRoadId} onSelectRoad={id => { setSelectedRoadId(id); setSelectedHazardId(null); }} focusGroup={groupNumber} selectedNodePosition={selectedNodePosition} hazards={visibleHazards} approvedPhotoIds={photoApprovedIds} onSelectHazard={id => { setSelectedHazardId(id); setSelectedRoadId(null); }} selectedHazardId={selectedHazardId} selectedLocation={draftPosition} onChooseLocation={position=>{setDraftPosition(position);setReportMessage("");}} />
         <aside className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-sm" aria-live="polite">
           {activeGroup ? <p className="mb-3 rounded-lg bg-amber-50 p-2 text-xs font-medium text-amber-900">Group {activeGroup.groupNumber}: {activeGroup.roadLineCount} mapped lines. Grouping is geometric only, not proof of disconnected roads.</p> : null}
           {selectedHazard ? (

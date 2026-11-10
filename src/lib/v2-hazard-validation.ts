@@ -1,9 +1,11 @@
 import { HAZARD_CATEGORIES, type HazardCategory } from "./demo-hazards";
+import { DEFAULT_SERVICE_AREA, isInsideServiceArea, type ServiceArea } from "./service-area";
 
 export const IMPACT_OPTIONS = ["unknown","caution","partial_obstruction","suspected_closure"] as const;
 export type HazardImpact = (typeof IMPACT_OPTIONS)[number];
 export type SubmittedHazard = { category: HazardCategory; description: string; coordinates: [number,number]; impact: HazardImpact };
-export function validateHazardSubmission(input: unknown): SubmittedHazard {
+/** `area` is the active service area (see src/lib/service-area-server.ts); BBR when not given. */
+export function validateHazardSubmission(input: unknown, area: ServiceArea = DEFAULT_SERVICE_AREA): SubmittedHazard {
   if (!input || typeof input !== "object") throw new Error("Invalid hazard report");
   const value = input as Record<string,unknown>;
   if (!HAZARD_CATEGORIES.includes(value.category as HazardCategory)) throw new Error("Choose a valid hazard category");
@@ -12,8 +14,7 @@ export function validateHazardSubmission(input: unknown): SubmittedHazard {
   if (!Array.isArray(value.coordinates) || value.coordinates.length !== 2 ||
     !value.coordinates.every(v => typeof v === "number" && Number.isFinite(v))) throw new Error("Choose a map location");
   const [lon,lat] = value.coordinates;
-  // Research demonstration rectangle, not official township boundary.
-  if (lon < 101.40 || lon > 101.47 || lat < 3.06 || lat > 3.11) throw new Error("Select a point inside the demonstration map area");
+  if (!isInsideServiceArea(area, lon, lat)) throw new Error(`Select a point inside the service area (${area.name})`);
   return { category: value.category as HazardCategory, description: value.description.trim(), impact: value.impact as HazardImpact, coordinates: [lon,lat] };
 }
 export function validateHazardReview(input: unknown) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMapEvents, MapContainer, TileLayer, CircleMarker, Tooltip, ZoomControl, Polyline, useMap, Marker, Popup } from "react-leaflet";
+import { useMapEvents, MapContainer, TileLayer, CircleMarker, Tooltip, ZoomControl, Polyline, Polygon, useMap, Marker, Popup } from "react-leaflet";
 import { divIcon } from "leaflet";
 import { HAZARD_SYMBOLS } from "@/lib/hazard-symbols";
 import { useEffect } from "react";
@@ -9,6 +9,7 @@ import { roadStyle } from "@/lib/bbr-road-display";
 import {candidateVicinityColor,type CandidateVicinityStroke} from "@/lib/v215-road-vicinity";
 import type { RoadFeature } from "@/lib/bbr-roads";
 import type { DemoHazard } from "@/lib/demo-hazards";
+import { DEFAULT_SERVICE_AREA, areaCenter, type ServiceAreaResponse } from "@/lib/service-area";
 
 function FocusSelectedNode({ selectedNodePosition }: { selectedNodePosition: [number, number] | null }) {
   const map = useMap();
@@ -27,6 +28,15 @@ function FocusSelectedGroup({ roads, focusGroup }: { roads: RoadFeature[]; focus
     const points = roads.flatMap(road => road.geometry.coordinates.map(([lon, lat]) => [lat, lon] as [number, number]));
     if (points.length > 0) map.fitBounds(points, { padding: [24, 24], maxZoom: 16 });
   }, [map, roads, focusGroup]);
+  return null;
+}
+
+/** Shows the whole active service area once it is known (only when the area itself changes). */
+function FocusServiceArea({ areaId, bounds }: { areaId: string; bounds: ServiceAreaResponse["bounds"] }) {
+  const map = useMap();
+  useEffect(() => {
+    map.fitBounds([[bounds.south, bounds.west], [bounds.north, bounds.east]], { padding: [16, 16], maxZoom: 16, animate: false });
+  }, [map, areaId]);
   return null;
 }
 
@@ -60,7 +70,9 @@ export default function GeographicReferenceMap({
   selectedHazardId = null,
   onChooseLocation,
   selectedLocation = null,
+  serviceArea,
 }: {
+  serviceArea?: ServiceAreaResponse;
   roads?: RoadFeature[];
   vicinityStrokes?: readonly CandidateVicinityStroke[];
   selectedRoadId: string | null;
@@ -77,7 +89,7 @@ export default function GeographicReferenceMap({
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-inner">
       <MapContainer
-        center={[3.087, 101.435]} zoom={14} minZoom={9} maxZoom={18}
+        center={[(serviceArea?.center ?? areaCenter(DEFAULT_SERVICE_AREA))[1], (serviceArea?.center ?? areaCenter(DEFAULT_SERVICE_AREA))[0]]} zoom={14} minZoom={9} maxZoom={18}
         scrollWheelZoom={false} zoomControl={false}
         className="h-[390px] w-full bg-slate-100 sm:h-[520px] lg:h-[570px]"
         aria-label="Geographic context near Bandar Bukit Raja; not a flood or road safety map"
@@ -89,6 +101,12 @@ export default function GeographicReferenceMap({
         />
         <ZoomControl position="topright" />
         <LocationPicker onChooseLocation={onChooseLocation} />
+        {serviceArea ? <>
+          <FocusServiceArea areaId={serviceArea.area.id} bounds={serviceArea.bounds} />
+          {/* Where reports are accepted. Not a road status; drawn faintly so roads stay readable. */}
+          <Polygon positions={serviceArea.area.rings.map(ring => ring.map(([lon, lat]) => [lat, lon] as [number, number]))} interactive={false}
+            pathOptions={{ color: "#0F1513", weight: 1.5, opacity: 0.45, dashArray: "6 6", fill: false }} />
+        </> : null}
         {selectedLocation ? <CircleMarker center={[selectedLocation[1],selectedLocation[0]]} radius={10} pathOptions={{color:"#0B7350",fillColor:"#95D2B6",fillOpacity:1,weight:3}}><Tooltip permanent>Draft demo report location</Tooltip></CircleMarker>:null}
         <FocusSelectedGroup roads={roads} focusGroup={focusGroup} />
         <FocusSelectedNode selectedNodePosition={selectedNodePosition} />

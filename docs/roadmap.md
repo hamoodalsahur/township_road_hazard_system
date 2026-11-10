@@ -86,7 +86,7 @@ Recommended answer to decision G2: move to **Supabase**, a hosted Postgres datab
 
 | Step | What | Protects |
 | --- | --- | --- |
-| 2.1 | **Service area setting.** Replace the BBR rectangle hard-coded in 3 files with one setting. BBR stays the default. | Needed to test at the owner's own location |
+| 2.1 | **Service area setting.** Replace the BBR rectangle hard-coded in 3 files with one setting. BBR stays the default. Done 10 Nov 2026: a polygon file in `config/service-areas/`, picked by the server-only `SERVICE_AREA` setting. | Needed to test at the owner's own location. Personal areas are gitignored. |
 | 2.2 | **Move to Postgres.** New Supabase project, schema moved, plus a one-way copy script that reads the owner's `dev.db` and writes to the new database | The original `dev.db` is only read, never changed. The script is tested on a copy first. |
 | 2.3 | **Roads into the database.** The road import writes to a database table | Reads the owner's GeoJSON file and never overwrites it |
 | 2.4 | **Photos to private storage.** Approved photos get a public link; others never do | Same privacy rules as today |
@@ -129,12 +129,17 @@ Order follows `DESIGN.md`, section 15. Each step needs mockups approved first.
 
 ### Phase 6: Way home
 
-Recommended answer to decision G6: routes are calculated in the database with **pgRouting**, so we don't write our own routing maths.
+**Reach (decided by the owner on 10 November 2026):** the whole trip home from anywhere, for example from UiTM to home, not only the part inside the township. Our township road data cannot cover that, so routes come from a **routing provider** behind one interface, in the same way AI already has a local and a cloud option. The service area still decides where reports and closures are accepted. Each closed road segment is sent to the provider as a thin "avoid" shape.
+
+Decision G6 is now **which routing provider**, chosen before 6.1:
+- **OpenRouteService** (hosted): free with a daily limit, `avoid_polygons`. Route requests, including home, go to its servers. The API key stays on our server.
+- **Valhalla** (self-hosted, for example in Docker on the owner's PC): private and unlimited, `exclude_polygons` and `exclude_locations`. Needs Docker and a few GB of memory and disk for a Malaysia map extract. It cannot run on Vercel's free tier.
+- **pgRouting** stays useful for checks inside the township (for example which segments a closure cuts), but it is no longer the main route engine.
 
 | Step | What |
 | --- | --- |
-| 6.1 | **Road network check.** Build the routable network from the road table. Report and fix data problems such as disconnected pieces and wrong one-way tags. The existing topology research tools are reused here. |
-| 6.2 | **Route API.** Given a start and an end, return a route that avoids active closures, plus whether the usual route was affected. Locations are used for the answer and **not stored**. |
+| 6.1 | **Routing provider.** One interface with the chosen provider behind it, the key server-side only, and a test mode with recorded answers so tests never call the real service. Closures become avoid shapes. |
+| 6.2 | **Route API.** Given a start and an end, return a route that avoids active closures, plus whether the usual route was affected. Locations are passed to the provider for the answer and **not stored** by us. The privacy notice says which provider sees them. |
 | 6.3 | **Home pin.** The resident sets home by tapping the map. It is stored in the browser only, never on the server. "Start from where I am" is opt-in and uses the browser's location permission. |
 | 6.4 | **"Your way home" card.** When the resident opens the site, it shows "clear", or "affected" with the detour on the map. |
 | 6.5 | **Own-area test pack.** Import the owner's area locally, add fictional closures, and work through a checklist. Home coordinates never go into Git. |
@@ -187,7 +192,7 @@ Picked up after phase 6. The Expo app keeps working against the API in the meant
 | G3 | Background map | Phase 3 | OpenFreeMap "Positron" (free, no key, commercial use allowed) |
 | G4 | How the phone app shows the map | Phone app step P.3 | Decided by how it feels on the iPhone |
 | G5 | Operator-confirmed closures may affect routes | Phase 5 | Yes, operator-only, with an end or review date |
-| G6 | How routes are calculated | Phase 6 | pgRouting in the database |
+| G6 | Which routing provider (whole trips, owner's choice on 10 Nov 2026) | Phase 6 | OpenRouteService to start, or Valhalla on the owner's PC for privacy. Decide before 6.1. |
 | G7 | Alerts while the app is closed | Phase 7 | Installable web app with web push |
 | G8 | When to add Bahasa Malaysia | Phase 8 | Prepare early, translate after the screens settle |
 | G9 | Merge the two repositories into one | Not now | No; the compatibility tests (2.7) and P.8 are enough for now |

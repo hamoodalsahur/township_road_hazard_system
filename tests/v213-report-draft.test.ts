@@ -17,7 +17,7 @@ test("draft hints explain absent pin and short descriptions without changing bac
 test("wrong location and invalid photo prevent accidental partial submission",()=>{
  const off=inspectDemoReportDraft("Fictional fallen branches",[0,0],null);
  assert.equal(off.canSubmit,false);
- assert.match(off.locationError??"",/demonstration area/);
+ assert.match(off.locationError??"",/inside the service area/);
  const unsupported=inspectDemoReportDraft("Fictional example issue",inside,{type:"image/gif",size:100});
  assert.match(unsupported.photoError??"",/JPEG or PNG/);
  const tooBig=inspectDemoReportDraft("Fictional example issue",inside,{type:"image/png",size:5_000_001});

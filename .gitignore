@@ -29,3 +29,7 @@ yarn-error.log*
 .idea/
 # Local backups made before switching branches (never commit these)
 /backup/
+# Service areas: only the BBR default and the template are shared. Personal test areas stay local.
+/config/service-areas/*.geojson
+!/config/service-areas/bbr.geojson
+!/config/service-areas/local.example.geojson
