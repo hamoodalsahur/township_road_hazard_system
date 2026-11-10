@@ -1,6 +1,7 @@
 # Design direction
 
-**Status:** approved by the owner on 9 November 2026. The code does not follow it yet; the order of work is in [roadmap.md](roadmap.md), phases 1, 3 and 4.
+**Status:** approved by the owner on 9 November 2026. Style updated on 10 November 2026: the owner chose **Crisp Modern** for the light theme and **Night Ops** for dark mode, from four mockup options. The order of work is in [roadmap.md](roadmap.md), phases 1, 3 and 4.
+**Reference mockups:** [design/reference-crisp-modern.png](design/reference-crisp-modern.png) (light) and [design/reference-night-ops-dark.png](design/reference-night-ops-dark.png) (dark). When this file and a mockup disagree, this file wins.
 **Applies to:** the management website, the resident website (this repository) and the resident mobile app (`township_system_mobile`).
 **Written:** 9 November 2026, against `main` at `71f6b50` (web) and `c8dfbdf` (mobile).
 
@@ -81,21 +82,20 @@ This makes "how sure are we" readable at a glance and does not rely on colour vi
 
 Nothing else gets a colour.
 
-### Light theme
+### Light theme (Crisp Modern)
 
 | Token | Hex | Use | Why |
 | --- | --- | --- | --- |
-| `paper` | `#F5F3EE` | Page background, map surround | Warm off-white reads like a paper map and is less clinical than grey-blue |
+| `page` | `#F6F7F6` | Page background, sidebar, map surround | Cool, airy off-white; white cards stand out on it without borders |
 | `surface` | `#FFFFFF` | Panels, cards, inputs | Content sits on clean white |
-| `sunken` | `#ECE9E2` | Wells, table headers, read-only fields | Recessed without needing a border |
-| `line` | `#DDD8CE` | Dividers, card borders | Structure without weight |
-| `field` | `#8A8478` | Input and checkbox borders | Meets 3:1 for interactive boundaries |
-| `ink` | `#1B2420` | Main text | Near-black with a green cast, so it matches the brand green |
-| `muted` | `#4F5853` | Secondary text | Readable on every background |
-| `subtle` | `#5C6560` | Hints, timestamps | Lightest text allowed, still AA on every background |
-| `green` | `#17573F` | Primary buttons, links, selection, focus ring | Echoes Malaysian expressway sign green, a local "go and trust" colour, without the generic SaaS teal |
-| `green-hover` | `#124733` | Hover and pressed state for green | Darker, not lighter, so text contrast rises |
-| `green-tint` / `green-text` | `#E5EFEA` / `#0F3F2D` | Selected rows, active tab background | Selection without shouting |
+| `sunken` | `#F0F2F1` | Wells, fact boxes, filter chips | Recessed without needing a border |
+| `line` | `#E6E9E7` | Dividers, where a line is still needed | Structure without weight; most separation comes from shadow and space |
+| `field` | `#848D89` | Input and checkbox borders, decorative icons | Meets 3:1 for interactive boundaries |
+| `ink` | `#0F1513` | Main text | Near-black with a green cast, matching the jade |
+| `muted` | `#45514C` | Secondary text | Readable on every background |
+| `subtle` | `#56625C` | Hints, timestamps | Lightest text allowed, still AA on every background |
+| `jade` | `#0B7350` | Primary buttons, links, selection, focus ring | A fresher take on the Malaysian expressway sign green: still means "go and trust", but feels current |
+| `jade-tint` / `jade-text` | `#E3F4EC` / `#064E36` | Selected rows, active filters | Selection without shouting |
 
 ### Severity scale (hazards only)
 
@@ -108,23 +108,24 @@ Maps to the stored `impact` value. Each step has a solid colour (markers), a tin
 | `caution` | Take care | `#F2B42C` | `#FDF4DC` | `#7A5100` | `ink` |
 | `unknown` | Not sure | `#68716C` | `#ECEDEA` | `#47504B` | white |
 
-Every marker has a thin outline in `ink` at 70% opacity. Without it, the amber marker measures only 1.67:1 against `paper` and disappears on light map areas.
+Every marker has a thin outline in `ink` at 70% opacity. Without it, the amber marker barely shows against the pale page and map background.
 
-### Dark theme
+### Dark theme (Night Ops)
 
-This is required on mobile, which follows the phone's setting. The management website can stay light-only in the first phase.
+Required on mobile, which follows the phone's setting, and offered on the website as a setting. Built with the screen rebuilds (roadmap step 4.5).
 
 | Token | Hex | | Token | Hex |
 | --- | --- | --- | --- | --- |
-| `paper` | `#111513` | | `green` | `#6CC79D` (text on it: `#0B1F17`) |
-| `surface` | `#191E1B` | | `green-tint` / text | `#18342A` / `#A8E3C7` |
-| `sunken` | `#0C0F0D` | | severity solids | `#F2867A`, `#F3A066`, `#F2C04C`, `#A3ABA6` |
-| `line` | `#2D3430` | | `ink` / `muted` / `subtle` | `#ECEFEA` / `#B3BBB5` / `#9AA39C` |
-| `field` | `#7C857F` | | | |
+| `page` | `#0D1210` | | `jade` | `#6CC79D` (text on it: `#0B1F17`) |
+| `surface` | `#141A17` | | `jade-tint` / text | `#173328` / `#A8E3C7` |
+| `sunken` | `#0A0E0C` | | severity solids | `#F2867A`, `#F3A066`, `#F2C04C`, `#A3ABA6` |
+| `line` | `#26302B` | | `ink` / `muted` / `subtle` | `#E7ECE8` / `#B2BBB5` / `#949E98` |
+
+In dark mode the map uses a dark background with light road lines, and hazard markers use the lighter severity solids, so they stand out more than in daylight.
 
 ### Contrast check
 
-Every text and background pair above was checked with a script against WCAG AA: 4.5:1 for text, and 3:1 for input borders and map markers. All pairs pass. The lowest is `subtle` on `sunken` at 4.97:1. Re-run the check whenever a token changes.
+Every text and background pair above passes WCAG AA: 4.5:1 for text, and 3:1 for input borders, icons and map markers. `tests/design-tokens.test.ts` re-checks the pairs in use on every test run, so a token change that breaks contrast fails the tests.
 
 ### Rules
 
@@ -136,12 +137,14 @@ Every text and background pair above was checked with a script against WCAG AA: 
 
 | Role | Family | Why |
 | --- | --- | --- |
-| Everything | **Atkinson Hyperlegible Next** (Braille Institute, OFL licence) | Designed so similar letters (I, l, 1, O, 0) stay distinct for low-vision readers. That fits a safety tool read on small screens in bad conditions, and it gives the product a recognisable voice that is not one of the AI-default fonts. |
-| Coordinates, report IDs, times in tables | **Atkinson Hyperlegible Mono** | Same family, fixed width, so numbers line up in columns |
+| Everything | **Instrument Sans** (OFL licence) | A clean, current sans with open shapes and clear numerals. It gives the product a modern voice without being one of the over-used defaults (Inter, Roboto). |
+| Coordinates, report IDs, times in tables | **IBM Plex Mono** | Fixed width, so numbers line up in columns; distinct 0/O and 1/l |
+
+Chosen with the Crisp Modern style on 10 November 2026, replacing Atkinson Hyperlegible. To keep legibility high, body text is never below 15 px on desktop or 16 px on phones, and weights stay at 400 or more.
 
 Packages, all checked on npm:
-- **Web:** `@fontsource/atkinson-hyperlegible-next`, `@fontsource/atkinson-hyperlegible-mono`
-- **Mobile:** `@expo-google-fonts/atkinson-hyperlegible-next`, `@expo-google-fonts/atkinson-hyperlegible-mono`
+- **Web:** `@fontsource/instrument-sans`, `@fontsource/ibm-plex-mono`
+- **Mobile:** `@expo-google-fonts/instrument-sans`, `@expo-google-fonts/ibm-plex-mono`
 
 ### Scale (px, line height in brackets)
 
@@ -156,7 +159,7 @@ Packages, all checked on npm:
 
 - **Sentence case everywhere.**
 - **No uppercase labels with wide letter-spacing, and no small "eyebrow" labels above headings.** The current UI has more than a dozen of these.
-- **Weights:** 400 for text, 600 for labels and buttons, 700 for titles. Nothing heavier.
+- **Weights:** 400 for text, 600 for labels, buttons and titles. Page titles may use tighter letter-spacing (about -0.03em). Nothing heavier than 700.
 - **Dynamic Type:** respect the phone's text-size setting on mobile, and test at 130%.
 
 ## 7. Icons and map markers
@@ -193,18 +196,16 @@ Packages, all checked on npm:
 ## 8. Shape, space and elevation
 
 - **Radius:**
-  - **6 px:** inputs and buttons.
-  - **12 px:** panels and cards.
-  - **20 px:** the top corners of mobile bottom sheets.
-  - **Full:** status chips only.
-
-  Three sizes keep the purposes distinct, so a pill always means a status.
+  - **10 px:** inputs, small controls.
+  - **Full (pill):** buttons, search fields, filter chips and status chips.
+  - **18 px:** cards and report rows.
+  - **24 px:** large panels and the top corners of mobile bottom sheets.
 - **Spacing:** a 4 px base (4, 8, 12, 16, 24, 32, 48). Use 24 or more between unrelated groups and 8 to 12 inside a group, so whitespace shows grouping.
 - **Elevation:**
-  - **Shadow** only for layers that float over the map: side sheet, bottom sheet, popovers, map controls.
-  - **Borders** for everything else, which sits on the page.
-
-  This works because the map is the only place where a layer can be on top of live content.
+  - **Soft layered shadows** separate cards and panels from the page, instead of outlines. Three levels: `sm` (cards, rows), `md` (panels), `lg` (layers floating over the map: sheets, popovers, map controls).
+  - **Lines** only where content inside one panel needs dividing (for example above a decision footer).
+  - **The selected item** gets a 2 px jade ring, not just a tint, so selection is clear without colour alone.
+- **Dark mode:** shadows don't show on dark backgrounds, so dark mode uses `line` borders instead.
 - **Touch targets:** 44 × 44 px minimum on every surface, including desktop table actions.
 
 ## 9. Layout by surface
@@ -344,7 +345,8 @@ These were accepted earlier and are replaced here. The owner approved the replac
 | Blue road hierarchy (`#2563eb` and friends, major roads 3.8 px at 0.58 opacity) always drawn | Overlay hidden by default; thin ink lines in road-inspection mode |
 | Emoji hazard markers, tilted 7° | Upright Phosphor glyph pins with fill by verification |
 | Teal-800 as the accent for everything | Calm green for actions only; severity colours for hazards only |
-| Inter font | Atkinson Hyperlegible Next |
+| Inter font | Instrument Sans (Atkinson Hyperlegible on 9 Nov; replaced on 10 Nov when Crisp Modern was chosen) |
+| Bordered panels on a warm paper background (first proposal, 9 Nov) | Crisp Modern: white cards with soft shadows on a cool off-white page; Night Ops dark mode |
 | Simulation on the resident page | Simulation moved to management, under Maps |
 
 ## 15. Rollout

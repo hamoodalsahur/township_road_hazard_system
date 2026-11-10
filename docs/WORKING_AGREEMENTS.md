@@ -109,7 +109,7 @@ The product decisions are tracked as G1 to G9 in [roadmap.md](roadmap.md), secti
 
 ## 12. Next step
 
-Phase 0 is done. Next is roadmap step **1.1**: new colours, font and shapes on the website, with no layout changes. Before and after screenshots come first, for the owner's approval.
+Phases 0 and 1 are done. Next is roadmap step **2.1**: replace the BBR rectangle hard-coded in 3 files with one service-area setting (BBR stays the default). Small, no visual change, and needed later for testing at the owner's own location.
 
 ## 13. Lessons learned
 

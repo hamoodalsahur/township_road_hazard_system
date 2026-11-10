@@ -47,7 +47,7 @@ The two are connected only through the website's API over the local network. The
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
 | Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 173 tests pass on `main`; checks for `71f6b50` are green on GitHub |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
-| Design revamp | ⏳ | Direction approved and recorded in `docs/DESIGN.md`. Building starts at roadmap phase 1. |
+| Design revamp | ⏳ | Direction in `docs/DESIGN.md`. Step 1.1 done (new colours, font and corners, no layout changes). Screens follow in phases 3 and 4. |
 | Residents can see the full outcome of a report (including "Resolved") | ❌ | The public reports API does not expose incident status |
 | "My reports" on the resident website | ❌ | |
 | Real user accounts and sign-in | ❌ | |
@@ -77,6 +77,27 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 10 November 2026: new look, step one (roadmap step 1.1)
+- **Style chosen:** after a first version (warm paper and Atkinson Hyperlegible), the owner asked for something more modern. Four styles were mocked up on the same two screens: Calm Civic, Crisp Modern, Night Ops and Bold Signal. The owner chose **Crisp Modern** for the light theme, with **Night Ops** as the future dark mode. The two chosen mockups are saved in `docs/design/`.
+- **What:**
+  - **Colours:** cool neutrals and jade green, in `src/lib/design-tokens.ts`. Tailwind remaps the existing `slate` and `teal` class names onto them, so every page changed without layout edits.
+  - **Font:** Instrument Sans, plus IBM Plex Mono for numbers, self-hosted through Fontsource.
+  - **Shapes:** rounder corners (10, 18 and 24 px).
+  - **Shadows:** soft layered shadows on the existing shadow classes.
+  - **Global styles:** focus ring, selection and page background updated, and the map highlight colours use the jade.
+  - **Recorded for later:** the Night Ops dark colours are stored in the tokens. Dark mode itself is roadmap step 4.5.
+- **Docs:**
+  - `DESIGN.md` sections 5 (colour), 6 (type), 8 (shape and elevation) and 14 (replaced decisions) updated.
+  - Roadmap step 1.1 reworded, and step 4.5 (dark mode) added.
+- **Not changed yet:**
+  - Layouts. The card-based screens in the mockups come in phase 4.
+  - Warning colours, AI panel colours, blue road lines and emoji markers (phases 3 and 4).
+- **Checked:**
+  - Contrast tests cover every light pair in use and the dark theme pairs. 198 tests pass.
+  - The typecheck shows no new errors.
+  - Before and after screenshots of five pages at desktop width and two at phone width.
+- **After pulling:** run `npm ci` (font packages changed).
 
 ### 10 November 2026: judge demo retired (roadmap step 0.5)
 - **What:**
