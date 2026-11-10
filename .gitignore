@@ -27,3 +27,5 @@ yarn-error.log*
 # IDE
 .vscode/
 .idea/
+# Local backups made before switching branches (never commit these)
+/backup/

@@ -72,7 +72,6 @@ These come from that repository's README and docs. I have not re-tested them on 
 
 | Problem | Effect | Source |
 | --- | --- | --- |
-| The README quick start says `npm ci`, but there is no `package-lock.json` in the repository | A new developer following the README gets an error on the first install command | `README.md`; checked against the repository tree on 9 Nov 2026 |
 | The typecheck needs the generated Prisma client | It cannot pass in an environment that blocks Prisma's engine download. It passes in GitHub checks. | Local run on 9 Nov 2026: 20 errors, all inside Prisma callbacks |
 | Seven old pull requests are still open (#13, #29, #30, #37, #48, #64, #84) | Clutter, and #84 holds demo docs that never reached `main` | GitHub, 9 Nov 2026 |
 | The product appears under three names | Confusing for users | `src/app/layout.tsx`, `ManagementShell.tsx`, repository name |
@@ -80,6 +79,19 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 10 November 2026: lockfile and safer line endings (roadmap step 0.2)
+- **What:**
+  - Added `package-lock.json`.
+  - Added `.gitattributes` with `*.geojson -text`, so Git never changes line endings in road data files.
+  - Ignored a local `backup/` folder.
+- **Why:**
+  - The README says `npm ci`, which fails without a lockfile.
+  - On 9 November, a stash and pop on the owner's Windows PC rewrote the real road file with Windows line endings: 1,124,031 bytes became 1,177,459. The 53,428 extra bytes are one per line; the map content was unchanged. The new rule stops that.
+- **Checked:**
+  - The lockfile lists 206 packages, all from the public npm registry, including the Windows build tools.
+  - `npm ci` succeeds on a clean copy, and the full test suite passes.
+  - The line-ending problem was reproduced with Windows Git settings: without the rule, a stash and pop added one byte per line; with the rule, the file stayed identical.
 
 ### 9 November 2026: web first
 - **What:** the roadmap now refines the website first. Mobile steps moved to a "Phone app, later" list (roadmap section 3A). "Way home" is built on the resident website first.
