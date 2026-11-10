@@ -14,9 +14,8 @@ A multi-hazard road and incident intelligence prototype connecting **resident re
 | --- | --- | --- |
 | **Website, backend and management** | **This repository** | Next.js API, local SQLite development data, management dashboard, incident/evidence review, maps and simulation |
 | **Resident mobile application** | [township_system_mobile](https://github.com/hamoodalsahur/township_system_mobile) | Expo / React Native app for browsing fictional incident reports, submitting reports and sample photos |
-| **Judge-accessible live preview** | [Launch browser demo](https://hamoodalsahur.github.io/township_road_hazard_system/) | Standalone public GitHub Pages simulation, with 1,269 imported BBR road features and fictional incidents |
 
-**Important:** The public browser preview is **not** the hosted Next.js backend. Its demo reviews and incident submissions are browser-only; they do not sync with the actual mobile app or local database.
+The public browser-only judge demo from the hackathon was retired on 10 November 2026.
 
 ## How the integrated prototype works
 
@@ -52,7 +51,6 @@ Use `npm run db:seed` **only when intentionally creating a fresh fictional demo 
 Open:
 - **Management:** `http://localhost:3000/management`
 - **Resident website:** `http://localhost:3000/resident`
-- **Browser preview:** [Public judge demo](https://hamoodalsahur.github.io/township_road_hazard_system/)
 
 For local operator demo login, configure your private `DEMO_OPERATOR_KEY` in `.env`, then use that key on the management sign-in screen. This is a **development-only** control, not production authentication. Follow [operator setup](docs/operator-demo.md).
 
@@ -64,7 +62,7 @@ For local operator demo login, configure your private `DEMO_OPERATOR_KEY` in `.e
 4. In the mobile app go to **About → Local Backend** and enter `http://<PC-WIFI-IPv4>:3000` using the PC's actual Wi-Fi adapter address, **not** `localhost`.
 5. Submit a clearly fictional sample incident in the mobile app; review it from the management website.
 
-The real SQLite database, uncommitted local road data, and private photos are **not automatically transferred by cloning**. The public judge preview bundles its own road GeoJSON at `judge-demo/assets/bbr-roads.geojson`; the local app's original `public/data/bbr-roads.geojson` may require separate setup.
+The real SQLite database, uncommitted local road data, and private photos are **not automatically transferred by cloning**. A reference copy of the BBR road lines (1,269 features) is kept at `data/bbr-roads-reference.geojson` for tests and mockups. The app itself still reads your local `public/data/bbr-roads.geojson`, which needs separate setup.
 
 ## Features
 
@@ -95,4 +93,3 @@ The GitHub Actions workflow runs the website checks on pull requests. This proje
 - [Road source register](docs/source-register.md)
 - [Data handling notes](docs/data-integrity.md)
 - [Roadmap](docs/roadmap.md)
-- [Public judge-demo notes](judge-demo/README.md)

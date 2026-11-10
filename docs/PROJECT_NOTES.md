@@ -46,7 +46,7 @@ The two are connected only through the website's API over the local network. The
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
 | Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 173 tests pass on `main`; checks for `71f6b50` are green on GitHub |
-| Public browser-only judge demo (`judge-demo/`, GitHub Pages) | ✅ | Built for the hackathon; not part of the ongoing work. Keep or remove is an open question. |
+| Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
 | Design revamp | ⏳ | Direction approved and recorded in `docs/DESIGN.md`. Building starts at roadmap phase 1. |
 | Residents can see the full outcome of a report (including "Resolved") | ❌ | The public reports API does not expose incident status |
 | "My reports" on the resident website | ❌ | |
@@ -77,6 +77,18 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 10 November 2026: judge demo retired (roadmap step 0.5)
+- **What:**
+  - Removed the browser-only judge demo page (`judge-demo/`) and the GitHub Actions workflow that published it to GitHub Pages.
+  - Moved its road file, unchanged, to `data/bbr-roads-reference.geojson`, with a `data/README.md` covering use and OpenStreetMap attribution.
+  - Removed the README's links to the demo.
+- **Why:** the hackathon is over, and the demo showed an outdated version.
+- **Checked:**
+  - The moved road file has the same Git fingerprint as before and 1,269 features.
+  - All tests pass.
+  - No remaining references to `judge-demo/` outside the archive.
+- **Still to do by the owner:** unpublish the live GitHub Pages site in the repository settings. Removing the workflow stops new deployments but does not take the existing site down.
 
 ### 10 November 2026: one placeholder name (roadmap step 0.4)
 - **What:** the product now shows one name, **"Laluan"** (Malay for "route"), everywhere it appears: the browser tab title, the resident site header, the management sidebar and the README heading.
