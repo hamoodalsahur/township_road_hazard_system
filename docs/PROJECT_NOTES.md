@@ -73,12 +73,19 @@ These come from that repository's README and docs. I have not re-tested them on 
 | Problem | Effect | Source |
 | --- | --- | --- |
 | The typecheck needs the generated Prisma client | It cannot pass in an environment that blocks Prisma's engine download. It passes in GitHub checks. | Local run on 9 Nov 2026: 20 errors, all inside Prisma callbacks |
-| Seven old pull requests are still open (#13, #29, #30, #37, #48, #64, #84) | Clutter, and #84 holds demo docs that never reached `main` | GitHub, 9 Nov 2026 |
 | The product appears under three names | Confusing for users | `src/app/layout.tsx`, `ManagementShell.tsx`, repository name |
 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 10 November 2026: old pull requests closed (roadmap step 0.3)
+- **What:** closed the seven hackathon pull requests that were still open (#13, #29, #30, #37, #48, #64, #84). Each has a one-line note saying what replaced it. Their branches were kept.
+- **Why:** they were stale and confusing.
+- **Checked before closing:** each pull request's files were compared with `main`.
+  - Five were replaced by different work on `main`: #13, #30, #37, #48 and #64.
+  - #29's one-click scenario presets and #84's hackathon demo playbook never reached `main`. They stay available on their branches.
+- **Checked after closing:** no pull requests are open, and all seven branches still exist on GitHub.
 
 ### 10 November 2026: lockfile and safer line endings (roadmap step 0.2)
 - **What:**

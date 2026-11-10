@@ -108,7 +108,7 @@ The product decisions are tracked as G1 to G9 in [roadmap.md](roadmap.md), secti
 
 ## 12. Next step
 
-Roadmap step **0.3**: close the seven old hackathon pull requests (#13, #29, #30, #37, #48, #64, #84), each with a one-line note.
+Roadmap step **0.4**: pick one product name (decision G1) and use it everywhere.
 
 ## 13. Lessons learned
 
