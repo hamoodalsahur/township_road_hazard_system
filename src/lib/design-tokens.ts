@@ -1,37 +1,60 @@
 /**
- * Colour tokens from docs/DESIGN.md. Tailwind maps these onto the `slate` and `teal`
+ * Design tokens from docs/DESIGN.md (Crisp Modern). Tailwind maps the colours onto the `slate` and `teal`
  * class names (see tailwind.config.ts), so pages pick them up without markup changes.
  * tests/design-tokens.test.ts checks their contrast whenever they change.
  */
 
-/** Warm neutrals: 50 = paper, 100 = sunken, 200 = line, 500 = subtle text, 900 = ink. */
-export const WARM_NEUTRAL = {
-  50: "#F5F3EE",
-  100: "#ECE9E2",
-  200: "#DDD8CE",
-  300: "#C5BEB1",
-  400: "#8A8478",
-  500: "#5C6560",
-  600: "#4F5853",
-  700: "#3A433E",
-  800: "#283029",
-  900: "#1B2420",
-  950: "#111513",
+/** Cool neutrals with a slight green cast: 50 = page, 100 = sunken, 200 = line, 500 = subtle text, 900 = ink. */
+export const NEUTRAL = {
+  50: "#F6F7F6",
+  100: "#F0F2F1",
+  200: "#E6E9E7",
+  300: "#CDD3D0",
+  400: "#848D89",
+  500: "#56625C",
+  600: "#45514C",
+  700: "#333D39",
+  800: "#222A27",
+  900: "#0F1513",
+  950: "#0A0E0C",
 } as const;
 
-/** Expressway green for actions, links, selection and focus. 800 is the primary green. */
+/** Jade green for actions, links, selection and focus. 800 is the primary green. */
 export const BRAND_GREEN = {
-  50: "#EEF5F1",
-  100: "#E5EFEA",
-  200: "#C6DDD2",
-  300: "#9CC5B1",
-  400: "#5FA184",
-  500: "#2F7E5E",
-  600: "#1F6A4D",
-  700: "#1A5F45",
-  800: "#17573F",
-  900: "#0F3F2D",
-  950: "#0A2A1E",
+  50: "#EEF8F3",
+  100: "#E3F4EC",
+  200: "#C3E6D5",
+  300: "#95D2B6",
+  400: "#4FB08A",
+  500: "#1C8C64",
+  600: "#107D57",
+  700: "#0D7752",
+  800: "#0B7350",
+  900: "#064E36",
+  950: "#04382A",
+} as const;
+
+/**
+ * Night Ops dark theme (docs/DESIGN.md, section 5). Recorded now, used when dark mode is
+ * built with the screen rebuilds (roadmap step 4.5).
+ */
+export const DARK = {
+  page: "#0D1210",
+  surface: "#141A17",
+  sunken: "#0A0E0C",
+  line: "#26302B",
+  ink: "#E7ECE8",
+  muted: "#B2BBB5",
+  subtle: "#949E98",
+  accent: "#6CC79D",
+  onAccent: "#0B1F17",
+} as const;
+
+/** Soft layered shadows that replace most borders (Crisp Modern). */
+export const SHADOW = {
+  sm: "0 1px 2px rgba(15,21,19,.05), 0 8px 24px -14px rgba(15,21,19,.18)",
+  md: "0 1px 2px rgba(15,21,19,.05), 0 14px 32px -16px rgba(15,21,19,.24)",
+  lg: "0 18px 40px -12px rgba(15,21,19,.28)",
 } as const;
 
 /** WCAG 2.x contrast ratio between two #RRGGBB colours. */

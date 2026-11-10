@@ -89,7 +89,7 @@ export default function GeographicReferenceMap({
         />
         <ZoomControl position="topright" />
         <LocationPicker onChooseLocation={onChooseLocation} />
-        {selectedLocation ? <CircleMarker center={[selectedLocation[1],selectedLocation[0]]} radius={10} pathOptions={{color:"#17573F",fillColor:"#9CC5B1",fillOpacity:1,weight:3}}><Tooltip permanent>Draft demo report location</Tooltip></CircleMarker>:null}
+        {selectedLocation ? <CircleMarker center={[selectedLocation[1],selectedLocation[0]]} radius={10} pathOptions={{color:"#0B7350",fillColor:"#95D2B6",fillOpacity:1,weight:3}}><Tooltip permanent>Draft demo report location</Tooltip></CircleMarker>:null}
         <FocusSelectedGroup roads={roads} focusGroup={focusGroup} />
         <FocusSelectedNode selectedNodePosition={selectedNodePosition} />
         {selectedNodePosition ? <CircleMarker
@@ -148,7 +148,7 @@ export default function GeographicReferenceMap({
           const [longitude, latitude] = feature.geometry.coordinates;
           return (
             <CircleMarker key={feature.properties.id} center={[latitude, longitude]} radius={8}
-              pathOptions={{ color: "#ffffff", weight: 2, fillColor: "#17573F", fillOpacity: 1 }}>
+              pathOptions={{ color: "#ffffff", weight: 2, fillColor: "#0B7350", fillOpacity: 1 }}>
               <Tooltip>{feature.properties.name} · source-linked reference only</Tooltip>
             </CircleMarker>
           );

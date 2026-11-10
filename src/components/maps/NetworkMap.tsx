@@ -47,7 +47,7 @@ export default function NetworkMap({ zones, nodes, roads, selectedId, onSelect }
           key={zone.id}
           positions={zone.boundary.map(([x, y]) => toPosition(x, y))}
           pathOptions={{
-            color: selectedId === zone.id ? "#17573F" : "#7caeb8",
+            color: selectedId === zone.id ? "#0B7350" : "#7caeb8",
             weight: selectedId === zone.id ? 3 : 1.5,
             fillColor: "#d6edf0",
             fillOpacity: selectedId === zone.id ? 0.8 : 0.48,
@@ -83,7 +83,7 @@ export default function NetworkMap({ zones, nodes, roads, selectedId, onSelect }
           key={node.id}
           center={toPosition(node.x, node.y)}
           radius={node.isGateway ? 6 : 4}
-          pathOptions={{ color: "#fff", weight: 2, fillColor: node.isGateway ? "#17573F" : "#176891", fillOpacity: 1 }}
+          pathOptions={{ color: "#fff", weight: 2, fillColor: node.isGateway ? "#0B7350" : "#176891", fillOpacity: 1 }}
         >
           <Tooltip>{node.label}</Tooltip>
         </CircleMarker>

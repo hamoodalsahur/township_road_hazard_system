@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "leaflet/dist/leaflet.css";
-import "@fontsource/atkinson-hyperlegible-next/400.css";
-import "@fontsource/atkinson-hyperlegible-next/600.css";
-import "@fontsource/atkinson-hyperlegible-next/700.css";
-import "@fontsource/atkinson-hyperlegible-mono/400.css";
+import "@fontsource/instrument-sans/400.css";
+import "@fontsource/instrument-sans/500.css";
+import "@fontsource/instrument-sans/600.css";
+import "@fontsource/instrument-sans/700.css";
+import "@fontsource/ibm-plex-mono/400.css";
 import "./globals.css";
 import { PRODUCT_NAME, PRODUCT_TAGLINE } from "@/lib/product";
 
