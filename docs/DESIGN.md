@@ -1,7 +1,7 @@
 # Design direction
 
 **Status:** approved by the owner on 9 November 2026. Style updated on 10 November 2026: the owner chose **Crisp Modern** for the light theme and **Night Ops** for dark mode, from four mockup options. The order of work is in [roadmap.md](roadmap.md), phases 1, 3 and 4.
-**Reference mockups:** [design/reference-crisp-modern.png](design/reference-crisp-modern.png) (light) and [design/reference-night-ops-dark.png](design/reference-night-ops-dark.png) (dark). Incidents screen, approved 10 November 2026: [desktop](design/incidents-review-desktop.png) and [phone](design/incidents-review-phone.png). When this file and a mockup disagree, this file wins.
+**Reference mockups:** [design/reference-crisp-modern.png](design/reference-crisp-modern.png) (light) and [design/reference-night-ops-dark.png](design/reference-night-ops-dark.png) (dark). Incidents screen, approved 10 November 2026: [desktop](design/incidents-review-desktop.png) and [phone](design/incidents-review-phone.png). Overview, approved the same day: [desktop](design/overview-desktop.png). When this file and a mockup disagree, this file wins.
 **Applies to:** the management website, the resident website (this repository) and the resident mobile app (`township_system_mobile`).
 **Written:** 9 November 2026, against `main` at `71f6b50` (web) and `c8dfbdf` (mobile).
 
@@ -217,6 +217,8 @@ Packages, all checked on npm:
   - The first block is "Needs your decision", listing reports oldest first, with their age and severity.
   - The four stat cards shrink to a single summary line. They are not decisions.
   - The "Quick actions" tiles are removed, because they repeat the sidebar.
+  - Each row opens that exact report or group in Incidents, and "Start reviewing" opens the oldest waiting report. Waits over a day are shown in bold, not red, because red belongs to hazards.
+  - Beside the queue: incident groups under review and the four most recent reports. The review-age and activity panels stay folded under "Advanced".
 - **Incidents:** keep the list-and-detail review layout from #85, which already fits the job.
   - Add the lifecycle track to the detail panel.
   - Move the decision buttons into a fixed footer of the detail panel, so they never scroll away.

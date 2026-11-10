@@ -8,6 +8,7 @@ import { filterReviewReports, reportReviewCounts } from "@/lib/v212-report-revie
 import { type PrivatePhotoState } from "@/lib/v214-evidence-state";
 import { reviewPhotoPresentation } from "@/lib/v216-review-photo-presentation";
 import { categoryLabel, formatAge, formatAgeLong } from "@/lib/hazard-presentation";
+import { requestedId } from "@/lib/overview-queue";
 import {
   decisionMessage, moveSelection, nextReportAfterDecision, reasonIsValid, reviewShortcut, MIN_REASON_LENGTH,
 } from "@/lib/incident-review-queue";
@@ -111,6 +112,8 @@ export default function V2HazardManager({ operatorKey, onCountsChange }: { opera
     } catch (error) { if (activeSelectionRef.current === id) setPhotoErrorId(id); }
     finally { setPhotoLoadingId(current => (current === id ? null : current)); }
   }
+  // A link such as ?report=<id> (from the Overview) opens that report once, on the first load.
+  const firstLoadRef = useRef(true);
   /** `prefer` picks the report to open after a decision; null means none are left. */
   async function reload(prefer?: { id: string | null }) {
     setLoading(true); setLoadError("");
@@ -127,6 +130,14 @@ export default function V2HazardManager({ operatorKey, onCountsChange }: { opera
       const data = await r.json() as { reports: RecordItem[] };
       setItems(data.reports);
       setNow(Date.now());
+      if (firstLoadRef.current) {
+        firstLoadRef.current = false;
+        const requested = requestedId(window.location.search, "report");
+        if (requested && data.reports.some(item => item.id === requested)) {
+          prefer = { id: requested };
+          setPhoneView("detail");
+        }
+      }
       setSelectedReportId(current => {
         // With nothing waiting, no report opens and the panel says "All caught up".
         const fallback = data.reports.find(item => item.reviewState === "unverified")?.id ?? null;

@@ -112,7 +112,7 @@ Order follows `DESIGN.md`, section 15. Each step needs mockups approved first.
 | Step | Screen |
 | --- | --- |
 | 4.1 | Management map page: full-screen map, floating filters, side panel |
-| 4.2 | Management overview (decision queue first) and incident review (fixed decision buttons, keyboard shortcuts). Incident review was brought forward and built on 10 November 2026; the overview is still to do. |
+| 4.2 | Management overview (decision queue first) and incident review (fixed decision buttons, keyboard shortcuts). Both built on 10 November 2026, brought forward ahead of phase 2. |
 | 4.3 | Resident website: map, report in three steps, "My reports". The simulation moves to management. Checked at phone width in the iPhone's browser. |
 | 4.4 | Motion pass: only the animations listed in `DESIGN.md` |
 | 4.5 | Dark mode (Night Ops) on the website, following the device setting with a manual switch |
