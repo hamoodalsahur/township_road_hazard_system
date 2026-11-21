@@ -14,6 +14,8 @@ const REBUILT = [
   // Night Desk foundation (21 November 2026): the shared shadcn/ui components.
   "src/components/ui/button.tsx", "src/components/ui/input.tsx", "src/components/ui/checkbox.tsx",
   "src/components/ui/tabs.tsx", "src/components/ui/dialog.tsx",
+  // Night Desk Overview and Incidents (21 November 2026).
+  "src/components/hazards/OverviewMap.tsx", "src/components/management/TodayTimeline.tsx",
 ];
 
 test("the type scale is defined once in Tailwind", () => {
@@ -42,7 +44,8 @@ for (const file of REBUILT) {
 test("chips are calmer than titles, the avatar is neutral, and inputs use the control radius", () => {
   assert.match(readFileSync("src/components/hazards/HazardChips.tsx", "utf8"), /text-caption font-medium/);
   assert.doesNotMatch(readFileSync("src/components/management/ManagementShell.tsx", "utf8"), /bg-teal-100[^"]*>OP</);
-  for (const file of ["src/components/management/V2HazardManager.tsx", "src/components/management/IncidentManager.tsx"]) {
-    assert.match(readFileSync(file, "utf8"), /min-h-11 w-full rounded-lg border border-slate-400/);
-  }
+  // The review screen now uses the shared Input (10 px radius, field border); groups still style their own.
+  assert.match(readFileSync("src/components/management/V2HazardManager.tsx", "utf8"), /<Input id=\{"reason-"/);
+  assert.match(readFileSync("src/components/ui/input.tsx", "utf8"), /h-11 w-full rounded-lg border border-slate-400/);
+  assert.match(readFileSync("src/components/management/IncidentManager.tsx", "utf8"), /min-h-11 w-full rounded-lg border border-slate-400/);
 });

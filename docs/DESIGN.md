@@ -114,6 +114,8 @@ Tailwind keeps the `slate` class names for these, so older screens follow automa
 | `subtle` | `#5A6672` | Hints, timestamps | Lightest text allowed, still AA on every background |
 | `jade` | `#0B7350` | Approve, links, focus ring | The Malaysian expressway sign green: "go and trust" |
 | `jade-tint` / `jade-text` | `#E3F4EC` / `#064E36` | Active filters where a tint is needed | Selection without shouting |
+| `selected` (tint / edge / bar) | `#EAF6F0` / `#B9DCCB` / `#0B7350` | The selected report card or row: tint, border and a 4 px left bar | Selection that is visible without a heavy dark border (UI/UX handoff, 21 Nov) |
+| `review` (text / tint) | `#1F5A94` / `#E8F0FB` | "Needs review" chip, the current step in Progress, keyboard focus on report rows | Review status gets its own quiet blue, so it is never confused with road condition (severity) or with approval |
 
 ### Severity scale (hazards only)
 
@@ -236,7 +238,8 @@ Packages, all checked on npm:
   - A navy **top bar** with the six sections, the Incidents count in mint, a "Demo data" note, Resident view and Log out. It replaces the left sidebar, giving the work area the full width.
   - A navy **page header** under it on every page: title, a live one-line summary, actions on the right (Refresh, search) and, where a page has them, tabs along its bottom edge.
   - **Phones:** the top bar keeps only the name and the demo note; a white **bottom tab bar** has Overview, Incidents and Maps, and "More" opens a bottom sheet with Evidence, AI & Research, System & Audit, Resident view and Log out.
-- **Overview, next (roadmap step 4, part 2):** the header becomes a hero with a headline sentence ("3 reports are waiting for you. The oldest…"), the clock and **today's timeline** of reports with a "now" line; below it the decision cards with large wait times, groups under review and a short shift log, and a larger "Where" map.
+- **Overview (built 21 November 2026):** the header says "3 reports need review", with today's counts and the oldest report in its own box, and **today's timeline** of reports with a "now" line. Below: decision cards with large wait times and a "Review report" link, groups under review, a shift log, and a "Where" map. Cards, timeline and map share one selection.
+- **Incidents (built 21 November 2026):** tabs in the navy header; the list states its sort order; road condition and review status are separate chips; the detail reads what, evidence, progress, similar reports, then the decision; "No photo for this report" is a deliberate note; the reason is labelled as required; the photo choice is a "Public visibility" box; shortcut help sits behind "?".
 - **Overview, queue first:**
   - The first block is "Needs your decision", listing reports oldest first, with their age and severity.
   - The four stat cards shrink to a single summary line. They are not decisions.

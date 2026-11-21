@@ -1,18 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { validRoadCollection, type RoadFeature } from "@/lib/bbr-roads";
+import type { RoadFeature } from "@/lib/bbr-roads";
+import { loadRoads } from "@/lib/road-loader";
 import HazardMarker from "./HazardMarker";
 import { MINI_MAP_HEIGHT as H, MINI_MAP_WIDTH as W, miniMapPaths } from "@/lib/mini-map";
-
-// The local road file is loaded once per visit and shared by every mini map.
-let roadsPromise: Promise<RoadFeature[]> | null = null;
-function loadRoads(): Promise<RoadFeature[]> {
-  roadsPromise ??= fetch("/data/bbr-roads.geojson")
-    .then(response => (response.ok ? response.json() : null))
-    .then((data: unknown) => (validRoadCollection(data) ? data.features : []))
-    .catch(() => []);
-  return roadsPromise;
-}
 
 /** Small reference map for one report. Road lines are unverified OpenStreetMap data. */
 export default function ReportMiniMap({ longitude, latitude, category, impact, reviewState }: {

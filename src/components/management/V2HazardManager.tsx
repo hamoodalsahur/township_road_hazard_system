@@ -1,14 +1,18 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowClockwiseIcon, ArrowsInIcon, ArrowsOutIcon, BrainIcon, CameraIcon, CaretLeftIcon, CheckIcon,
-  ClipboardTextIcon, LockSimpleIcon, MagnifyingGlassIcon, WarningCircleIcon, XIcon,
+  ArrowClockwiseIcon, ArrowsInIcon, BrainIcon, CameraIcon, CaretLeftIcon, CheckIcon, ClipboardTextIcon, EyeIcon, FunnelIcon,
+  ImageIcon, LockSimpleIcon, MagnifyingGlassIcon, MagnifyingGlassPlusIcon, WarningCircleIcon, XCircleIcon, XIcon,
 } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { filterReviewReports, reportReviewCounts } from "@/lib/v212-report-review-list";
 import { type PrivatePhotoState } from "@/lib/v214-evidence-state";
 import { reviewPhotoPresentation } from "@/lib/v216-review-photo-presentation";
 import { categoryLabel, formatAge, formatAgeLong } from "@/lib/hazard-presentation";
-import { requestedId } from "@/lib/overview-queue";
+import { formatWait, requestedId } from "@/lib/overview-queue";
 import {
   decisionMessage, moveSelection, nextReportAfterDecision, reasonIsValid, reviewShortcut, MIN_REASON_LENGTH,
 } from "@/lib/incident-review-queue";
@@ -19,10 +23,13 @@ import { LifecycleTrack, ReviewStateChip, SeverityChip } from "@/components/haza
 type RecordItem = { id: string; category: string; description: string; impact: string; reviewState: string; createdAt: string; latitude: number; longitude: number };
 type AiResult = { provider: string; model: string; analysed: number; matches: { id: string; similarity: number; category: string }[]; disclaimer: string };
 
-const pill = "inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-small font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-800";
-const smallButton = "inline-flex min-h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-white px-4 text-caption font-semibold text-slate-900 shadow-[inset_0_0_0_1px_#E6E9E7] hover:bg-slate-50 disabled:opacity-50";
 
-export default function V2HazardManager({ operatorKey, onCountsChange }: { operatorKey: string; onCountsChange?: (needsReview: number | null) => void }) {
+export default function V2HazardManager({ operatorKey, onCountsChange, onSummaryChange }: {
+  operatorKey: string;
+  onCountsChange?: (needsReview: number | null) => void;
+  /** The one-line summary ("3 reports need your decision. Oldest waiting 2d 4h."), shown in the page header. */
+  onSummaryChange?: (summary: string) => void;
+}) {
   const [items, setItems] = useState<RecordItem[]>([]);
   const [photoStates, setPhotoStates] = useState<Record<string, PrivatePhotoState> | null>(null);
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
@@ -219,203 +226,231 @@ export default function V2HazardManager({ operatorKey, onCountsChange }: { opera
     finally { setBusy(false); }
   }
   const hasPhoto = (id: string) => photoStates !== null && photoStates[id] !== undefined && photoStates[id] !== "none";
-  const chip = (active: boolean) => "inline-flex min-h-9 items-center rounded-full px-4 text-caption font-medium transition-colors " +
-    (active ? "bg-teal-100 text-teal-900" : "bg-slate-100 text-slate-600 hover:text-slate-900");
+  const filterChip = (active: boolean) => "inline-flex min-h-9 items-center gap-1 whitespace-nowrap rounded-full border px-3 text-small font-medium transition-colors " +
+    (active ? "border-night bg-night text-white" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900");
   const summary = loadError ? "Reports could not be loaded"
     : counts.unverified === 0 ? "Nothing needs your decision right now"
-    : `${counts.unverified} ${counts.unverified === 1 ? "report needs" : "reports need"} your decision` +
-      (oldestWaiting ? ` · ${counts.unverified === 1 ? "waiting" : "oldest waiting"} ${formatAge(oldestWaiting, now)}` : "");
+    : `${counts.unverified} ${counts.unverified === 1 ? "report needs" : "reports need"} your decision.` +
+      (oldestWaiting ? ` ${counts.unverified === 1 ? "Waiting" : "Oldest waiting"} ${formatWait(oldestWaiting, now)}.` : "");
+  useEffect(() => { onSummaryChange?.(loading && items.length === 0 ? "Loading reports…" : summary); }, [summary, loading, items.length]);
+  const sortLabel = { needs_review_first: "needs review first, then newest", newest: "newest first", oldest: "oldest first" }[order];
+  const clearFilters = () => { setQuery(""); setStateFilter("all"); setCategoryFilter("all"); setOrder("needs_review_first"); };
 
-  return <section ref={rootRef} aria-label="Report review" className="pb-6">
-    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-      <p className="text-body text-slate-600" aria-live="polite">{loading && items.length === 0 ? "Loading reports…" : summary}</p>
-      <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-        <label className="flex min-h-11 flex-1 items-center gap-2 rounded-full bg-slate-100 px-4 text-small text-slate-500 focus-within:outline focus-within:outline-2 focus-within:outline-teal-800 sm:w-72 sm:flex-none">
-          <MagnifyingGlassIcon size={20} aria-hidden="true" />
-          <span className="sr-only">Search reports</span>
-          <input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search reports or IDs"
-            className="w-full bg-transparent text-slate-900 placeholder:text-slate-500 focus:outline-none" />
-        </label>
-        <button type="button" disabled={loading} onClick={() => void reload()} className={pill + " bg-white text-slate-900 shadow-sm hover:bg-slate-50 disabled:opacity-50"}>
-          <ArrowClockwiseIcon size={16} aria-hidden="true" />Refresh
-        </button>
-      </div>
-    </div>
+  return <section ref={rootRef} aria-label="Report review" className="scroll-mt-20 pb-6">
+    <p className="sr-only" aria-live="polite">{loading && items.length === 0 ? "Loading reports…" : summary}</p>
 
-    {message && <div role="status" className="fixed inset-x-4 bottom-5 z-40 flex items-start gap-3 rounded-2xl bg-slate-900 px-4 py-3 text-small leading-5 text-white shadow-lg sm:inset-x-auto sm:left-6 sm:w-[440px] lg:left-[calc(15rem+2rem)]">
-      <span className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#6CC79D]"><CheckIcon size={14} weight="bold" color="#0B1F17" aria-hidden="true" /></span>
+    {message && <div role="status" className="fixed inset-x-4 bottom-24 z-40 flex items-start gap-3 rounded-xl bg-night px-4 py-3 text-small leading-5 text-white shadow-lg sm:inset-x-auto sm:left-8 sm:w-[440px] lg:bottom-6">
+      <span className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-night-mint"><CheckIcon size={14} weight="bold" color="#0B1F17" aria-hidden="true" /></span>
       <span className="flex-1">{message}</span>
-      <button type="button" onClick={() => setMessage("")} className="-m-1 rounded-full p-1 text-white/70 hover:text-white" aria-label="Dismiss message"><XIcon size={16} aria-hidden="true" /></button>
+      <button type="button" onClick={() => setMessage("")} className="-m-2 flex h-9 w-9 items-center justify-center rounded-lg text-white/70 hover:text-white" aria-label="Dismiss message"><XIcon size={16} aria-hidden="true" /></button>
     </div>}
 
-    {loadError && <div role="alert" className="flex max-w-xl gap-3 rounded-2xl bg-rose-50 p-4 text-small leading-5 text-rose-800">
+    {loadError && <div role="alert" className="flex max-w-xl gap-3 rounded-xl bg-rose-50 p-4 text-small leading-5 text-rose-800">
       <WarningCircleIcon size={20} weight="bold" className="shrink-0" aria-hidden="true" />
       <div>
         <p className="font-semibold text-rose-950">Could not load reports. No previous review data is shown as current.</p>
         <p className="mt-1">{loadError}</p>
-        <button type="button" onClick={() => void reload()} className={smallButton + " mt-3"}><ArrowClockwiseIcon size={16} aria-hidden="true" />Retry</button>
+        <Button variant="secondary" size="sm" onClick={() => void reload()} className="mt-3"><ArrowClockwiseIcon size={16} aria-hidden="true" />Retry</Button>
       </div>
     </div>}
-    {loading && items.length === 0 && !loadError && <p role="status" className="rounded-2xl bg-white p-5 text-small text-slate-600 shadow-sm">Loading reports…</p>}
+    {loading && items.length === 0 && !loadError && <p role="status" className="rounded-xl border border-slate-200 bg-white p-5 text-small text-slate-600">Loading reports…</p>}
 
-    {!loading && !loadError && <div className="grid items-start gap-6 xl:h-[max(34rem,calc(100vh-20.5rem))] xl:grid-cols-[minmax(320px,440px)_minmax(0,1fr)] xl:items-stretch">
+    {!loading && !loadError && <div className="grid items-start gap-5 xl:h-[max(36rem,calc(100vh-16rem))] xl:grid-cols-[minmax(340px,460px)_minmax(0,1fr)] xl:items-stretch">
       <div className={"min-w-0 xl:flex xl:min-h-0 xl:flex-col " + (phoneView === "detail" ? "hidden xl:flex" : "")}>
-        <div className="mb-3 flex flex-wrap items-center gap-2" role="group" aria-label="Filter by review state">
-          <button type="button" aria-pressed={stateFilter === "all"} onClick={() => setStateFilter("all")} className={chip(stateFilter === "all")}>All {counts.total}</button>
-          <button type="button" aria-pressed={stateFilter === "unverified"} onClick={() => setStateFilter("unverified")} className={chip(stateFilter === "unverified")}>Needs review {counts.unverified}</button>
-          <button type="button" aria-pressed={stateFilter === "corroborated"} onClick={() => setStateFilter("corroborated")} className={chip(stateFilter === "corroborated")}>Approved {counts.corroborated}</button>
+        <div className="mb-3 flex items-center gap-2">
+          <label className="relative flex-1">
+            <span className="sr-only">Search reports by description, category or ID</span>
+            <MagnifyingGlassIcon size={20} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden="true" />
+            <Input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search reports or IDs" className="pl-10 pr-11 [&::-webkit-search-cancel-button]:hidden" />
+            {query ? <button type="button" onClick={() => setQuery("")} aria-label="Clear search" className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900"><XCircleIcon size={20} aria-hidden="true" /></button> : null}
+          </label>
+          <Button variant="secondary" size="icon" disabled={loading} onClick={() => void reload()} aria-label="Refresh reports"><ArrowClockwiseIcon size={20} aria-hidden="true" /></Button>
         </div>
-        <div className="mb-3 flex flex-wrap items-center gap-2 text-caption">
-          <label className="inline-flex min-h-9 items-center gap-2 rounded-full bg-white px-3 font-semibold text-slate-600 shadow-[inset_0_0_0_1px_#E6E9E7]">Category
-            <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="bg-transparent font-semibold text-slate-900 focus:outline-none">
-              <option value="all">All</option>
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by review state">
+            <button type="button" aria-pressed={stateFilter === "all"} onClick={() => setStateFilter("all")} className={filterChip(stateFilter === "all")}>All <span className="font-semibold">{counts.total}</span></button>
+            <button type="button" aria-pressed={stateFilter === "unverified"} onClick={() => setStateFilter("unverified")} className={filterChip(stateFilter === "unverified")}>Needs review <span className="font-semibold">{counts.unverified}</span></button>
+            <button type="button" aria-pressed={stateFilter === "corroborated"} onClick={() => setStateFilter("corroborated")} className={filterChip(stateFilter === "corroborated")}>Approved <span className="font-semibold">{counts.corroborated}</span></button>
+          </div>
+          <label className="ml-auto inline-flex min-h-9 items-center gap-2 rounded-full border border-slate-200 bg-white px-3 text-small text-slate-600">
+            <FunnelIcon size={16} aria-hidden="true" /><span className="sr-only">Category</span>
+            <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="bg-transparent font-medium text-slate-900 focus:outline-none">
+              <option value="all">All categories</option>
               {categories.map(category => <option key={category} value={category}>{categoryLabel(category)}</option>)}
             </select>
           </label>
-          <label className="inline-flex min-h-9 items-center gap-2 rounded-full bg-white px-3 font-semibold text-slate-600 shadow-[inset_0_0_0_1px_#E6E9E7]">Sort
-            <select value={order} onChange={e => setOrder(e.target.value as "needs_review_first" | "newest" | "oldest")} className="bg-transparent font-semibold text-slate-900 focus:outline-none">
-              <option value="needs_review_first">Needs review first</option>
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
+        </div>
+        <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-small text-slate-600">
+          <label className="inline-flex items-center gap-1">Sorted by
+            <select value={order} onChange={e => setOrder(e.target.value as "needs_review_first" | "newest" | "oldest")} aria-label={`Sort order, now ${sortLabel}`}
+              className="min-h-9 rounded-lg bg-transparent pr-1 font-semibold text-slate-900 hover:bg-slate-100 focus:outline-none">
+              <option value="needs_review_first">needs review first</option>
+              <option value="newest">newest first</option>
+              <option value="oldest">oldest first</option>
             </select>
           </label>
-          {filtersActive && <button type="button" onClick={() => { setQuery(""); setStateFilter("all"); setCategoryFilter("all"); setOrder("needs_review_first"); }}
-            className="min-h-9 px-1 font-semibold text-teal-800 hover:underline">Clear filters</button>}
-          <span className="ml-auto text-slate-500">{visibleItems.length} shown</span>
+          {filtersActive && <button type="button" onClick={clearFilters} className="min-h-9 font-semibold text-teal-800 hover:underline">Clear filters</button>}
+          <span className="ml-auto whitespace-nowrap">{visibleItems.length} {visibleItems.length === 1 ? "report" : "reports"}</span>
         </div>
-        {visibleItems.length === 0 && <p role="status" className="rounded-2xl bg-white p-5 text-small text-slate-600 shadow-sm">{items.length ? "No matching reports. Clear the filters to see everything." : "No reports yet. New resident reports appear here as soon as they are sent."}</p>}
-        <ul aria-label="Incoming reports" className="flex flex-col gap-2 p-0.5 xl:min-h-0 xl:flex-1 xl:overflow-y-auto">
-          {visibleItems.map(item => <li key={item.id}>
-            <button type="button" id={"report-row-" + item.id} onClick={() => toggleReport(item.id)} aria-pressed={selectedReportId === item.id}
-              className={"flex w-full items-start gap-2 rounded-2xl bg-white p-4 text-left shadow-sm transition-shadow hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-800 " +
-                (selectedReportId === item.id ? "ring-2 ring-teal-800" : "")}>
-              <HazardMarker category={item.category} impact={item.impact} reviewState={item.reviewState} size={30} decorative />
-              <span className="min-w-0 flex-1">
-                <span className="flex items-baseline justify-between gap-2">
-                  <strong className="text-body font-semibold text-slate-900">{categoryLabel(item.category)}</strong>
-                  <time dateTime={item.createdAt} title={new Date(item.createdAt).toLocaleString()} className="shrink-0 font-mono text-caption text-slate-500">{formatAge(item.createdAt, now)}</time>
+        {visibleItems.length === 0 && <div role="status" className="rounded-xl border border-dashed border-slate-300 bg-white p-5 text-small text-slate-600">
+          {items.length ? <>No matching reports for these filters. <button type="button" onClick={clearFilters} className="font-semibold text-teal-800 hover:underline">Clear filters</button></>
+            : "No reports yet. New resident reports appear here as soon as they are sent."}
+        </div>}
+        <ul aria-label="Incoming reports" className="flex flex-col gap-2 p-1 xl:min-h-0 xl:flex-1 xl:overflow-y-auto">
+          {visibleItems.map(item => {
+            const selected = selectedReportId === item.id;
+            const waiting = item.reviewState === "unverified";
+            return <li key={item.id}>
+              <button type="button" id={"report-row-" + item.id} onClick={() => toggleReport(item.id)} aria-pressed={selected}
+                className={"flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-colors focus-visible:outline-[#1F5A94] " +
+                  (selected ? "border-[#B9DCCB] bg-[#EAF6F0] shadow-[inset_4px_0_0_#0B7350]" : "border-slate-200 bg-white hover:border-slate-300")}>
+                <HazardMarker category={item.category} impact={item.impact} reviewState={item.reviewState} size={30} decorative />
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-baseline justify-between gap-2">
+                    <strong className="text-heading font-semibold text-slate-900">{categoryLabel(item.category)}</strong>
+                    <span className="shrink-0 whitespace-nowrap">
+                      <time dateTime={item.createdAt} title={new Date(item.createdAt).toLocaleString()} className="font-display text-heading font-semibold tabular-nums text-slate-900">{waiting ? formatWait(item.createdAt, now) : formatAge(item.createdAt, now)}</time>
+                      <span className="ml-1 text-caption text-slate-600">{waiting ? "waiting" : "ago"}</span>
+                    </span>
+                  </span>
+                  <span className="mb-2 mt-1 block truncate text-small text-slate-600">{item.description}</span>
+                  <span className="flex flex-wrap items-center gap-2">
+                    <SeverityChip impact={item.impact} /><ReviewStateChip reviewState={item.reviewState} />
+                    {hasPhoto(item.id) && <span aria-label="Attached sample photo" className="ml-auto inline-flex items-center gap-1 text-caption text-slate-600"><CameraIcon size={14} aria-hidden="true" />Photo</span>}
+                  </span>
                 </span>
-                <span className="mb-2 mt-1 block truncate text-small text-slate-600">{item.description}</span>
-                <span className="flex flex-wrap items-center gap-2">
-                  <SeverityChip impact={item.impact} /><ReviewStateChip reviewState={item.reviewState} />
-                  {hasPhoto(item.id) && <span aria-label="Attached sample photo" className="ml-auto inline-flex items-center gap-1 text-caption text-slate-500"><CameraIcon size={14} aria-hidden="true" />Photo</span>}
-                </span>
-              </span>
-            </button>
-          </li>)}
+              </button>
+            </li>;
+          })}
         </ul>
       </div>
 
-      <div className={"min-w-0 flex-col rounded-3xl bg-white shadow-md xl:flex xl:h-full xl:overflow-hidden " + (phoneView === "list" ? "hidden" : "flex")}>
+      <div className={"min-w-0 flex-col rounded-xl border border-slate-200 bg-white xl:flex xl:h-full xl:overflow-hidden " + (phoneView === "list" ? "hidden" : "flex")}>
         <button type="button" onClick={() => setPhoneView("list")} className="flex min-h-11 items-center gap-1 px-5 pt-3 text-body font-semibold text-teal-800 xl:hidden">
-          <CaretLeftIcon size={16} aria-hidden="true" />Reports
+          <CaretLeftIcon size={16} aria-hidden="true" />All reports
         </button>
         {selectedReport && visibleItems.some(i => i.id === selectedReport.id) ? <>
-          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-5 sm:px-7 sm:py-6">
-            <div className="flex flex-wrap items-center gap-4">
-              <HazardMarker category={selectedReport.category} impact={selectedReport.impact} reviewState={selectedReport.reviewState} size={50} />
+          <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-5 sm:px-6">
+            <header className="flex flex-wrap items-start gap-4">
+              <HazardMarker category={selectedReport.category} impact={selectedReport.impact} reviewState={selectedReport.reviewState} size={48} />
               <div className="min-w-0 flex-1">
-                <h2 className="text-title font-semibold tracking-tight text-slate-900">{categoryLabel(selectedReport.category)}</h2>
+                <h2 className="font-display text-title font-semibold text-slate-900">{categoryLabel(selectedReport.category)}</h2>
+                <p className="text-small text-slate-600"><time dateTime={selectedReport.createdAt} title={new Date(selectedReport.createdAt).toLocaleString()}>Reported {formatAgeLong(selectedReport.createdAt, now)}, {reportedAt(selectedReport.createdAt, now)}</time></p>
                 <div className="mt-2 flex flex-wrap gap-2"><SeverityChip impact={selectedReport.impact} /><ReviewStateChip reviewState={selectedReport.reviewState} /></div>
               </div>
-              <p className="basis-full text-caption text-slate-500 sm:basis-auto sm:text-right">
-                <time dateTime={selectedReport.createdAt} title={new Date(selectedReport.createdAt).toLocaleString()}>Reported {formatAgeLong(selectedReport.createdAt, now)}</time>
-                <span className="block font-mono">ID {selectedReport.id}</span>
-              </p>
-            </div>
+              <div className="text-right">
+                {selectedReport.reviewState === "unverified" ? <>
+                  <p className="font-display text-title font-semibold tabular-nums text-slate-900">{formatWait(selectedReport.createdAt, now)}</p>
+                  <p className="text-caption text-slate-600">waiting for review</p>
+                </> : null}
+                <p className="mt-1 font-mono text-caption text-slate-600">ID {selectedReport.id}</p>
+              </div>
+            </header>
             <p className="text-body leading-6 text-slate-900">{selectedReport.description}</p>
 
-            <div className={"grid gap-3 " + (photoLarge ? "" : "md:grid-cols-[1fr_1.25fr]")}>
-              <div className="min-w-0">
-                <h3 className="sr-only">Submitted photo</h3>
-                {selectedPhotoMode === "approved_inline" && <div className="relative overflow-hidden rounded-2xl bg-slate-100">
-                  <img src={"/api/v2/hazards/" + encodeURIComponent(selectedReport.id) + "/evidence/approved"}
-                    alt={"Approved sample photo for " + categoryLabel(selectedReport.category)}
-                    className={"w-full object-contain " + (photoLarge ? "max-h-[28rem]" : "h-44")} />
-                  <PhotoSizeButton large={photoLarge} onToggle={() => setPhotoLarge(v => !v)} />
-                  <span className="absolute bottom-3 left-2.5 rounded-full bg-slate-900/80 px-3 py-1 text-caption text-white">Shown in the resident app</span>
-                </div>}
-                {selectedPhotoMode === "inspect_private" && (evidenceUrls[selectedReport.id]
-                  ? <div className="relative overflow-hidden rounded-2xl bg-slate-100">
-                      <img src={evidenceUrls[selectedReport.id]} alt={"Private sample photo for " + categoryLabel(selectedReport.category)}
-                        className={"w-full object-contain " + (photoLarge ? "max-h-[28rem]" : "h-44")} />
-                      <PhotoSizeButton large={photoLarge} onToggle={() => setPhotoLarge(v => !v)} />
-                      <span className="absolute bottom-3 left-2.5 inline-flex items-center gap-2 rounded-full bg-slate-900/80 px-3 py-1 text-caption text-white">
-                        <LockSimpleIcon size={14} aria-hidden="true" />Private sample photo · only operators can see it
-                      </span>
-                    </div>
-                  : photoErrorId === selectedReport.id
-                    ? <div role="alert" className="flex h-44 flex-col items-center justify-center gap-2 rounded-2xl bg-rose-50 p-4 text-center text-small text-rose-800">Photo could not be opened.
-                        <button type="button" onClick={() => void viewEvidence(selectedReport.id)} className={smallButton}><ArrowClockwiseIcon size={16} aria-hidden="true" />Retry photo</button></div>
-                    : <p role="status" className="flex h-44 items-center justify-center rounded-2xl bg-slate-100 text-small text-slate-600">{photoLoadingId === selectedReport.id ? "Loading attached image…" : "Preparing photo preview…"}</p>)}
-                {selectedPhotoMode === "none" && <p className="flex h-44 items-center justify-center gap-2 rounded-2xl bg-slate-50 text-small text-slate-600"><CameraIcon size={20} aria-hidden="true" />No photo attached</p>}
-                {selectedPhotoMode === "unavailable" && <p role="status" className="flex h-44 items-center rounded-2xl bg-[#FDF4DC] p-4 text-small leading-5 text-[#7A5100]">Photo information could not be verified. Refresh before making a photo visibility decision.</p>}
-              </div>
-              {!photoLarge && <ReportMiniMap longitude={selectedReport.longitude} latitude={selectedReport.latitude}
-                category={selectedReport.category} impact={selectedReport.impact} reviewState={selectedReport.reviewState} />}
-            </div>
+            <section aria-labelledby="evidence-heading">
+              <h3 id="evidence-heading" className="mb-2 text-small font-semibold text-slate-600">Evidence</h3>
+              {selectedPhotoMode === "none" ? <>
+                {/* No photo: a short note, and the map takes the space instead of an empty box. */}
+                <p className="mb-3 flex items-center gap-3 rounded-xl border border-dashed border-slate-300 px-4 py-3 text-small text-slate-600">
+                  <ImageIcon size={20} className="shrink-0" aria-hidden="true" />
+                  <span><strong className="block font-semibold text-slate-900">No photo for this report</strong>Decide from the description and the location</span>
+                </p>
+                <ReportMiniMap longitude={selectedReport.longitude} latitude={selectedReport.latitude}
+                  category={selectedReport.category} impact={selectedReport.impact} reviewState={selectedReport.reviewState} />
+              </> : <div className={"grid gap-3 " + (photoLarge ? "" : "md:grid-cols-[1.4fr_1fr]")}>
+                <div className="min-w-0">
+                  {selectedPhotoMode === "approved_inline" && <div className="relative overflow-hidden rounded-xl bg-slate-100">
+                    <img src={"/api/v2/hazards/" + encodeURIComponent(selectedReport.id) + "/evidence/approved"}
+                      alt={"Approved sample photo for " + categoryLabel(selectedReport.category)}
+                      className={"w-full object-contain " + (photoLarge ? "max-h-[28rem]" : "h-44")} />
+                    <PhotoSizeButton large={photoLarge} onToggle={() => setPhotoLarge(v => !v)} />
+                    <span className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-night/90 px-3 py-1 text-caption text-white"><EyeIcon size={14} aria-hidden="true" />Shown to residents</span>
+                  </div>}
+                  {selectedPhotoMode === "inspect_private" && (evidenceUrls[selectedReport.id]
+                    ? <div className="relative overflow-hidden rounded-xl bg-slate-100">
+                        <img src={evidenceUrls[selectedReport.id]} alt={"Private sample photo for " + categoryLabel(selectedReport.category)}
+                          className={"w-full object-contain " + (photoLarge ? "max-h-[28rem]" : "h-44")} />
+                        <PhotoSizeButton large={photoLarge} onToggle={() => setPhotoLarge(v => !v)} />
+                        <span className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-night/90 px-3 py-1 text-caption text-white">
+                          <LockSimpleIcon size={14} aria-hidden="true" />Operators only
+                        </span>
+                      </div>
+                    : photoErrorId === selectedReport.id
+                      ? <div role="alert" className="flex h-44 flex-col items-center justify-center gap-2 rounded-xl bg-rose-50 p-4 text-center text-small text-rose-800">Photo could not be opened.
+                          <Button variant="secondary" size="sm" onClick={() => void viewEvidence(selectedReport.id)}><ArrowClockwiseIcon size={16} aria-hidden="true" />Retry photo</Button></div>
+                      : <p role="status" className="flex h-44 items-center justify-center rounded-xl bg-slate-100 text-small text-slate-600">{photoLoadingId === selectedReport.id ? "Loading the photo…" : "Preparing photo preview…"}</p>)}
+                  {selectedPhotoMode === "unavailable" && <p role="status" className="flex h-44 items-center rounded-xl bg-slate-100 p-4 text-small leading-5 text-slate-700">Photo information could not be verified. Refresh before deciding whether residents may see a photo.</p>}
+                </div>
+                {!photoLarge && <ReportMiniMap longitude={selectedReport.longitude} latitude={selectedReport.latitude}
+                  category={selectedReport.category} impact={selectedReport.impact} reviewState={selectedReport.reviewState} />}
+              </div>}
+            </section>
 
-            <LifecycleTrack reviewState={selectedReport.reviewState} />
+            <section aria-labelledby="progress-heading">
+              <h3 id="progress-heading" className="mb-2 text-small font-semibold text-slate-600">Progress</h3>
+              <LifecycleTrack reviewState={selectedReport.reviewState} />
+            </section>
 
-            {selectedReport.reviewState === "unverified" && <div className="rounded-2xl bg-slate-50 p-4">
+            {selectedReport.reviewState === "unverified" && <section aria-labelledby="support-heading" className="rounded-xl border border-slate-200 p-4">
               <div className="flex flex-wrap items-center gap-3">
                 <BrainIcon size={20} className="shrink-0 text-slate-600" aria-hidden="true" />
-                <p className="min-w-0 flex-1 text-small text-slate-600"><strong className="font-semibold text-slate-900">Similar reports</strong> · optional AI check. You make the decision.</p>
-                <button type="button" disabled={aiBusy !== null} onClick={() => void runAiAnalysis(selectedReport.id)} className={smallButton}>
+                <p className="min-w-0 flex-1 text-small text-slate-600"><strong id="support-heading" className="font-semibold text-slate-900">Similar reports</strong>, an optional AI check. You make the decision.</p>
+                <Button variant="secondary" size="sm" disabled={aiBusy !== null} onClick={() => void runAiAnalysis(selectedReport.id)}>
                   {aiBusy === selectedReport.id ? "Checking…" : "Find similar reports"}
-                </button>
+                </Button>
               </div>
               {aiErrors[selectedReport.id] && <p role="status" className="mt-2 text-caption text-rose-800">{aiErrors[selectedReport.id]}</p>}
               {aiResults[selectedReport.id] && <div className="mt-3 space-y-1 text-caption text-slate-700">
                 {aiResults[selectedReport.id].matches.length
-                  ? aiResults[selectedReport.id].matches.map(m => <p key={m.id}>Possible match: <span className="font-mono">{m.id}</span> · {(m.similarity * 100).toFixed(0)}% similar</p>)
+                  ? aiResults[selectedReport.id].matches.map(m => <p key={m.id}>Possible match: <span className="font-mono">{m.id}</span>, {(m.similarity * 100).toFixed(0)}% similar</p>)
                   : <p>No strong matches found</p>}
-                <p className="pt-1 text-slate-500">Advisory only, not automatic verification</p>
+                <p className="pt-1 text-slate-600">Advisory only, not automatic verification</p>
               </div>}
-            </div>}
+            </section>}
           </div>
 
-          {selectedReport.reviewState === "unverified" ? <div className="sticky bottom-0 mt-auto flex flex-col gap-2 rounded-b-3xl border-t border-slate-100 bg-white px-5 py-4 shadow-[0_-12px_24px_-20px_rgba(15,21,19,.35)] sm:px-7 xl:shadow-none">
-            <div className="flex flex-wrap items-center gap-2">
-              <label className="min-w-[200px] flex-1">
-                <span className="sr-only">Reason for decision</span>
-                <input ref={reasonRef} value={notes[selectedReport.id] ?? ""} maxLength={400}
-                  onChange={e => setNotes(old => ({ ...old, [selectedReport.id]: e.target.value }))}
-                  placeholder={`Reason for decision (at least ${MIN_REASON_LENGTH} characters)`}
-                  className="min-h-11 w-full rounded-lg border border-slate-400 bg-white px-4 text-small text-slate-900 placeholder:text-slate-500" />
+          {selectedReport.reviewState === "unverified" ? <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] mt-auto flex flex-col gap-3 border-t lg:bottom-0 border-slate-200 bg-slate-50 px-5 py-4 shadow-[0_-12px_24px_-20px_rgba(17,24,32,.35)] sm:px-6 xl:shadow-none">
+            <div>
+              <label htmlFor={"reason-" + selectedReport.id} className="flex flex-wrap items-baseline gap-x-2 text-small font-semibold text-slate-900">
+                Reason for your decision<span className="font-normal text-slate-600">Required, at least {MIN_REASON_LENGTH} characters. Kept in the audit log.</span>
               </label>
-              <div className="flex flex-1 gap-2 sm:flex-none">
-                <button ref={rejectRef} type="button" disabled={busy || !reasonIsValid(notes[selectedReport.id])}
-                  onClick={() => void review(selectedReport.id, "rejected")}
-                  className={pill + " flex-1 justify-center border border-rose-200 bg-white text-rose-800 hover:bg-rose-50 disabled:opacity-45 sm:flex-none"}>Reject report</button>
-                <button ref={approveRef} type="button" disabled={busy || !reasonIsValid(notes[selectedReport.id])}
-                  onClick={() => void review(selectedReport.id, "corroborated")}
-                  className={pill + " flex-[1.3] justify-center bg-teal-800 text-white hover:bg-teal-700 disabled:opacity-45 sm:flex-none"}>
-                  <CheckIcon size={16} weight="bold" aria-hidden="true" />Approve report</button>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <Input id={"reason-" + selectedReport.id} ref={reasonRef} value={notes[selectedReport.id] ?? ""} maxLength={400} className="min-w-[200px] flex-1"
+                  onChange={e => setNotes(old => ({ ...old, [selectedReport.id]: e.target.value }))}
+                  placeholder="For example: matches the photo and an earlier report" />
+                <div className="flex flex-1 gap-3 sm:flex-none">
+                  <Button ref={rejectRef} variant="reject" disabled={busy || !reasonIsValid(notes[selectedReport.id])}
+                    onClick={() => void review(selectedReport.id, "rejected")} className="flex-1 sm:flex-none">{busy ? "Saving…" : "Reject report"}</Button>
+                  <Button ref={approveRef} variant="approve" disabled={busy || !reasonIsValid(notes[selectedReport.id])}
+                    onClick={() => void review(selectedReport.id, "corroborated")} className="flex-[1.5] sm:flex-none">
+                    <CheckIcon size={16} weight="bold" aria-hidden="true" />{busy ? "Saving…" : "Approve report"}</Button>
+                </div>
               </div>
             </div>
-            {photoStates?.[selectedReport.id] === "private_unreviewed" && <label className="flex min-h-9 items-center gap-2 text-small text-slate-900">
-              <input type="checkbox" className="h-5 w-5 shrink-0 accent-teal-800"
-                checked={publishPhotos[selectedReport.id] === true}
-                onChange={e => setPublishPhotos(p => ({ ...p, [selectedReport.id]: e.target.checked }))} />
-              <span>Also show this photo in the resident app after approval <span className="text-slate-500">(no faces, number plates or private details)</span></span>
-            </label>}
-            {decisionError && <p role="alert" className="rounded-xl bg-rose-50 px-3 py-2 text-small text-rose-800">{decisionError}</p>}
-            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-caption text-slate-500">
-              <span>Approval means a person checked this fictional report, not that the hazard is verified.</span>
-              <span className="hidden xl:inline" aria-hidden="true"><Kbd>J</Kbd>/<Kbd>K</Kbd> move · <Kbd>A</Kbd> approve · <Kbd>R</Kbd> reject · <Kbd>Enter</Kbd> confirm</span>
+            {decisionError && <p role="alert" className="rounded-lg bg-rose-50 px-3 py-2 text-small text-rose-800">{decisionError}</p>}
+            <div className="flex items-start gap-3">
+              {photoStates?.[selectedReport.id] === "private_unreviewed" ? <div className="flex min-w-0 flex-1 items-start gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3">
+                <Checkbox id={"publish-" + selectedReport.id} className="mt-1" checked={publishPhotos[selectedReport.id] === true}
+                  onCheckedChange={value => setPublishPhotos(p => ({ ...p, [selectedReport.id]: value === true }))} />
+                <label htmlFor={"publish-" + selectedReport.id} className="text-small text-slate-700">
+                  <strong className="block font-semibold text-slate-900">Public visibility</strong>
+                  Also show this photo to residents after approval. Only if it shows no faces, number plates or private details.
+                </label>
+              </div> : <p className="min-w-0 flex-1 text-caption text-slate-600">Approval means a person checked this fictional report, not that the hazard is verified.</p>}
+              <ShortcutHelp />
             </div>
-          </div> : <p className="mt-auto border-t border-slate-100 px-5 py-4 text-small text-slate-600 sm:px-7">
+          </div> : <p className="mt-auto border-t border-slate-200 px-5 py-4 text-small text-slate-600 sm:px-6">
             Decision recorded in the audit history. Approval does not change any road status.
           </p>}
         </> : <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 py-16 text-center text-slate-600">
           {counts.unverified === 0 && items.length > 0 ? <>
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-100"><CheckIcon size={24} weight="bold" className="text-teal-800" aria-hidden="true" /></span>
+            <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-teal-100"><CheckIcon size={24} weight="bold" className="text-teal-800" aria-hidden="true" /></span>
             <h2 className="mt-1 text-heading font-semibold text-slate-900">All caught up</h2>
-            <p className="max-w-sm text-body">No reports are waiting for a decision. New resident reports appear here as soon as they are sent.</p>
-            <button type="button" onClick={() => void reload()} className={smallButton + " mt-2"}><ArrowClockwiseIcon size={16} aria-hidden="true" />Check for new reports</button>
+            <p className="max-w-sm text-body">No reports are waiting for review. New resident reports appear here as soon as they are sent.</p>
+            <Button variant="secondary" size="sm" onClick={() => void reload()} className="mt-2"><ArrowClockwiseIcon size={16} aria-hidden="true" />Check for new reports</Button>
           </> : <>
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100"><ClipboardTextIcon size={24} className="text-slate-600" aria-hidden="true" /></span>
+            <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100"><ClipboardTextIcon size={24} className="text-slate-600" aria-hidden="true" /></span>
             <h2 className="mt-1 text-heading font-semibold text-slate-900">No report selected</h2>
             <p className="text-body">Choose a report from the list to see its details</p>
           </>}
@@ -425,14 +460,43 @@ export default function V2HazardManager({ operatorKey, onCountsChange }: { opera
   </section>;
 }
 
+/** "today at 16:13", "yesterday at 09:05" or "on 18 November at 11:52", in the operator's clock. */
+function reportedAt(createdAt: string, now: number): string {
+  const at = new Date(createdAt);
+  if (Number.isNaN(at.getTime())) return "";
+  const time = at.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
+  const today = new Date(now); today.setHours(0, 0, 0, 0);
+  if (at.getTime() >= today.getTime()) return `today at ${time}`;
+  if (at.getTime() >= today.getTime() - 86_400_000) return `yesterday at ${time}`;
+  return `on ${at.toLocaleDateString("en-GB", { day: "numeric", month: "long" })} at ${time}`;
+}
+
+/** Keyboard shortcuts, kept out of the way behind a "?" button (they still work without opening it). */
+function ShortcutHelp() {
+  return <Dialog>
+    <DialogTrigger className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-small font-semibold text-slate-700 hover:border-slate-300 hover:text-slate-900 xl:flex" aria-label="Keyboard shortcuts">?</DialogTrigger>
+    <DialogContent>
+      <DialogHeader><DialogTitle>Keyboard shortcuts</DialogTitle>
+        <DialogDescription>They work while the review list is open and you are not typing.</DialogDescription></DialogHeader>
+      <dl className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-3 text-body">
+        <dt><Kbd>J</Kbd> <Kbd>K</Kbd></dt><dd>Next or previous report</dd>
+        <dt><Kbd>A</Kbd></dt><dd>Move to Approve (nothing is saved yet)</dd>
+        <dt><Kbd>R</Kbd></dt><dd>Move to Reject (nothing is saved yet)</dd>
+        <dt><Kbd>Enter</Kbd></dt><dd>Confirm the focused button</dd>
+      </dl>
+      <p className="text-small text-slate-600">A reason of at least {MIN_REASON_LENGTH} characters is needed before either decision.</p>
+    </DialogContent>
+  </Dialog>;
+}
+
 function PhotoSizeButton({ large, onToggle }: { large: boolean; onToggle: () => void }) {
-  const Icon = large ? ArrowsInIcon : ArrowsOutIcon;
-  return <button type="button" onClick={onToggle} aria-label={large ? "Show smaller photo" : "Show larger photo"}
-    className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow-sm hover:bg-white">
-    <Icon size={16} aria-hidden="true" />
+  const Icon = large ? ArrowsInIcon : MagnifyingGlassPlusIcon;
+  return <button type="button" onClick={onToggle} aria-pressed={large}
+    className="absolute bottom-3 right-3 inline-flex h-9 items-center gap-2 rounded-lg bg-white px-3 text-small font-semibold text-slate-900 shadow-sm hover:bg-slate-50">
+    <Icon size={16} aria-hidden="true" />{large ? "Smaller" : "Enlarge"}
   </button>;
 }
 
 function Kbd({ children }: { children: string }) {
-  return <kbd className="rounded bg-slate-100 px-2 py-px font-mono text-caption text-slate-900">{children}</kbd>;
+  return <kbd className="rounded-md border border-b-2 border-slate-300 bg-slate-100 px-2 py-px font-sans text-caption font-medium text-slate-900">{children}</kbd>;
 }

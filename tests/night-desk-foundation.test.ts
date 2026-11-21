@@ -54,5 +54,5 @@ test("page headers are portalled into the shell's navy band", () => {
   assert.match(heading, /createPortal\(band,slot\)/);
   assert.match(heading, /bg-night text-night-text/);
   assert.match(heading, /font-display/);
-  assert.match(read("src/components/management/pages/OverviewPage.tsx"), /actions=\{<Button variant="night"/);
+  assert.match(read("src/components/management/pages/OverviewPage.tsx"), /<Button variant="nightGhost" size="icon"/);
 });
