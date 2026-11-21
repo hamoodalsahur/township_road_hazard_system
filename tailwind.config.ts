@@ -15,6 +15,15 @@ const config: Config = {
         ocean: "#176891",
         mist: "#eef5f8",
       },
+      // Type scale from docs/DESIGN.md section 6 (size, line height). Rebuilt screens use only these.
+      fontSize: {
+        caption: ["13px", "18px"],
+        small: ["14px", "20px"],
+        body: ["16px", "24px"],
+        heading: ["18px", "24px"],
+        title: ["24px", "30px"],
+        display: ["32px", "38px"],
+      },
       fontFamily: {
         sans: ['"Instrument Sans"', "ui-sans-serif", "system-ui", "-apple-system", '"Segoe UI"', "Arial", "sans-serif"],
         mono: ['"IBM Plex Mono"', "ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],

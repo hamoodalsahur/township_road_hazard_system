@@ -17,11 +17,11 @@ type Group = { id: string; title: string; category: string; status: string; crea
 type Data = { metrics: OverviewMetrics; reports: Report[]; groups: Group[]; photos: Record<string, string> | null };
 
 const card = "overflow-hidden rounded-3xl bg-white shadow-md";
-const cardTitle = "flex flex-1 items-center gap-2.5 text-lg font-semibold tracking-tight text-slate-900";
-const countBadge = (hot: boolean) => "rounded-full px-2.5 py-0.5 text-[13px] font-semibold " + (hot ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600");
-const footer = "flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-3.5 text-[13px] text-slate-500 sm:px-6";
-const textLink = "inline-flex min-h-9 items-center gap-1 whitespace-nowrap text-sm font-semibold text-teal-800 hover:underline";
-const rowLink = "flex items-center gap-3 rounded-2xl px-2.5 py-3 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-800";
+const cardTitle = "flex flex-1 items-center gap-2 text-heading font-semibold tracking-tight text-slate-900";
+const countBadge = (hot: boolean) => "rounded-full px-3 py-0.5 text-caption font-medium " + (hot ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600");
+const footer = "flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-4 text-caption text-slate-500 sm:px-6";
+const textLink = "inline-flex min-h-9 items-center gap-1 whitespace-nowrap text-small font-semibold text-teal-800 hover:underline";
+const rowLink = "flex items-center gap-3 rounded-2xl px-3 py-3 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-800";
 
 /** Overview, queue first: what needs a decision comes before anything else. */
 export default function OverviewPage() {
@@ -73,24 +73,24 @@ export default function OverviewPage() {
 
   return <>
     <div className="flex items-start justify-between gap-3">
-      <div className="min-w-0 flex-1"><ManagementSectionHeading section="overview" subtitle={<p className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[15px] text-slate-600" aria-live="polite">
+      <div className="min-w-0 flex-1"><ManagementSectionHeading section="overview" subtitle={<p className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-body text-slate-600" aria-live="polite">
         {error ? "Could not load the overview" : busy && !data ? "Loading the latest reports…" : summary.map((part, index) => <span key={part} className="inline-flex items-center gap-2">
           {index === 0 ? <span aria-hidden="true" className={"h-2 w-2 rounded-full " + (queue?.total ? "bg-slate-900" : "bg-teal-800")} /> : null}
           <span className={index === 0 ? "font-semibold text-slate-900" : ""}>{part}</span>
         </span>)}
       </p>} /></div>
       <button type="button" onClick={() => void reload()} disabled={busy}
-        className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-full bg-white px-3 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-50 disabled:opacity-50 sm:px-4">
-        <ArrowClockwiseIcon size={18} aria-hidden="true" /><span className="sr-only sm:not-sr-only">{busy ? "Loading…" : "Refresh"}</span>
+        className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-full bg-white px-3 text-small font-semibold text-slate-900 shadow-sm hover:bg-slate-50 disabled:opacity-50 sm:px-4">
+        <ArrowClockwiseIcon size={16} aria-hidden="true" /><span className="sr-only sm:not-sr-only">{busy ? "Loading…" : "Refresh"}</span>
       </button>
     </div>
 
-    {error ? <div role="alert" className="flex max-w-2xl gap-3 rounded-2xl bg-rose-50 p-4 text-sm leading-5 text-rose-800">
-      <WarningCircleIcon size={22} weight="bold" className="shrink-0" aria-hidden="true" />
+    {error ? <div role="alert" className="flex max-w-2xl gap-3 rounded-2xl bg-rose-50 p-4 text-small leading-5 text-rose-800">
+      <WarningCircleIcon size={20} weight="bold" className="shrink-0" aria-hidden="true" />
       <div>
         <p className="font-semibold text-rose-950">Could not load the overview. Nothing is shown so you don&apos;t act on out-of-date information.</p>
         <p className="mt-1">{error}</p>
-        <button type="button" onClick={() => void reload()} className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-white px-3.5 text-[13px] font-semibold text-slate-900 shadow-sm"><ArrowClockwiseIcon size={16} aria-hidden="true" />Try again</button>
+        <button type="button" onClick={() => void reload()} className="mt-3 inline-flex min-h-9 items-center gap-2 rounded-full bg-white px-4 text-caption font-semibold text-slate-900 shadow-sm"><ArrowClockwiseIcon size={16} aria-hidden="true" />Try again</button>
       </div>
     </div> : null}
 
@@ -102,78 +102,78 @@ export default function OverviewPage() {
       <section className={card} aria-labelledby="needs-decision">
         <div className="flex items-center gap-3 px-5 pb-2 pt-5 sm:px-6">
           <h2 id="needs-decision" className={cardTitle}>Needs your decision <span className={countBadge(queue.total > 0)}>{queue.total}</span></h2>
-          {queue.total > 0 ? <Link href={startLink} className="hidden min-h-11 items-center gap-2 rounded-full bg-teal-800 px-5 text-sm font-semibold text-white hover:bg-teal-700 sm:inline-flex">
+          {queue.total > 0 ? <Link href={startLink} className="hidden min-h-11 items-center gap-2 rounded-full bg-teal-800 px-5 text-small font-semibold text-white hover:bg-teal-700 sm:inline-flex">
             Start reviewing<ArrowRightIcon size={16} aria-hidden="true" /></Link> : null}
         </div>
         {queue.total === 0 ? <div className="flex items-center gap-4 px-5 pb-5 pt-2 sm:px-6">
-          <span className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl bg-teal-100"><CheckIcon size={26} weight="bold" className="text-teal-800" aria-hidden="true" /></span>
-          <div><h3 className="text-lg font-semibold text-slate-900">All caught up</h3>
-            <p className="text-[15px] text-slate-600">No reports are waiting for a decision. New resident reports appear here as soon as they are sent.</p></div>
-        </div> : <ul className="px-3 pb-2 sm:px-3.5">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-teal-100"><CheckIcon size={24} weight="bold" className="text-teal-800" aria-hidden="true" /></span>
+          <div><h3 className="text-heading font-semibold text-slate-900">All caught up</h3>
+            <p className="text-body text-slate-600">No reports are waiting for a decision. New resident reports appear here as soon as they are sent.</p></div>
+        </div> : <ul className="px-3 pb-2 sm:px-4">
           {queue.items.map(({ report, wait, overADay }) => <li key={report.id} className="border-b border-slate-100 last:border-0">
             <Link href={reportLink(report.id)} className={rowLink}>
               <HazardMarker category={report.category} impact={report.impact} reviewState={report.reviewState} size={34} decorative />
               <span className="min-w-0 flex-1">
-                <strong className="block text-[15px] font-semibold text-slate-900">{categoryLabel(report.category)}</strong>
-                <span className="mb-1.5 mt-0.5 block truncate text-sm text-slate-600">{report.description}</span>
+                <strong className="block text-body font-semibold text-slate-900">{categoryLabel(report.category)}</strong>
+                <span className="mb-2 mt-1 block truncate text-small text-slate-600">{report.description}</span>
                 <span className="flex items-center gap-2"><SeverityChip impact={report.impact} />
-                  {data.photos?.[report.id] && data.photos[report.id] !== "none" ? <span className="inline-flex items-center gap-1 text-xs text-slate-500"><CameraIcon size={14} aria-hidden="true" />Photo</span> : null}</span>
+                  {data.photos?.[report.id] && data.photos[report.id] !== "none" ? <span className="inline-flex items-center gap-1 text-caption text-slate-500"><CameraIcon size={14} aria-hidden="true" />Photo</span> : null}</span>
               </span>
               <span className="flex min-w-[76px] flex-col items-end text-right">
-                <time dateTime={report.createdAt} title={new Date(report.createdAt).toLocaleString()} className={"font-mono text-sm text-slate-900 " + (overADay ? "font-semibold" : "")}>{wait}</time>
-                <span className="text-xs text-slate-500">{overADay ? "waiting · over a day" : "waiting"}</span>
+                <time dateTime={report.createdAt} title={new Date(report.createdAt).toLocaleString()} className={"font-mono text-small text-slate-900 " + (overADay ? "font-semibold" : "")}>{wait}</time>
+                <span className="text-caption text-slate-500">{overADay ? "waiting · over a day" : "waiting"}</span>
               </span>
-              <CaretRightIcon size={18} className="shrink-0 text-slate-400" aria-hidden="true" />
+              <CaretRightIcon size={16} className="shrink-0 text-slate-400" aria-hidden="true" />
             </Link>
           </li>)}
         </ul>}
         {queue.total > 0 ? <div className="px-5 pb-4 sm:hidden">
-          <Link href={startLink} className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-teal-800 text-[15px] font-semibold text-white">Start reviewing<ArrowRightIcon size={16} aria-hidden="true" /></Link>
+          <Link href={startLink} className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-teal-800 text-body font-semibold text-white">Start reviewing<ArrowRightIcon size={16} aria-hidden="true" /></Link>
         </div> : null}
         <div className={footer}>
           <span>{queue.more ? `${queue.more} more waiting. ` : ""}{queue.total ? "Oldest first. Opening a report takes you to it in Incidents." : "Checked just now."}</span>
-          <Link href="/management/incidents#report-review" className={textLink}>All reports<CaretRightIcon size={15} aria-hidden="true" /></Link>
+          <Link href="/management/incidents#report-review" className={textLink}>All reports<CaretRightIcon size={16} aria-hidden="true" /></Link>
         </div>
       </section>
 
       <div className="flex flex-col gap-5">
         <section className={card} aria-labelledby="groups-under-review">
           <div className="px-5 pb-2 pt-5 sm:px-6"><h2 id="groups-under-review" className={cardTitle}>Incident groups under review <span className={countBadge(false)}>{groups.total}</span></h2></div>
-          {groups.total === 0 ? <p className="px-5 pb-5 text-sm text-slate-600 sm:px-6">No incident groups are under review.</p> : <ul className="px-3 pb-2">
+          {groups.total === 0 ? <p className="px-5 pb-5 text-small text-slate-600 sm:px-6">No incident groups are under review</p> : <ul className="px-3 pb-2">
             {groups.items.map(group => <li key={group.id} className="border-b border-slate-100 last:border-0">
-              <Link href={groupLink(group.id)} className={rowLink + " py-2.5"}>
-                <HazardMarker category={group.category} impact={highestSeverity(group.reports.map(link => link.report.impact)).key} reviewState="unverified" size={26} decorative />
-                <span className="min-w-0 flex-1"><strong className="block truncate text-[15px] font-semibold text-slate-900">{group.title}</strong>
-                  <span className="text-[13px] text-slate-500">{group.reports.length} {group.reports.length === 1 ? "report" : "reports"} · opened {formatAge(group.createdAt, now)} ago</span></span>
+              <Link href={groupLink(group.id)} className={rowLink + " py-2"}>
+                <HazardMarker category={group.category} impact={highestSeverity(group.reports.map(link => link.report.impact)).key} reviewState="unverified" size={24} decorative />
+                <span className="min-w-0 flex-1"><strong className="block truncate text-body font-semibold text-slate-900">{group.title}</strong>
+                  <span className="text-caption text-slate-500">{group.reports.length} {group.reports.length === 1 ? "report" : "reports"} · opened {formatAge(group.createdAt, now)} ago</span></span>
                 <CaretRightIcon size={16} className="shrink-0 text-slate-400" aria-hidden="true" />
               </Link>
             </li>)}
           </ul>}
           <div className={footer}><span>{groups.more ? `${groups.more} more under review.` : ""}</span>
-            <Link href="/management/incidents#incident-groups" className={textLink}>Open incident groups<CaretRightIcon size={15} aria-hidden="true" /></Link></div>
+            <Link href="/management/incidents#incident-groups" className={textLink}>Open incident groups<CaretRightIcon size={16} aria-hidden="true" /></Link></div>
         </section>
 
         <section className={card} aria-labelledby="recent-reports">
           <div className="px-5 pb-2 pt-5 sm:px-6"><h2 id="recent-reports" className={cardTitle}>Recent reports</h2></div>
-          {recent.length === 0 ? <p className="px-5 pb-5 text-sm text-slate-600 sm:px-6">No reports yet.</p> : <ul className="px-3 pb-2">
+          {recent.length === 0 ? <p className="px-5 pb-5 text-small text-slate-600 sm:px-6">No reports yet</p> : <ul className="px-3 pb-2">
             {recent.map(report => <li key={report.id} className="border-b border-slate-100 last:border-0">
-              <Link href={reportLink(report.id)} className={rowLink + " py-2.5"}>
-                <HazardMarker category={report.category} impact={report.impact} reviewState={report.reviewState} size={26} decorative />
-                <span className="min-w-0 flex-1"><strong className="block text-[15px] font-semibold text-slate-900">{categoryLabel(report.category)}</strong>
-                  <time dateTime={report.createdAt} className="text-[13px] text-slate-500">{formatAge(report.createdAt, now)} ago</time></span>
+              <Link href={reportLink(report.id)} className={rowLink + " py-2"}>
+                <HazardMarker category={report.category} impact={report.impact} reviewState={report.reviewState} size={24} decorative />
+                <span className="min-w-0 flex-1"><strong className="block text-body font-semibold text-slate-900">{categoryLabel(report.category)}</strong>
+                  <time dateTime={report.createdAt} className="text-caption text-slate-500">{formatAge(report.createdAt, now)} ago</time></span>
                 <ReviewStateChip reviewState={report.reviewState} />
               </Link>
             </li>)}
           </ul>}
-          <div className={footer}><span /><Link href="/management/incidents#report-review" className={textLink}>View all reports<CaretRightIcon size={15} aria-hidden="true" /></Link></div>
+          <div className={footer}><span /><Link href="/management/incidents#report-review" className={textLink}>View all reports<CaretRightIcon size={16} aria-hidden="true" /></Link></div>
         </section>
       </div>
     </div> : null}
 
     <details className="group mt-5 rounded-2xl bg-white shadow-sm">
-      <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-5 text-[15px] font-semibold text-slate-900 sm:px-6">
+      <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-5 text-body font-semibold text-slate-900 sm:px-6">
         <CaretRightIcon size={16} className="transition-transform group-open:rotate-90" aria-hidden="true" />Review ages and operator activity
-        <span className="text-[13px] font-normal text-slate-500">Advanced · read-only counts</span>
+        <span className="text-caption font-normal text-slate-500">Advanced · read-only counts</span>
       </summary>
       <div className="grid items-start gap-4 px-5 pb-5 sm:px-6 xl:grid-cols-2"><ReviewAgeQueue operatorKey={operatorKey} /><OperatorAuditSummary operatorKey={operatorKey} /></div>
     </details>

@@ -16,14 +16,14 @@ export default function IncidentRoadCandidates({id,operatorKey}:{id:string;opera
  }
  return <section className="mt-3">
   <div className="flex flex-wrap items-center justify-between gap-2">
-   <div><p className="text-[13px] text-slate-600">Read-only comparison with unverified OpenStreetMap lines. It does not update road conditions.</p></div>
-   <button type="button" disabled={busy} onClick={()=>void inspect()} className="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-full bg-white px-3.5 text-[13px] font-semibold text-slate-900 shadow-[inset_0_0_0_1px_#E6E9E7] hover:bg-slate-50 disabled:opacity-50">{busy?"Checking…":"Inspect nearby road lines"}</button>
+   <div><p className="text-caption text-slate-600">Read-only comparison with unverified OpenStreetMap lines. It does not update road conditions.</p></div>
+   <button type="button" disabled={busy} onClick={()=>void inspect()} className="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-full bg-white px-4 text-caption font-semibold text-slate-900 shadow-[inset_0_0_0_1px_#E6E9E7] hover:bg-slate-50 disabled:opacity-50">{busy?"Checking…":"Inspect nearby road lines"}</button>
   </div>
-  {error?<p role="alert" className="mt-2 text-xs text-rose-900">{error}</p>:null}
+  {error?<p role="alert" className="mt-2 text-caption text-rose-900">{error}</p>:null}
   {data?<div className="mt-3 space-y-2">
-   <p className="text-xs font-semibold text-slate-900">Compared {data.reportLocations} fictional report locations against {data.roadFeaturesScanned} locally imported OSM road lines.</p>
-   {data.candidates.length===0?<p className="text-xs">No mapped road lines found within 150 m of the available report points.</p>:null}
-   <ul className="space-y-2">{data.candidates.map(road=><li key={road.id} className="rounded-lg border border-slate-200 bg-white p-2 text-xs">
+   <p className="text-caption font-semibold text-slate-900">Compared {data.reportLocations} fictional report locations against {data.roadFeaturesScanned} locally imported OSM road lines.</p>
+   {data.candidates.length===0?<p className="text-caption">No mapped road lines found within 150 m of the available report points.</p>:null}
+   <ul className="space-y-2">{data.candidates.map(road=><li key={road.id} className="rounded-lg border border-slate-200 bg-white p-2 text-caption">
     <strong>{road.name}</strong> · {road.highway.replaceAll("_"," ")} · approximately {road.distanceMetres} m from a report
     <p className="mt-1"><a href={road.sourceUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-teal-800 underline">View original OSM way</a> · {road.id} · unverified geometry</p>
     <div className="mt-2 rounded border border-slate-200 bg-slate-50 p-2">
@@ -43,10 +43,10 @@ export default function IncidentRoadCandidates({id,operatorKey}:{id:string;opera
           ["tunnel",road.sourceReview.tunnel],["layer",road.sourceReview.layer]
         ] as const).filter(([,value])=>value!==null).map(([label,value])=><span key={label} className="ml-2 inline-block">{label}={value}</span>)}
       </p>
-      <ul className="mt-1 list-disc space-y-0.5 pl-4">{road.sourceReview.reviewNotes.map(note=><li key={note}>{note}</li>)}</ul>
+      <ul className="mt-1 list-disc space-y-1 pl-4">{road.sourceReview.reviewNotes.map(note=><li key={note}>{note}</li>)}</ul>
     </div>
    </li>)}</ul>
-   <p className="text-xs leading-5 text-slate-900">{data.disclaimer}</p>
+   <p className="text-caption leading-5 text-slate-900">{data.disclaimer}</p>
   </div>:null}
  </section>;
 }

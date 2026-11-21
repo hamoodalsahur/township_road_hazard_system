@@ -6,7 +6,7 @@ export default function ManagementSectionHeading({section,subtitle}:{section:Man
   const item=MANAGEMENT_SECTIONS.find(x=>x.id===section);
   if(!item)return null;
   return <div className="mb-6">
-    <h1 className="text-[32px] font-semibold leading-[38px] tracking-[-0.03em] text-slate-900">{item.label}</h1>
-    {subtitle??<p className="mt-1.5 max-w-3xl text-[15px] text-slate-600">{item.description}</p>}
+    <h1 className="text-display font-semibold tracking-[-0.03em] text-slate-900">{item.label}</h1>
+    {subtitle??<p className="mt-2 max-w-3xl text-body text-slate-600">{item.description}</p>}
   </div>;
 }
