@@ -2,7 +2,7 @@
 import { CheckIcon, XIcon } from "@phosphor-icons/react";
 import { LIFECYCLE_STEPS, lifecycleOf, reviewStateOf, severityOf } from "@/lib/hazard-presentation";
 
-const chip = "inline-flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 text-[13px] font-semibold leading-none";
+const chip = "inline-flex h-7 shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 text-caption font-medium leading-none";
 
 /** Severity chip: hazard colour on its tint. Only ever used for hazards. */
 export function SeverityChip({ impact }: { impact: string }) {
@@ -21,7 +21,7 @@ export function ReviewStateChip({ reviewState }: { reviewState: string }) {
     </span>;
   }
   const Icon = reviewState === "rejected" ? XIcon : CheckIcon;
-  return <span className={chip + " bg-slate-100 text-slate-900"}><Icon size={13} weight="bold" aria-hidden="true" />{state.label}</span>;
+  return <span className={chip + " bg-slate-100 text-slate-900"}><Icon size={14} weight="bold" aria-hidden="true" />{state.label}</span>;
 }
 
 /** Plain status chip for incident groups. */
@@ -43,7 +43,7 @@ export function LifecycleTrack({ reviewState, incidentStatus }: { reviewState: s
           (done ? "bg-slate-900" : now ? "border-2 border-slate-900 bg-white" : "border-2 border-slate-200 bg-white")}>
           {done ? <CheckIcon size={11} weight="bold" color="#FFFFFF" /> : now ? <span className="h-2 w-2 rounded-full bg-slate-900" /> : null}
         </span>
-        <span className={"mt-1.5 block pr-2 text-[13px] leading-[18px] " + (now ? "font-semibold text-slate-900" : done ? "text-slate-900" : "text-slate-500")}>
+        <span className={"mt-2 block pr-2 text-caption " + (now ? "font-semibold text-slate-900" : done ? "text-slate-900" : "text-slate-500")}>
           {labels[index]}{done ? <span className="sr-only"> (done)</span> : now ? <span className="sr-only"> (current step)</span> : null}
         </span>
       </li>;

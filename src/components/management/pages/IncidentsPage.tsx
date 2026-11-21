@@ -41,9 +41,9 @@ export default function IncidentsPage() {
     choose(next);
     document.getElementById("tab-" + next)?.focus();
   }
-  const tabClass = (id: Tab) => "flex min-h-11 items-center gap-2 whitespace-nowrap text-[15px] font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-800 " +
+  const tabClass = (id: Tab) => "flex min-h-11 items-center gap-2 whitespace-nowrap text-body font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-800 " +
     (tab === id ? "text-slate-900 shadow-[inset_0_-2.5px_0_#0B7350]" : "text-slate-600 hover:text-slate-900");
-  const count = (n: number | null) => n === null ? null : <span className="rounded-full bg-slate-100 px-2 text-xs font-semibold text-slate-600">{n}</span>;
+  const count = (n: number | null) => n === null ? null : <span className="rounded-full bg-slate-100 px-2 text-caption font-medium text-slate-600">{n}</span>;
 
   return <>
     <ManagementSectionHeading section="incidents" />
@@ -53,7 +53,7 @@ export default function IncidentsPage() {
       <button type="button" role="tab" id="tab-incident-groups" aria-selected={tab === "incident-groups"} aria-controls="incident-groups" tabIndex={tab === "incident-groups" ? 0 : -1}
         onClick={() => choose("incident-groups")} className={tabClass("incident-groups")}>Incident groups{count(underReview)}</button>
       <button type="button" role="tab" id="tab-simulator-reports" aria-selected={tab === "simulator-reports"} aria-controls="simulator-reports" tabIndex={tab === "simulator-reports" ? 0 : -1}
-        onClick={() => choose("simulator-reports")} className={tabClass("simulator-reports") + " ml-auto text-sm font-medium"}>Older simulator reports</button>
+        onClick={() => choose("simulator-reports")} className={tabClass("simulator-reports") + " ml-auto text-small font-medium"}>Older simulator reports</button>
     </div>
     <section id="report-review" role="tabpanel" aria-labelledby="tab-report-review" hidden={tab !== "report-review"} className="scroll-mt-28">
       <V2HazardManager operatorKey={operatorKey} onCountsChange={setNeedsReview} />
@@ -62,7 +62,7 @@ export default function IncidentsPage() {
       <IncidentManager operatorKey={operatorKey} onCountsChange={setUnderReview} />
     </section>
     <section id="simulator-reports" role="tabpanel" aria-labelledby="tab-simulator-reports" hidden={tab !== "simulator-reports"} className="scroll-mt-28">
-      <p className="mb-4 max-w-3xl text-[15px] leading-6 text-slate-600">Historical simulator reports, kept for the original schematic road-network demonstration. They are separate from resident reports and incident groups.</p>
+      <p className="mb-4 max-w-3xl text-body leading-6 text-slate-600">Historical simulator reports, kept for the original schematic road-network demonstration. They are separate from resident reports and incident groups.</p>
       <ReportWorkspace view="management" operatorKey={operatorKey} />
     </section>
   </>;

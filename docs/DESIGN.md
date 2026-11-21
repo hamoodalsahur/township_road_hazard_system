@@ -1,7 +1,8 @@
 # Design direction
 
-**Status:** approved by the owner on 9 November 2026. Style updated on 10 November 2026: the owner chose **Crisp Modern** for the light theme and **Night Ops** for dark mode, from four mockup options. The order of work is in [roadmap.md](roadmap.md), phases 1, 3 and 4.
-**Reference mockups:** [design/reference-crisp-modern.png](design/reference-crisp-modern.png) (light) and [design/reference-night-ops-dark.png](design/reference-night-ops-dark.png) (dark). Incidents screen, approved 10 November 2026: [desktop](design/incidents-review-desktop.png) and [phone](design/incidents-review-phone.png). Overview, approved the same day: [desktop](design/overview-desktop.png). When this file and a mockup disagree, this file wins.
+**Status:** approved by the owner on 9 November 2026. Style updated on 10 November 2026 (**Crisp Modern** light theme, **Night Ops** dark mode) and again on **21 November 2026**, when the owner chose **Night Desk** from six mockup options: navy chrome (top bar and page headers) around a light work area, set in Barlow. Night Desk replaces Crisp Modern; Night Ops stays the plan for a full dark mode. The order of work is in [roadmap.md](roadmap.md), phases 1, 3 and 4.
+**Reference mockups (current, Night Desk):** [overview](design/night-desk/1-overview.png), [incidents](design/night-desk/2-incidents.png), [maps](design/night-desk/3-maps.png), [evidence](design/night-desk/4-evidence.png), [system](design/night-desk/5-system.png), [operator phone](design/night-desk/6-phone-operator.png) and [resident phone](design/night-desk/7-phone-resident.png), approved 21 November 2026. The resident phone screens preview later roadmap steps (4.3 and 6).
+**Earlier mockups (superseded):** [design/reference-crisp-modern.png](design/reference-crisp-modern.png) (light) and [design/reference-night-ops-dark.png](design/reference-night-ops-dark.png) (dark). Incidents screen, approved 10 November 2026: [desktop](design/incidents-review-desktop.png) and [phone](design/incidents-review-phone.png). Overview, approved the same day: [desktop](design/overview-desktop.png). When this file and a mockup disagree, this file wins.
 **Applies to:** the management website, the resident website (this repository) and the resident mobile app (`township_system_mobile`).
 **Written:** 9 November 2026, against `main` at `71f6b50` (web) and `c8dfbdf` (mobile).
 
@@ -76,26 +77,43 @@ This makes "how sure are we" readable at a glance and does not rely on colour vi
 
 ### Roles
 
-- **Neutrals** carry the interface.
-- **Green** marks actions, selection and focus.
+- **Navy (night chrome)** frames every screen: the top bar and the page header. Primary buttons are navy too.
+- **Neutrals** carry the light work area where reports, photos and decisions live.
+- **Jade green** marks positive decisions (Approve), links and focus. **Mint** marks the current page and the "now" line on the night chrome only.
 - **The severity scale** is for hazards only.
 
 Nothing else gets a colour.
 
-### Light theme (Crisp Modern)
+### Night chrome (Night Desk)
+
+Tailwind: `night-*` (`src/lib/design-tokens.ts`, `NIGHT`).
 
 | Token | Hex | Use | Why |
 | --- | --- | --- | --- |
-| `page` | `#F6F7F6` | Page background, sidebar, map surround | Cool, airy off-white; white cards stand out on it without borders |
-| `surface` | `#FFFFFF` | Panels, cards, inputs | Content sits on clean white |
-| `sunken` | `#F0F2F1` | Wells, fact boxes, filter chips | Recessed without needing a border |
-| `line` | `#E6E9E7` | Dividers, where a line is still needed | Structure without weight; most separation comes from shadow and space |
-| `field` | `#848D89` | Input and checkbox borders, decorative icons | Meets 3:1 for interactive boundaries |
-| `ink` | `#0F1513` | Main text | Near-black with a green cast, matching the jade |
-| `muted` | `#45514C` | Secondary text | Readable on every background |
-| `subtle` | `#56625C` | Hints, timestamps | Lightest text allowed, still AA on every background |
-| `jade` | `#0B7350` | Primary buttons, links, selection, focus ring | A fresher take on the Malaysian expressway sign green: still means "go and trust", but feels current |
-| `jade-tint` / `jade-text` | `#E3F4EC` / `#064E36` | Selected rows, active filters | Selection without shouting |
+| `bar` | `#0B131B` | Top bar, sign-in page | The darkest step, so the bar reads as a frame, not content |
+| `band` (`night`) | `#0E1720` | Page headers, the Overview hero, primary buttons | Navy instead of black: calm, official, and it lets white type sit large |
+| `raised` | `#1A2733` | Buttons and search fields on the chrome | One step up from the band |
+| `line` / `edge` | `#1F2C38` / `#2A3946` | Bar border / control borders on the chrome | Structure without glare |
+| `text` | `#E4ECF2` | Main text on the chrome | Softer than pure white over large areas |
+| `muted` / `subtle` | `#9FB0BE` / `#7E91A3` | Summaries / hour ticks and hints on the chrome | Both pass AA on `band` and `bar` |
+| `mint` (text on it: `#0B1F17`) | `#7FD4AE` | Current page underline, Incidents badge, the "now" line | The jade family, lifted so it shows on navy |
+
+### Light work area (Night Desk)
+
+Tailwind keeps the `slate` class names for these, so older screens follow automatically.
+
+| Token | Hex | Use | Why |
+| --- | --- | --- | --- |
+| `page` | `#F2F4F6` | Work-area background, map surround | Cool blue-grey that matches the navy above it |
+| `surface` | `#FFFFFF` | Cards, panels, inputs | Content sits on clean white |
+| `sunken` | `#EEF1F3` | Wells, fact boxes, filter chips | Recessed without needing a border |
+| `line` | `#E1E6EA` | Card borders and dividers | Night Desk uses a hairline border on cards instead of a shadow |
+| `field` | `#7D8995` | Input and checkbox borders, decorative icons | Meets 3:1 for interactive boundaries |
+| `ink` | `#111820` | Main text | Near-black with the navy's blue cast |
+| `muted` | `#46525E` | Secondary text | Readable on every background |
+| `subtle` | `#5A6672` | Hints, timestamps | Lightest text allowed, still AA on every background |
+| `jade` | `#0B7350` | Approve, links, focus ring | The Malaysian expressway sign green: "go and trust" |
+| `jade-tint` / `jade-text` | `#E3F4EC` / `#064E36` | Active filters where a tint is needed | Selection without shouting |
 
 ### Severity scale (hazards only)
 
@@ -137,14 +155,15 @@ Every text and background pair above passes WCAG AA: 4.5:1 for text, and 3:1 for
 
 | Role | Family | Why |
 | --- | --- | --- |
-| Everything | **Instrument Sans** (OFL licence) | A clean, current sans with open shapes and clear numerals. It gives the product a modern voice without being one of the over-used defaults (Inter, Roboto). |
-| Coordinates, report IDs, times in tables | **IBM Plex Mono** | Fixed width, so numbers line up in columns; distinct 0/O and 1/l |
+| Interface text | **Barlow** (OFL licence) | Drawn from the lettering of road signs and number plates, so it suits a road-reporting tool; slightly narrow, which fits long report descriptions and wait times on a phone |
+| Page titles, headlines, big numbers such as wait times (`font-display`) | **Barlow Semi Condensed** | The same family, narrower and firmer: headlines read as signage without a second voice |
+| Coordinates, report IDs | **IBM Plex Mono** | Fixed width; distinct 0/O and 1/l |
 
-Chosen with the Crisp Modern style on 10 November 2026, replacing Atkinson Hyperlegible. To keep legibility high, body text is never below 15 px on desktop or 16 px on phones, and weights stay at 400 or more.
+Chosen with Night Desk on 21 November 2026, replacing Instrument Sans (Crisp Modern, 10 November) and Atkinson Hyperlegible before that. Body text is never below 15 px on desktop or 16 px on phones, and weights stay at 400 or more. Numbers that are compared (wait times, counts, clock) use tabular figures (`tabular-nums`).
 
 Packages, all checked on npm:
-- **Web:** `@fontsource/instrument-sans`, `@fontsource/ibm-plex-mono`
-- **Mobile:** `@expo-google-fonts/instrument-sans`, `@expo-google-fonts/ibm-plex-mono`
+- **Web:** `@fontsource/barlow`, `@fontsource/barlow-semi-condensed`, `@fontsource/ibm-plex-mono`
+- **Mobile (later):** `@expo-google-fonts/barlow`, `@expo-google-fonts/barlow-semi-condensed`, `@expo-google-fonts/ibm-plex-mono`
 
 ### Scale (px, line height in brackets)
 
@@ -159,7 +178,7 @@ Packages, all checked on npm:
 
 - **Sentence case everywhere.**
 - **No uppercase labels with wide letter-spacing, and no small "eyebrow" labels above headings.** The current UI has more than a dozen of these.
-- **Weights:** 400 for text, 600 for labels, buttons and titles. Page titles may use tighter letter-spacing (about -0.03em). Nothing heavier than 700.
+- **Weights:** 400 for text, 500 for navigation and chips, 600 for labels, buttons and titles. Barlow Semi Condensed titles keep normal letter-spacing (the face is already tight). Nothing heavier than 700.
 - **Dynamic Type:** respect the phone's text-size setting on mobile, and test at 130%.
 
 ## 7. Icons and map markers
@@ -195,11 +214,12 @@ Packages, all checked on npm:
 
 ## 8. Shape, space and elevation
 
-- **Radius:**
-  - **10 px:** inputs, small controls.
-  - **Full (pill):** buttons, search fields, filter chips and status chips.
-  - **18 px:** cards and report rows.
-  - **24 px:** large panels and the top corners of mobile bottom sheets.
+- **Radius (Night Desk):**
+  - **10 px:** buttons, inputs, search fields and small controls.
+  - **Full (pill):** filter chips, status chips and severity chips.
+  - **14 px:** cards and report rows (older screens still use 18 px until they are rebuilt).
+  - **24 px:** dialogs and the top corners of mobile bottom sheets.
+- **Components:** built on shadcn/ui (`src/components/ui`), restyled to these tokens. See the README there.
 - **Spacing:** a 4 px base (4, 8, 12, 16, 24, 32, 48). Use 24 or more between unrelated groups and 8 to 12 inside a group, so whitespace shows grouping.
 - **Elevation:**
   - **Soft layered shadows** separate cards and panels from the page, instead of outlines. Three levels: `sm` (cards, rows), `md` (panels), `lg` (layers floating over the map: sheets, popovers, map controls).
@@ -212,7 +232,11 @@ Packages, all checked on npm:
 
 ### Management website
 
-- **Keep the left sidebar.** It is real navigation across six sections. On narrow screens it becomes a top bar with a menu.
+- **Frame (Night Desk, built 21 November 2026):**
+  - A navy **top bar** with the six sections, the Incidents count in mint, a "Demo data" note, Resident view and Log out. It replaces the left sidebar, giving the work area the full width.
+  - A navy **page header** under it on every page: title, a live one-line summary, actions on the right (Refresh, search) and, where a page has them, tabs along its bottom edge.
+  - **Phones:** the top bar keeps only the name and the demo note; a white **bottom tab bar** has Overview, Incidents and Maps, and "More" opens a bottom sheet with Evidence, AI & Research, System & Audit, Resident view and Log out.
+- **Overview, next (roadmap step 4, part 2):** the header becomes a hero with a headline sentence ("3 reports are waiting for you. The oldest…"), the clock and **today's timeline** of reports with a "now" line; below it the decision cards with large wait times, groups under review and a short shift log, and a larger "Where" map.
 - **Overview, queue first:**
   - The first block is "Needs your decision", listing reports oldest first, with their age and severity.
   - The four stat cards shrink to a single summary line. They are not decisions.
@@ -352,6 +376,9 @@ These were accepted earlier and are replaced here. The owner approved the replac
 | Inter font | Instrument Sans (Atkinson Hyperlegible on 9 Nov; replaced on 10 Nov when Crisp Modern was chosen) |
 | Bordered panels on a warm paper background (first proposal, 9 Nov) | Crisp Modern: white cards with soft shadows on a cool off-white page; Night Ops dark mode |
 | Simulation on the resident page | Simulation moved to management, under Maps |
+| Crisp Modern light theme: shadow-only white cards on `#F6F7F6`, Instrument Sans (10 Nov) | Night Desk: navy top bar and page headers, light work area with hairline-bordered cards, Barlow (21 Nov) |
+| Left sidebar navigation | Navy top bar on desktop, bottom tab bar with "More" on phones (21 Nov) |
+| Pill-shaped buttons in jade | 10 px buttons: navy for the main action, jade only for Approve (21 Nov) |
 
 ## 15. Rollout
 

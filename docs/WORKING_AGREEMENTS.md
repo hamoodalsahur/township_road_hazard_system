@@ -120,7 +120,9 @@ Phases 0 and 1 are done. The incident review half of roadmap step 4.2 was brough
 
 The Overview (the other half of 4.2) and step 2.1 (service area) followed the same day. Next is **step 2.2**: move to Postgres. For decision G2, Postgres with PostGIS in Docker on the owner's PC was recommended on 21 Nov 2026 as the easier option, with Supabase kept for hosting later. It needs the owner's confirmation and a short plan first, because it involves a one-way copy of the owner's `dev.db`, which must only ever be read.
 
-The design audit of 21 Nov 2026 found fixes for the Overview and Incidents screens (group A in the audit), which can be done as a small PR before or after 2.2.
+On 21 Nov 2026 the owner chose the **Night Desk** look and asked for it before 2.2. It is built in four PRs: foundation (with the audit fixes folded in), Overview, Incidents, then the remaining pages. Step 2.2 (Postgres in Docker, confirmed by the owner) follows, with a short plan first, because it involves a one-way copy of the owner's `dev.db`, which must only ever be read.
+
+**Identity on GitHub (owner's request, 21 Nov 2026):** commits are authored and committed as the owner, PRs are opened and merged through the owner's account, and no co-author or session trailers are added to commits.
 
 ## 13. Lessons learned
 

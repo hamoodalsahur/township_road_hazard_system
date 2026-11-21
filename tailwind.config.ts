@@ -1,22 +1,33 @@
 import type { Config } from "tailwindcss";
-import { BRAND_GREEN, NEUTRAL, SHADOW } from "./src/lib/design-tokens";
+import { BRAND_GREEN, NEUTRAL, NIGHT, SHADOW } from "./src/lib/design-tokens";
 
 const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
-      // Design direction (docs/DESIGN.md, Crisp Modern): cool neutrals carry the interface and
-      // one jade green marks actions. The existing `slate` and `teal` class names are remapped
-      // so every page takes the new look without layout changes.
+      // Design direction (docs/DESIGN.md, Night Desk): navy chrome frames a light work area,
+      // cool neutrals carry the content and jade green marks positive actions. The existing `slate`
+      // and `teal` class names are remapped so every page takes the new look without layout changes.
       colors: {
         slate: NEUTRAL,
         teal: BRAND_GREEN,
+        night: { ...NIGHT, DEFAULT: NIGHT.band, "on-mint": NIGHT.onMint },
         navy: "#102840",
         ocean: "#176891",
         mist: "#eef5f8",
       },
+      // Type scale from docs/DESIGN.md section 6 (size, line height). Rebuilt screens use only these.
+      fontSize: {
+        caption: ["13px", "18px"],
+        small: ["14px", "20px"],
+        body: ["16px", "24px"],
+        heading: ["18px", "24px"],
+        title: ["24px", "30px"],
+        display: ["32px", "38px"],
+      },
       fontFamily: {
-        sans: ['"Instrument Sans"', "ui-sans-serif", "system-ui", "-apple-system", '"Segoe UI"', "Arial", "sans-serif"],
+        sans: ['"Barlow"', "ui-sans-serif", "system-ui", "-apple-system", '"Segoe UI"', "Arial", "sans-serif"],
+        display: ['"Barlow Semi Condensed"', '"Barlow"', "ui-sans-serif", "system-ui", "sans-serif"],
         mono: ['"IBM Plex Mono"', "ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
       },
       // Controls 10px, cards 18px, large panels and sheets 24px (DESIGN.md section 8).

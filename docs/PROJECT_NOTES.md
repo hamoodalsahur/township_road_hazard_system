@@ -36,7 +36,7 @@ The two are connected only through the website's API over the local network. The
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Management website: six pages (Overview, Incidents, Maps & Simulation, Evidence, AI & Research, System & Audit) | ✅ | Overview and Incidents rebuilt in the new style (roadmap step 4.2). The other pages keep the hackathon layout from PR #85 with the new colours. |
+| Management website: six pages (Overview, Incidents, Maps & Simulation, Evidence, AI & Research, System & Audit) | ✅ | Every page has the Night Desk frame (navy top bar, navy page header, phone tab bar). Overview and Incidents were rebuilt in step 4.2 and get the Night Desk layout next; the other pages keep the hackathon layout from PR #85 inside the new frame. |
 | Management sign-in | ✅ | A shared development key only. **Not real accounts.** |
 | Report review: list and detail, approve or reject with a reason | ✅ | Pinned decision bar, keyboard shortcuts (J/K, A, R, then Enter), next report opens after a decision, works at phone width |
 | Private sample photos with separate approval before anything is public | ✅ | |
@@ -45,9 +45,9 @@ The two are connected only through the website's API over the local network. The
 | Resident web page (map, simulation, practice reports) | ✅ | To be restructured by the design revamp |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 225 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 265 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
-| Design revamp | ⏳ | Direction in `docs/DESIGN.md`. Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
+| Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Foundation done (Barlow, navy chrome, shadcn/ui components, new frame). Next: Overview, Incidents, then the other pages. Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
 | Residents can see the full outcome of a report (including "Resolved") | ❌ | The public reports API does not expose incident status |
 | "My reports" on the resident website | ❌ | |
 | Real user accounts and sign-in | ❌ | |
@@ -77,6 +77,20 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 21 November 2026: Night Desk foundation and the design audit fixes
+- **Why:** the owner asked for a more modern feel. Six directions were mocked up; the owner chose **E2, "dark top, light desk"** (named Night Desk in `DESIGN.md`), with Barlow from the "night shift" option and a larger map. Mockups are in `docs/design/night-desk/`.
+- **What (step 1 of 4):**
+  - **Fonts:** Barlow for text, Barlow Semi Condensed (`font-display`) for titles and big numbers. Instrument Sans removed.
+  - **Colours:** a new `NIGHT` token set (navy chrome, mint for the current page) as Tailwind `night-*`, and cooler blue-grey neutrals for the work area. Contrast pairs added to `tests/design-tokens.test.ts`.
+  - **shadcn/ui:** `components.json`, the `cn` helper (`src/lib/utils.ts`, taught our named text sizes) and Button, Input, Checkbox, Tabs and Dialog in `src/components/ui`, restyled to our tokens with Phosphor icons. The CLI's own colour classes did not work with Tailwind 3, so they were replaced by hand.
+  - **Frame:** a navy top bar replaces the sidebar; each page's title, summary and actions sit in a navy page header (portalled from `ManagementSectionHeading` into a slot in the shell); phones get a bottom tab bar with "More" as a bottom sheet. Sign-in restyled.
+  - **Design audit fixes** from the unslop audit, held since this morning: one type scale, 4 px spacing, icon sizes 14/16/20/24, calmer chips.
+- **Not changed yet:** the inside of each page. Overview, Incidents and the rest are restyled in the next steps.
+- **Checked:**
+  - 265 tests pass; typecheck and production build pass.
+  - Screenshots of the built app at 1440, 1280 and 390 px with mocked data: sign-in, all six pages, the phone "More" sheet. No console errors.
+  - Not checked: a real phone, Safari, and keyboard-only use of the new "More" sheet (Radix handles focus, but it was not tried by hand).
 
 ### 21 November 2026: unslop design audit added to the workflow
 - **What:**

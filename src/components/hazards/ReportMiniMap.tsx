@@ -36,9 +36,9 @@ export default function ReportMiniMap({ longitude, latitude, category, impact, r
       <HazardMarker category={category} impact={impact} reviewState={reviewState} selected decorative size={44} />
     </div>
     {roads !== null && paths.length === 0
-      ? <figcaption className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs text-slate-600">Road lines not loaded</figcaption>
+      ? <figcaption className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-caption text-slate-600">Road lines not loaded</figcaption>
       : null}
-    <span className="absolute bottom-2 right-2 rounded-full bg-white px-2.5 py-0.5 font-mono text-xs text-slate-900">
+    <span className="absolute bottom-2 right-2 rounded-full bg-white px-3 py-0.5 font-mono text-caption text-slate-900">
       {latitude.toFixed(5)}, {longitude.toFixed(5)}
     </span>
   </figure>;

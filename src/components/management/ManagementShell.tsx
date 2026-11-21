@@ -3,11 +3,19 @@
 import Link from "next/link";
 import {usePathname} from "next/navigation";
 import {createContext,useContext,useEffect,useState,type FormEvent,type ReactNode} from "react";
-import {ArrowUpRightIcon,ClipboardTextIcon,GearSixIcon,ImagesIcon,InfoIcon,LockKeyIcon,MapTrifoldIcon,PathIcon,SignOutIcon,SquaresFourIcon,BrainIcon} from "@phosphor-icons/react";
-import {MANAGEMENT_SECTIONS,managementSectionFromPath} from "@/lib/management-sections";
+import {ArrowUpRightIcon,ClipboardTextIcon,GearSixIcon,ImagesIcon,InfoIcon,ListIcon,LockKeyIcon,MapTrifoldIcon,PathIcon,SignOutIcon,SquaresFourIcon,BrainIcon} from "@phosphor-icons/react";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogTrigger} from "@/components/ui/dialog";
+import {HeaderSlotContext} from "@/components/management/header-slot";
+import {MANAGEMENT_SECTIONS,managementSectionFromPath,type ManagementSectionId} from "@/lib/management-sections";
 import {PRODUCT_NAME} from "@/lib/product";
 
 const OperatorKeyContext=createContext<string|null>(null);
+
+/** Phones get a bottom tab bar with the three daily sections; the rest sit under "More". */
+const PHONE_TAB_IDS:readonly ManagementSectionId[]=["overview","incidents","maps"];
+const PHONE_TAB_LABELS:Partial<Record<ManagementSectionId,string>>={maps:"Maps"};
 
 /** Key is kept in React memory only across management child-route transitions.
  * Refresh/logout requires sign-in. Never persist it in a URL, cookie, or browser storage.
@@ -66,61 +74,106 @@ export default function ManagementShell({children}:{children:ReactNode}){
   },[operatorKey]);
 
   const sectionIcons={overview:SquaresFourIcon,incidents:ClipboardTextIcon,maps:MapTrifoldIcon,evidence:ImagesIcon,research:BrainIcon,system:GearSixIcon};
+  // The page header band (navy, under the top bar) is filled by each page's ManagementSectionHeading.
+  const [headerSlot,setHeaderSlot]=useState<HTMLElement|null>(null);
+  const [moreOpen,setMoreOpen]=useState(false);
+  useEffect(()=>{setMoreOpen(false);},[pathname]);
+  const badgeLabel=(n:number)=>`${n} ${n===1?"report needs":"reports need"} review`;
+  const phoneTabs=MANAGEMENT_SECTIONS.filter(section=>PHONE_TAB_IDS.includes(section.id));
+  const moreSections=MANAGEMENT_SECTIONS.filter(section=>!PHONE_TAB_IDS.includes(section.id));
   return <div className="min-h-screen bg-slate-50 text-slate-900">
     {operatorKey ? <OperatorKeyContext.Provider value={operatorKey}>
-      <div className="lg:flex">
-        <aside className="border-b border-slate-200 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-60 lg:shrink-0 lg:flex-col lg:border-b-0 lg:border-r">
-          <Link href="/management" className="flex items-center gap-3 px-4 py-5 text-slate-900" aria-label={`${PRODUCT_NAME} management overview`}>
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-800 text-white"><PathIcon size={22} aria-hidden="true"/></span>
-            <span><strong className="block text-[17px] font-semibold leading-5">{PRODUCT_NAME}</strong><span className="whitespace-nowrap text-[13px] text-slate-500">Management workspace</span></span>
+      <HeaderSlotContext.Provider value={{inShell:true,slot:headerSlot}}>
+      <header className="sticky top-0 z-40 border-b border-night-line bg-night-bar text-night-text">
+        <div className="mx-auto flex h-14 max-w-[1440px] items-center gap-6 px-4 sm:px-8 lg:h-[58px]">
+          <Link href="/management" className="flex shrink-0 items-center gap-3" aria-label={`${PRODUCT_NAME} management overview`}>
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-night-mint text-night-on-mint"><PathIcon size={20} aria-hidden="true"/></span>
+            <span className="font-display text-heading font-semibold">{PRODUCT_NAME}</span>
           </Link>
-          <nav aria-label="Management sections" className="flex gap-1 overflow-x-auto px-3 pb-3 lg:mt-2 lg:flex-col lg:gap-0.5 lg:overflow-visible">
+          <nav aria-label="Management sections" className="hidden h-full items-stretch gap-6 lg:flex">
             {MANAGEMENT_SECTIONS.map(section=>{
-              const Icon=sectionIcons[section.id];
               const badge=section.id==="incidents"&&needsReview?needsReview:null;
-              return <Link key={section.id} href={section.href} aria-current={active===section.id?"page":undefined}
-                className={"flex min-h-11 shrink-0 items-center gap-3 whitespace-nowrap rounded-xl px-3 py-2.5 text-[15px] font-semibold transition-colors "+
-                (active===section.id?"bg-teal-100 text-teal-900":"text-slate-600 hover:bg-slate-50 hover:text-slate-900")}>
-                <Icon size={20} aria-hidden="true"/><span className="flex-1">{section.label}</span>
-                {badge?<span className="flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-slate-900 px-1.5 text-xs font-semibold text-white" aria-label={`${badge} ${badge===1?"report needs":"reports need"} review`}>{badge}</span>:null}
+              const current=active===section.id;
+              return <Link key={section.id} href={section.href} aria-current={current?"page":undefined}
+                className={"flex items-center gap-2 whitespace-nowrap text-body font-medium transition-colors "+
+                (current?"text-white shadow-[inset_0_-3px_0_#7FD4AE]":"text-night-muted hover:text-white")}>
+                {section.label}
+                {badge?<span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-night-mint px-2 text-caption font-semibold text-night-on-mint" aria-label={badgeLabel(badge)}>{badge}</span>:null}
               </Link>;
             })}
           </nav>
-          <p className="mx-4 mb-5 mt-auto hidden px-1 text-xs leading-5 text-slate-500 lg:block">
-            Demo service. Reports are fictional; OSM roads are unverified reference data.
-          </p>
-        </aside>
-        <div className="min-w-0 flex-1">
-          <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-2.5 sm:px-8">
-            <p className="flex items-center gap-2 text-[13px] text-slate-600"><InfoIcon size={16} aria-hidden="true"/>Demo service: fictional reports, not live road conditions.</p>
-            <div className="flex items-center gap-2">
-              <Link href="/resident" className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-slate-100 px-3.5 text-[13px] font-semibold text-slate-900 hover:bg-slate-200">Resident view <ArrowUpRightIcon size={14} aria-hidden="true"/></Link>
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-900" aria-label="Local demo operator">OP</span>
-              <button type="button" onClick={logout} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-slate-100 px-3.5 text-[13px] font-semibold text-slate-900 hover:bg-slate-200"><SignOutIcon size={15} aria-hidden="true"/> Log out</button>
-            </div>
-          </header>
-          <main className="mx-auto max-w-7xl px-5 pb-20 pt-7 sm:px-8">{children}</main>
+          <div className="ml-auto flex items-center gap-2">
+            <span className="hidden items-center gap-2 rounded-full border border-night-edge px-3 py-1 text-caption text-night-muted sm:inline-flex" title="Demo service: fictional reports, not live road conditions">
+              <InfoIcon size={14} aria-hidden="true"/>Demo data<span className="sr-only">: fictional reports, not live road conditions</span>
+            </span>
+            <Button asChild variant="nightGhost" size="sm" className="hidden lg:inline-flex"><Link href="/resident">Resident view <ArrowUpRightIcon size={14} aria-hidden="true"/></Link></Button>
+            <span className="hidden h-9 w-9 items-center justify-center rounded-full bg-night-raised text-caption font-semibold text-night-text lg:flex" aria-label="Local demo operator">OP</span>
+            <Button variant="nightGhost" size="sm" onClick={logout} className="hidden lg:inline-flex"><SignOutIcon size={16} aria-hidden="true"/>Log out</Button>
+            <span className="inline-flex items-center rounded-full border border-night-edge px-3 py-1 text-caption text-night-muted sm:hidden">Demo data</span>
+          </div>
         </div>
-      </div>
+      </header>
+      <div ref={setHeaderSlot}/>
+      <main className="mx-auto max-w-[1440px] px-4 pb-28 pt-6 sm:px-8 lg:pb-16">{children}</main>
+      <nav aria-label="Management sections" className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">
+        <ul className="mx-auto flex max-w-xl">
+          {phoneTabs.map(section=>{
+            const Icon=sectionIcons[section.id];
+            const badge=section.id==="incidents"&&needsReview?needsReview:null;
+            const current=active===section.id;
+            return <li key={section.id} className="flex-1"><Link href={section.href} aria-current={current?"page":undefined}
+              className={"relative flex min-h-16 flex-col items-center justify-center gap-1 text-caption "+(current?"font-semibold text-slate-900":"font-medium text-slate-600")}>
+              <Icon size={24} weight={current?"fill":"regular"} aria-hidden="true"/>{PHONE_TAB_LABELS[section.id]??section.label}
+              {badge?<span className="absolute left-1/2 top-2 ml-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-night px-2 text-caption font-semibold text-white" aria-label={badgeLabel(badge)}>{badge}</span>:null}
+            </Link></li>;
+          })}
+          <li className="flex-1">
+            <Dialog open={moreOpen} onOpenChange={setMoreOpen}>
+              <DialogTrigger className={"flex min-h-16 w-full flex-col items-center justify-center gap-1 text-caption "+(active&&moreSections.some(s=>s.id===active)?"font-semibold text-slate-900":"font-medium text-slate-600")}>
+                <ListIcon size={24} aria-hidden="true"/>More
+              </DialogTrigger>
+              <DialogContent placement="sheet" aria-describedby={undefined}>
+                <DialogHeader><DialogTitle>More</DialogTitle></DialogHeader>
+                <ul className="grid gap-1">
+                  {moreSections.map(section=>{
+                    const Icon=sectionIcons[section.id];
+                    return <li key={section.id}><Link href={section.href} aria-current={active===section.id?"page":undefined}
+                      className={"flex min-h-12 items-center gap-3 rounded-lg px-3 text-body font-medium "+(active===section.id?"bg-slate-100 text-slate-900":"text-slate-700 hover:bg-slate-50")}>
+                      <Icon size={20} aria-hidden="true"/>{section.label}</Link></li>;
+                  })}
+                  <li><Link href="/resident" className="flex min-h-12 items-center gap-3 rounded-lg px-3 text-body font-medium text-slate-700 hover:bg-slate-50"><ArrowUpRightIcon size={20} aria-hidden="true"/>Resident view</Link></li>
+                </ul>
+                <p className="text-caption text-slate-600">Demo service: fictional reports, not live road conditions</p>
+                <Button variant="secondary" onClick={logout}><SignOutIcon size={20} aria-hidden="true"/>Log out</Button>
+              </DialogContent>
+            </Dialog>
+          </li>
+        </ul>
+      </nav>
+      </HeaderSlotContext.Provider>
     </OperatorKeyContext.Provider> :
-      <div className="mx-auto max-w-md px-4 pb-20 pt-16">
-        <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm" aria-label="Management login">
+      <div className="flex min-h-screen flex-col bg-night-bar px-4 pb-16 pt-10 text-night-text sm:pt-16">
+        <div className="mx-auto mb-8 flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-night-mint text-night-on-mint"><PathIcon size={24} aria-hidden="true"/></span>
+          <span className="font-display text-title font-semibold">{PRODUCT_NAME}</span>
+        </div>
+        <section className="mx-auto w-full max-w-md rounded-3xl bg-white p-8 text-slate-900 shadow-lg" aria-label="Management login">
           <div className="mb-6 flex flex-col items-center gap-2 text-center">
-            <div className="rounded-full bg-teal-50 p-3"><LockKeyIcon size={25} className="text-teal-700" aria-hidden="true"/></div>
-            <h1 className="text-2xl font-semibold">Management sign in</h1>
-            <p className="text-sm text-slate-600">Local demonstration operator access</p>
+            <div className="rounded-full bg-slate-100 p-3"><LockKeyIcon size={24} className="text-slate-900" aria-hidden="true"/></div>
+            <h1 className="font-display text-title font-semibold">Management sign in</h1>
+            <p className="text-small text-slate-600">Local demonstration operator access</p>
           </div>
           <form onSubmit={event=>void login(event)} className="space-y-4">
-            <label className="block text-sm font-semibold">Demo password
-              <input type="password" autoComplete="off" required value={password} onChange={event=>setPassword(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-slate-300 p-3" placeholder="Password from your private .env"/>
+            <label className="block text-small font-semibold">Demo password
+              <Input type="password" autoComplete="off" required value={password} onChange={event=>setPassword(event.target.value)}
+                className="mt-2" placeholder="Password from your private .env"/>
             </label>
-            {error?<p role="alert" className="rounded-lg bg-rose-50 p-3 text-sm text-rose-800">{error}</p>:null}
-            <button type="submit" disabled={checking||!password} className="w-full rounded-xl bg-teal-800 px-4 py-3 font-semibold text-white hover:bg-teal-700 disabled:opacity-50">
+            {error?<p role="alert" className="rounded-lg bg-rose-50 p-3 text-small text-rose-800">{error}</p>:null}
+            <Button type="submit" disabled={checking||!password} className="w-full">
               {checking?"Verifying…":"Log in"}
-            </button>
+            </Button>
           </form>
-          <p className="mt-4 text-center text-xs leading-5 text-slate-500">The local demo key is held in memory only. Refreshing requires signing in again.</p>
+          <p className="mt-4 text-center text-caption text-slate-600">The local demo key is held in memory only. Refreshing requires signing in again.</p>
         </section>
       </div>}
   </div>;
