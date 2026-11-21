@@ -36,7 +36,7 @@ The two are connected only through the website's API over the local network. The
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Management website: six pages (Overview, Incidents, Maps & Simulation, Evidence, AI & Research, System & Audit) | ✅ | Every page has the Night Desk frame (navy top bar, navy page header, phone tab bar). Overview and Incidents have the full Night Desk layout (21 Nov 2026); the other pages keep the hackathon layout from PR #85 inside the new frame. |
+| Management website: six pages (Overview, Incidents, Maps & Simulation, Evidence, AI & Research, System & Audit) | ✅ | Every page has the Night Desk frame (navy top bar, navy page header, phone tab bar). Overview, Incidents, Evidence, System & Audit and AI & Research have the Night Desk layout (21 Nov 2026). Maps has the new panel styling; its full-screen layout is next (step 4b). |
 | Management sign-in | ✅ | A shared development key only. **Not real accounts.** |
 | Report review: list and detail, approve or reject with a reason | ✅ | Pinned decision bar, keyboard shortcuts (J/K, A, R, then Enter), next report opens after a decision, works at phone width |
 | Private sample photos with separate approval before anything is public | ✅ | |
@@ -45,9 +45,9 @@ The two are connected only through the website's API over the local network. The
 | Resident web page (map, simulation, practice reports) | ✅ | To be restructured by the design revamp |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 285 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 292 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
-| Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Foundation, Overview and Incidents done. Next: Maps, Evidence, System and AI & Research. Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
+| Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Foundation, Overview, Incidents, Evidence, System and AI & Research done. Next: the full-screen Maps layout (4b). Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
 | Residents can see the full outcome of a report (including "Resolved") | ❌ | The public reports API does not expose incident status |
 | "My reports" on the resident website | ❌ | |
 | Real user accounts and sign-in | ❌ | |
@@ -77,6 +77,19 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 21 November 2026: Evidence, System & Audit, AI & Research in Night Desk (step 4a)
+- **Why:** the last pages of the restyle, following the approved mockups. Maps was split off (4b) because its map code is large and fragile.
+- **Evidence:** a photo grid with filters by who can see each photo (Waiting for a decision, Shown to residents, Operators only, and Needs checking when something is inconsistent). Opening a photo shows it large with its description and a link to that exact report. Storage counts and privacy checks load on arrival in a side panel; every counter is still available under "Every counter". A photo counts as "shown to residents" only when the photo and its report are both approved, the same rule as the resident map. Private photos load with the operator key and are released when the page closes.
+- **System & Audit:** four status cards (service area, data consistency, road data, AI help) and an "Operator actions" table in plain words (Approved, Rejected, Group opened…, with the operator's reason), plus **Export CSV**. The CSV quotes commas and defuses spreadsheet formulas. The detailed diagnostics and the full audit text are kept in collapsible sections.
+- **AI & Research:** the new header and panel styles; no violet notice.
+- **Maps:** the new header, neutral panels, Phosphor icons and type. The map itself and the report form behave as before.
+- **Older panels** (data quality, map source, topology, access tags, audit, research export, AI evaluation, evidence counters) now follow the type rules: no all-caps labels, no bold, no amber or violet boxes.
+- **Removed:** `EvidenceBrowser` (the photo list and detail), replaced by the grid.
+- **Checked:**
+  - 292 tests pass (new: `night-desk-other-pages`); typecheck and production build pass.
+  - Screenshots of all four pages with mocked data at 1440 and 390 px, including the photo dialog. No console errors.
+  - Not checked: a real phone, real photos, and the CSV opened in Excel.
 
 ### 21 November 2026: Overview and Incidents in Night Desk, with the UI/UX handoff points
 - **Why:** step 2 and 3 of the Night Desk restyle, built together at the owner's request. They include the points kept from the owner's UI/UX handoff document (mockups in `docs/design/night-desk/v3-*.png`, approved 21 Nov). The handoff's "Civic Teal" palette was not adopted; the owner chose to keep the darker Night Desk colours.

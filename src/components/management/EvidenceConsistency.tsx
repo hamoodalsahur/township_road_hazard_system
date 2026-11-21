@@ -29,24 +29,23 @@ export default function EvidenceConsistency({operatorKey}:{operatorKey:string}){
   ["Unsupported declared image type",metrics.unsupportedDeclaredMimeType],
   ["Invalid stored image byte count",metrics.invalidStoredByteCount]
  ] as const):[];
- return <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5" aria-label="Fictional evidence consistency audit">
+ return <section className="rounded-xl border border-slate-200 bg-white p-4" aria-label="Fictional evidence consistency audit">
   <div className="flex flex-wrap items-center justify-between gap-3">
-   <div><p className="text-xs font-bold uppercase text-teal-700">Evidence privacy · read-only metadata</p>
-    <h2 className="mt-1 text-xl font-bold">Fictional photo-publication consistency</h2></div>
+   <div><h2 className="font-display text-heading font-semibold">Fictional photo-publication consistency</h2></div>
    <button type="button" disabled={busy} onClick={()=>void inspect()}
-    className="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">
+    className="inline-flex min-h-9 items-center rounded-lg border border-slate-200 bg-white px-4 text-small font-semibold text-slate-900 hover:border-slate-300 disabled:opacity-50">
     {busy?"Checking…":"Inspect evidence safeguards"}</button>
   </div>
-  <p className="mt-2 text-sm text-slate-600">Checks stored fictional review/publication metadata only. It does not open photo contents or change any review, publication or deletion decision.</p>
-  {error?<p role="alert" className="mt-3 text-xs text-rose-800">{error}</p>:null}
+  <p className="mt-2 text-small text-slate-600">Checks stored fictional review/publication metadata only. It does not open photo contents or change any review, publication or deletion decision.</p>
+  {error?<p role="alert" className="mt-3 text-small text-rose-800">{error}</p>:null}
   {metrics?<div className="mt-4 space-y-3">
    <div className="grid grid-cols-2 gap-3 md:grid-cols-3">{values.map(([label,value])=>
-    <div key={label} className="rounded-lg bg-slate-50 p-3">
-     <p className="text-xs text-slate-600">{label}</p>
-     <p className="mt-1 text-xl font-bold">{value}</p>
+    <div key={label} className="rounded-lg bg-slate-100 p-3">
+     <p className="text-caption text-slate-600">{label}</p>
+     <p className="font-display text-heading font-semibold">{value}</p>
     </div>)}</div>
-   <p className="text-xs text-slate-600">One record may trigger several counters; do not add warning categories together.</p>
-   <p className="rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-950">{metrics.disclaimer}</p>
+   <p className="text-caption text-slate-600">One record may trigger several counters; do not add warning categories together.</p>
+   <p className="rounded-lg bg-slate-100 p-3 text-caption leading-5 text-slate-700">{metrics.disclaimer}</p>
   </div>:null}
  </section>;
 }

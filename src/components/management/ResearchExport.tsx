@@ -15,11 +15,11 @@ export default function ResearchExport({operatorKey}:{operatorKey:string}){
  }
  return <section className="mt-6 rounded-xl border border-slate-200 bg-white p-4" aria-label="Demo research export">
   <div className="flex flex-wrap items-center justify-between gap-3">
-   <div><h2 className="font-bold text-slate-900">Fictional incident research export</h2>
-    <p className="mt-1 text-xs text-slate-600">Download report and incident status metadata as CSV for your project evaluation. Excludes photos, free-text descriptions, precise coordinates and operator notes.</p></div>
-   <button type="button" disabled={busy} onClick={()=>void download()} className="rounded-lg border border-teal-400 px-3 py-2 text-xs font-bold text-teal-900 disabled:opacity-50">{busy?"Preparing…":"Download research CSV"}</button>
+   <div><h2 className="font-semibold text-slate-900">Fictional incident research export</h2>
+    <p className="mt-1 text-caption text-slate-600">Download report and incident status metadata as CSV for your project evaluation. Excludes photos, free-text descriptions, precise coordinates and operator notes.</p></div>
+   <button type="button" disabled={busy} onClick={()=>void download()} className="rounded-lg border border-teal-400 px-3 py-2 text-caption font-semibold text-teal-900 disabled:opacity-50">{busy?"Preparing…":"Download research CSV"}</button>
   </div>
-  {error?<p role="alert" className="mt-2 text-xs text-rose-700">{error}</p>:null}
-  <p className="mt-2 text-xs text-amber-900">Local fictional records only. Exported IDs and metadata are for internal coursework and must not be represented as verified public incidents.</p>
+  {error?<p role="alert" className="mt-2 text-caption text-rose-700">{error}</p>:null}
+  <p className="mt-2 text-caption text-slate-700">Local fictional records only. Exported IDs and metadata are for internal coursework and must not be represented as verified public incidents.</p>
  </section>;
 }
