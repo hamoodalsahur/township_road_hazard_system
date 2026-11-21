@@ -22,7 +22,8 @@ test("Incidents uses accessible tabs and keeps the old anchors working", () => {
 });
 
 test("decision buttons sit in a footer that stays visible", () => {
-  assert.match(review, /className="sticky bottom-0 mt-auto/);
+  // On phones it stays just above the bottom tab bar; on wide screens at the bottom of the panel.
+  assert.match(review, /className="sticky bottom-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\]mt-auto[^"]*lg:bottom-0/);
   assert.match(groups, /className="sticky bottom-0 mt-auto/);
 });
 

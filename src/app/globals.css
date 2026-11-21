@@ -18,6 +18,10 @@ a { text-decoration: none; }
   outline: 3px solid #0B7350;
   outline-offset: 3px;
 }
+/* On the navy chrome the jade ring is too dark to see, so focus turns mint there (Night Desk). */
+:where(.bg-night, .bg-night-bar, .bg-night-raised) :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline-color: #7FD4AE;
+}
 ::selection { background: #E3F4EC; color: #064E36; }
 .leaflet-container { font-family: inherit; }
 @media (prefers-reduced-motion: reduce) {

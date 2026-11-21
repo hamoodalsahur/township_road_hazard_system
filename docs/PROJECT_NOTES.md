@@ -36,7 +36,7 @@ The two are connected only through the website's API over the local network. The
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Management website: six pages (Overview, Incidents, Maps & Simulation, Evidence, AI & Research, System & Audit) | ✅ | Every page has the Night Desk frame (navy top bar, navy page header, phone tab bar). Overview and Incidents were rebuilt in step 4.2 and get the Night Desk layout next; the other pages keep the hackathon layout from PR #85 inside the new frame. |
+| Management website: six pages (Overview, Incidents, Maps & Simulation, Evidence, AI & Research, System & Audit) | ✅ | Every page has the Night Desk frame (navy top bar, navy page header, phone tab bar). Overview and Incidents have the full Night Desk layout (21 Nov 2026); the other pages keep the hackathon layout from PR #85 inside the new frame. |
 | Management sign-in | ✅ | A shared development key only. **Not real accounts.** |
 | Report review: list and detail, approve or reject with a reason | ✅ | Pinned decision bar, keyboard shortcuts (J/K, A, R, then Enter), next report opens after a decision, works at phone width |
 | Private sample photos with separate approval before anything is public | ✅ | |
@@ -45,9 +45,9 @@ The two are connected only through the website's API over the local network. The
 | Resident web page (map, simulation, practice reports) | ✅ | To be restructured by the design revamp |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 265 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 285 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
-| Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Foundation done (Barlow, navy chrome, shadcn/ui components, new frame). Next: Overview, Incidents, then the other pages. Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
+| Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Foundation, Overview and Incidents done. Next: Maps, Evidence, System and AI & Research. Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
 | Residents can see the full outcome of a report (including "Resolved") | ❌ | The public reports API does not expose incident status |
 | "My reports" on the resident website | ❌ | |
 | Real user accounts and sign-in | ❌ | |
@@ -77,6 +77,29 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 21 November 2026: Overview and Incidents in Night Desk, with the UI/UX handoff points
+- **Why:** step 2 and 3 of the Night Desk restyle, built together at the owner's request. They include the points kept from the owner's UI/UX handoff document (mockups in `docs/design/night-desk/v3-*.png`, approved 21 Nov). The handoff's "Civic Teal" palette was not adopted; the owner chose to keep the darker Night Desk colours.
+- **Overview:**
+  - Header: "3 reports need review", today's counts ("Today: 5 received, 2 approved, 1 rejected"), and the oldest report in its own box with Start reviewing.
+  - **Today's timeline** of every report received since local midnight. Hovering or focusing a pin shows what it is; choosing it selects that report. Rejected reports are shown faded and cannot be chosen.
+  - Decision cards with large wait times, an "Oldest" tag (the list is oldest first), and a "Review report" link on each.
+  - A **"Where" map** of all reports, linked both ways with the cards: choosing a card rings its pin and labels it; choosing a pin selects its card.
+  - Groups under review and a **shift log** (new reports, approvals, rejections, new groups, newest first). "Recent reports" was replaced by the shift log.
+- **Incidents (report review):**
+  - Tabs and the summary line moved into the navy header.
+  - The list shows its sort order ("Sorted by needs review first"), a search clear button, and "Clear filters" when nothing matches.
+  - Selected report: light green tint with a green left bar. Keyboard focus: a blue ring. The review chip is now blue ("Needs review"), apart from the road-condition chip; approved is ink with a tick, never green.
+  - Detail order: what and when, description, Evidence, Progress, Similar reports, then the decision. "Enlarge" on photos. **No photo:** a short note, and the map takes the space.
+  - The reason box is labelled "Reason for your decision: required, at least 8 characters, kept in the audit log". The photo choice is its own "Public visibility" box, unticked by default as before. Buttons show "Saving…" while a decision is saved.
+  - Keyboard shortcut help moved behind a "?" button; the shortcuts work as before.
+  - On phones the decision bar stays just above the bottom tab bar.
+- **API (read-only addition):** `/api/v2/incident-oversight` accepts `?since=<local midnight>` and then also returns `today: { received, reports }`. The time must be within the last two days. Nothing else in the API changed; approval and rejection rules are unchanged.
+- **Accessibility:** focus rings on the navy header and bar are mint instead of jade, which was too dark to see there.
+- **Checked:**
+  - 285 tests pass (new: `overview-today`, `night-desk-incidents`); typecheck and production build pass.
+  - Screenshots of the built app with mocked data at 1440, 1280 and 390 px: Overview, timeline hover, Incidents with and without a photo, the shortcut dialog, phone list and detail. No console errors.
+  - Not checked: a real phone, Safari, a screen reader, and real data on the owner's PC (the map needs the local road file, which only the owner has).
 
 ### 21 November 2026: Night Desk foundation and the design audit fixes
 - **Why:** the owner asked for a more modern feel. Six directions were mocked up; the owner chose **E2, "dark top, light desk"** (named Night Desk in `DESIGN.md`), with Barlow from the "night shift" option and a larger map. Mockups are in `docs/design/night-desk/`.

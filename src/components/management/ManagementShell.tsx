@@ -103,7 +103,7 @@ export default function ManagementShell({children}:{children:ReactNode}){
             })}
           </nav>
           <div className="ml-auto flex items-center gap-2">
-            <span className="hidden items-center gap-2 rounded-full border border-night-edge px-3 py-1 text-caption text-night-muted sm:inline-flex" title="Demo service: fictional reports, not live road conditions">
+            <span className="hidden items-center gap-2 whitespace-nowrap rounded-full border border-night-edge px-3 py-1 text-caption text-night-muted sm:inline-flex" title="Demo service: fictional reports, not live road conditions">
               <InfoIcon size={14} aria-hidden="true"/>Demo data<span className="sr-only">: fictional reports, not live road conditions</span>
             </span>
             <Button asChild variant="nightGhost" size="sm" className="hidden lg:inline-flex"><Link href="/resident">Resident view <ArrowUpRightIcon size={14} aria-hidden="true"/></Link></Button>

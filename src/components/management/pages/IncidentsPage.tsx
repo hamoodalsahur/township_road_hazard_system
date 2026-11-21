@@ -18,6 +18,7 @@ export default function IncidentsPage() {
   const [tab, setTab] = useState<Tab>("report-review");
   const [needsReview, setNeedsReview] = useState<number | null>(null);
   const [underReview, setUnderReview] = useState<number | null>(null);
+  const [reviewSummary, setReviewSummary] = useState("");
 
   // Links such as /management/incidents#incident-groups open the matching tab.
   useEffect(() => {
@@ -41,22 +42,24 @@ export default function IncidentsPage() {
     choose(next);
     document.getElementById("tab-" + next)?.focus();
   }
-  const tabClass = (id: Tab) => "flex min-h-11 items-center gap-2 whitespace-nowrap text-body font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-800 " +
-    (tab === id ? "text-slate-900 shadow-[inset_0_-2.5px_0_#0B7350]" : "text-slate-600 hover:text-slate-900");
-  const count = (n: number | null) => n === null ? null : <span className="rounded-full bg-slate-100 px-2 text-caption font-medium text-slate-600">{n}</span>;
+  // Tabs sit along the bottom of the navy page header (Night Desk): mint underline on the current one.
+  const tabClass = (id: Tab) => "flex min-h-12 items-center gap-2 whitespace-nowrap text-body font-medium transition-colors " +
+    (tab === id ? "text-white shadow-[inset_0_-3px_0_#7FD4AE]" : "text-night-muted hover:text-white");
+  const count = (n: number | null) => n === null ? null : <span className="font-semibold text-night-text">{n}</span>;
+  const subtitle = tab === "report-review" && reviewSummary ? <p className="mt-1 text-body text-night-muted">{reviewSummary}</p> : undefined;
 
   return <>
-    <ManagementSectionHeading section="incidents" />
-    <div role="tablist" aria-label="Incidents" onKeyDown={onTabKey} className="mb-5 flex gap-6 overflow-x-auto border-b border-slate-200">
-      <button type="button" role="tab" id="tab-report-review" aria-selected={tab === "report-review"} aria-controls="report-review" tabIndex={tab === "report-review" ? 0 : -1}
-        onClick={() => choose("report-review")} className={tabClass("report-review")}>Review reports{count(needsReview)}</button>
-      <button type="button" role="tab" id="tab-incident-groups" aria-selected={tab === "incident-groups"} aria-controls="incident-groups" tabIndex={tab === "incident-groups" ? 0 : -1}
-        onClick={() => choose("incident-groups")} className={tabClass("incident-groups")}>Incident groups{count(underReview)}</button>
-      <button type="button" role="tab" id="tab-simulator-reports" aria-selected={tab === "simulator-reports"} aria-controls="simulator-reports" tabIndex={tab === "simulator-reports" ? 0 : -1}
-        onClick={() => choose("simulator-reports")} className={tabClass("simulator-reports") + " ml-auto text-small font-medium"}>Older simulator reports</button>
-    </div>
+    <ManagementSectionHeading section="incidents" subtitle={subtitle} tabs={
+      <div role="tablist" aria-label="Incidents" onKeyDown={onTabKey} className="-mb-px flex gap-7 overflow-x-auto">
+        <button type="button" role="tab" id="tab-report-review" aria-selected={tab === "report-review"} aria-controls="report-review" tabIndex={tab === "report-review" ? 0 : -1}
+          onClick={() => choose("report-review")} className={tabClass("report-review")}>Review reports{count(needsReview)}</button>
+        <button type="button" role="tab" id="tab-incident-groups" aria-selected={tab === "incident-groups"} aria-controls="incident-groups" tabIndex={tab === "incident-groups" ? 0 : -1}
+          onClick={() => choose("incident-groups")} className={tabClass("incident-groups")}>Incident groups{count(underReview)}</button>
+        <button type="button" role="tab" id="tab-simulator-reports" aria-selected={tab === "simulator-reports"} aria-controls="simulator-reports" tabIndex={tab === "simulator-reports" ? 0 : -1}
+          onClick={() => choose("simulator-reports")} className={tabClass("simulator-reports")}>Older simulator reports</button>
+      </div>} />
     <section id="report-review" role="tabpanel" aria-labelledby="tab-report-review" hidden={tab !== "report-review"} className="scroll-mt-28">
-      <V2HazardManager operatorKey={operatorKey} onCountsChange={setNeedsReview} />
+      <V2HazardManager operatorKey={operatorKey} onCountsChange={setNeedsReview} onSummaryChange={setReviewSummary} />
     </section>
     <section id="incident-groups" role="tabpanel" aria-labelledby="tab-incident-groups" hidden={tab !== "incident-groups"} className="scroll-mt-28">
       <IncidentManager operatorKey={operatorKey} onCountsChange={setUnderReview} />
