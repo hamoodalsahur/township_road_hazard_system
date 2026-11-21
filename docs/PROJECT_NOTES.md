@@ -2,7 +2,7 @@
 
 The running record of what the system can do, what changed and why. Update it with every change. Other people and other AIs work from this file.
 
-**Last updated:** 10 November 2026
+**Last updated:** 21 November 2026
 **Rules for working on this project:** [WORKING_AGREEMENTS.md](WORKING_AGREEMENTS.md)
 **Where we are going:** [roadmap.md](roadmap.md) (approved 9 November 2026)
 **Older history:** [progress.md](progress.md), [archive/roadmap-hackathon.md](archive/roadmap-hackathon.md) and the `v2*` files in this folder describe the hackathon milestones. Parts of them are out of date. Where they disagree with this file, this file and the code are authoritative.
@@ -77,6 +77,21 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 21 November 2026: unslop design audit added to the workflow
+- **What:**
+  - The unslop skill by Damir Sokolovsky (CC BY 4.0) is copied unchanged into `.claude/skills/unslop`, pinned to commit `620163e`, with its licence and a `SOURCE.md` giving credit and the version.
+  - It loads automatically for Claude sessions working in this repository.
+- **Rule:** `WORKING_AGREEMENTS.md` section 8 now says every built or restyled screen gets an unslop audit in polish mode, with `DESIGN.md` as the brand.
+- **First audit** (`docs/design/unslop-audit-2026-11-21.md`):
+  - It found no "AI look" on the Overview and Incidents screens.
+  - It did find places where they break our own `DESIGN.md`: text below 13 px, sizes off the scale, 6/10/14 px spacing, icons in 16 sizes, and full stops on one-line captions. These are to be fixed in a follow-up PR.
+  - It also lists three points where unslop disagrees with the approved design (font weight 600, pills, the green avatar), for the owner to decide.
+- **Checked:**
+  - The skill's helper scripts were read before copying. One saves a web page; the other makes a video with ffmpeg. Neither reads secrets or changes settings.
+  - They are `.mjs` files, so typecheck and tests do not pick them up.
+  - The tests still pass.
+- **Setup:** the owner installed Docker Desktop (data on a second drive) and has 16 GB RAM, which is enough for Postgres now and Valhalla routing later.
 
 ### 10 November 2026: service area setting (roadmap step 2.1)
 - **Design:**

@@ -72,6 +72,12 @@ These come from the hackathon handoff and still apply:
 - **Tests:** a test for every feature and for every bug fixed. The full test suite stays green.
 - **Real checks:** test in a real browser, take screenshots and look at them, and check phone width.
 - **UI consistency:** follow `docs/DESIGN.md`, so the product looks like one thing.
+- **Design audit:** after building or restyling a screen, run the unslop skill (`.claude/skills/unslop`) as an **audit in polish mode**, with `docs/DESIGN.md` as the brand.
+  - The findings go in the PR description.
+  - Anything that breaks `DESIGN.md` gets fixed.
+  - Anything where unslop disagrees with the approved design is listed for the owner to decide.
+  - It never picks a new direction or redesigns on its own.
+  - The first audit is in `docs/design/unslop-audit-2026-11-21.md`.
 - **Old data keeps working** after upgrades.
 - **Safe by default:** new features don't change the owner's everyday setup unless the owner opts in.
 - **Demo data is labelled as fictional,** and is never used as evidence about the real world.
@@ -80,9 +86,9 @@ These come from the hackathon handoff and still apply:
 
 | | |
 | --- | --- |
-| Computer | Windows, VS Code with PowerShell (owner to confirm) |
+| Computer | Windows, VS Code with PowerShell (owner to confirm). 16 GB RAM. Docker Desktop installed on 21 Nov 2026, with its data on a second drive because C: is nearly full. |
 | Phone | iPhone with Expo Go |
-| Hardware limits | Not yet known |
+| Hardware limits | 16 GB RAM; C: drive nearly full, so large data goes on the second drive |
 | Handled elsewhere | Not yet known |
 | Deadline | None; own pace |
 
@@ -97,6 +103,7 @@ These come from the hackathon handoff and still apply:
 | 9 Nov 2026 | Commits are authored as the owner (Ahmad Danish Firas bin Faizol, UiTM email) | Owner's request; matches the rest of the history |
 | 9 Nov 2026 | Stay with Next.js and Expo; no Flutter or other framework switch | Expo Go is the only free, official way to test on the owner's iPhone from Windows |
 | 9 Nov 2026 | Follow `docs/roadmap.md` (phases 0 to 8) | Approved by the owner; it brings back routing, closures and hosting, each with a safeguard |
+| 21 Nov 2026 | Use the unslop skill as a design audit in polish mode, never as a redesigner | A second opinion on spacing, type, copy and icons; the approved design stays in charge |
 | 10 Nov 2026 | Placeholder product name "Laluan", set in `src/lib/product.ts` | One name everywhere; the final name is not decided |
 | 9 Nov 2026 | Web first; the phone app waits (roadmap section 3A) | Avoid working on two apps at once. The resident website covers phones in the meantime. |
 | Oct 2026 | Mobile app in its own repository, talking to the website only through the API | Simpler to keep separate (hackathon decision) |
@@ -105,13 +112,15 @@ These come from the hackathon handoff and still apply:
 
 The product decisions are tracked as G1 to G9 in [roadmap.md](roadmap.md), section 4. Other open items:
 
-1. Hardware limits, and anything handled outside these sessions.
+1. Anything handled outside these sessions.
 
 ## 12. Next step
 
 Phases 0 and 1 are done. The incident review half of roadmap step 4.2 was brought forward at the owner's request on 10 November 2026, so the new look shows on a real screen early.
 
-The Overview (the other half of 4.2) and step 2.1 (service area) followed the same day. Next is **step 2.2**: move to Postgres (Supabase). It needs decision G2 confirmed and a short plan first, because it involves a one-way copy of the owner's `dev.db`, which must only ever be read.
+The Overview (the other half of 4.2) and step 2.1 (service area) followed the same day. Next is **step 2.2**: move to Postgres. For decision G2, Postgres with PostGIS in Docker on the owner's PC was recommended on 21 Nov 2026 as the easier option, with Supabase kept for hosting later. It needs the owner's confirmation and a short plan first, because it involves a one-way copy of the owner's `dev.db`, which must only ever be read.
+
+The design audit of 21 Nov 2026 found fixes for the Overview and Incidents screens (group A in the audit), which can be done as a small PR before or after 2.2.
 
 ## 13. Lessons learned
 
