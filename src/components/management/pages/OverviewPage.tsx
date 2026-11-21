@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ArrowClockwiseIcon, ArrowRightIcon, CameraIcon, CaretRightIcon, CheckIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useManagementOperatorKey } from "@/components/management/ManagementShell";
 import ManagementSectionHeading from "@/components/management/ManagementSectionHeading";
+import { Button } from "@/components/ui/button";
 import ReviewAgeQueue from "@/components/management/ReviewAgeQueue";
 import OperatorAuditSummary from "@/components/management/OperatorAuditSummary";
 import HazardMarker from "@/components/hazards/HazardMarker";
@@ -72,18 +73,14 @@ export default function OverviewPage() {
   const startLink = queue?.oldestId ? reportLink(queue.oldestId) : "/management/incidents#report-review";
 
   return <>
-    <div className="flex items-start justify-between gap-3">
-      <div className="min-w-0 flex-1"><ManagementSectionHeading section="overview" subtitle={<p className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-body text-slate-600" aria-live="polite">
+    <ManagementSectionHeading section="overview" subtitle={<p className="mt-1 flex flex-wrap gap-x-5 gap-y-1 text-body text-night-muted" aria-live="polite">
         {error ? "Could not load the overview" : busy && !data ? "Loading the latest reports…" : summary.map((part, index) => <span key={part} className="inline-flex items-center gap-2">
-          {index === 0 ? <span aria-hidden="true" className={"h-2 w-2 rounded-full " + (queue?.total ? "bg-slate-900" : "bg-teal-800")} /> : null}
-          <span className={index === 0 ? "font-semibold text-slate-900" : ""}>{part}</span>
+          {index === 0 ? <span aria-hidden="true" className={"h-2 w-2 rounded-full " + (queue?.total ? "bg-white" : "bg-night-mint")} /> : null}
+          <span className={index === 0 ? "font-semibold text-white" : ""}>{part}</span>
         </span>)}
-      </p>} /></div>
-      <button type="button" onClick={() => void reload()} disabled={busy}
-        className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-full bg-white px-3 text-small font-semibold text-slate-900 shadow-sm hover:bg-slate-50 disabled:opacity-50 sm:px-4">
-        <ArrowClockwiseIcon size={16} aria-hidden="true" /><span className="sr-only sm:not-sr-only">{busy ? "Loading…" : "Refresh"}</span>
-      </button>
-    </div>
+      </p>} actions={<Button variant="night" onClick={() => void reload()} disabled={busy} aria-label={busy ? "Loading…" : "Refresh"}>
+        <ArrowClockwiseIcon size={16} aria-hidden="true" /><span className="hidden sm:inline">{busy ? "Loading…" : "Refresh"}</span>
+      </Button>} />
 
     {error ? <div role="alert" className="flex max-w-2xl gap-3 rounded-2xl bg-rose-50 p-4 text-small leading-5 text-rose-800">
       <WarningCircleIcon size={20} weight="bold" className="shrink-0" aria-hidden="true" />

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { BRAND_GREEN, DARK, NEUTRAL, contrastRatio } from "../src/lib/design-tokens";
+import { BRAND_GREEN, DARK, NEUTRAL, NIGHT, contrastRatio } from "../src/lib/design-tokens";
 
 const WHITE = "#FFFFFF";
 
@@ -10,10 +10,12 @@ test("contrast helper matches known WCAG values", () => {
   assert.equal(Number(contrastRatio(WHITE, WHITE).toFixed(2)), 1);
 });
 
-test("tokens keep the anchors from docs/DESIGN.md (Crisp Modern)", () => {
-  assert.equal(NEUTRAL[50], "#F6F7F6"); // page
-  assert.equal(NEUTRAL[900], "#0F1513"); // ink
-  assert.equal(BRAND_GREEN[800], "#0B7350"); // primary jade
+test("tokens keep the anchors from docs/DESIGN.md (Night Desk)", () => {
+  assert.equal(NEUTRAL[50], "#F2F4F6"); // page
+  assert.equal(NEUTRAL[900], "#111820"); // ink
+  assert.equal(BRAND_GREEN[800], "#0B7350"); // jade, positive actions
+  assert.equal(NIGHT.band, "#0E1720"); // page headers and primary buttons
+  assert.equal(NIGHT.mint, "#7FD4AE"); // current page on the night chrome
 });
 
 // Every text/background pair the current pages use with these scales (WCAG AA, 4.5:1).
@@ -27,6 +29,15 @@ const TEXT_PAIRS: [string, string, string][] = [
   ["teal-700 on white", BRAND_GREEN[700], WHITE],
   ["teal-700 on teal-50", BRAND_GREEN[700], BRAND_GREEN[50]],
   ["teal-900 on teal-100", BRAND_GREEN[900], BRAND_GREEN[100]],
+  // Night chrome: top bar, page headers, primary buttons.
+  ["night: text on bar", NIGHT.text, NIGHT.bar],
+  ["night: muted on band", NIGHT.muted, NIGHT.band],
+  ["night: muted on raised", NIGHT.muted, NIGHT.raised],
+  ["night: subtle on band", NIGHT.subtle, NIGHT.band],
+  ["night: subtle on bar", NIGHT.subtle, NIGHT.bar],
+  ["night: mint on band", NIGHT.mint, NIGHT.band],
+  ["night: text on mint", NIGHT.onMint, NIGHT.mint],
+  ["night: white on band (primary button)", WHITE, NIGHT.band],
   ["white on teal-600", WHITE, BRAND_GREEN[600]],
   ["white on teal-700", WHITE, BRAND_GREEN[700]],
   ["white on teal-800", WHITE, BRAND_GREEN[800]],
@@ -52,14 +63,16 @@ test("icons, focus rings and input borders reach 3:1", () => {
 
 test("global styles use the new tokens and font", () => {
   const css = readFileSync("src/app/globals.css", "utf8");
-  assert.match(css, /Instrument Sans/);
+  assert.match(css, /"Barlow"/);
   assert.match(css, new RegExp(NEUTRAL[50], "i"));
   assert.match(css, new RegExp(BRAND_GREEN[800], "i"));
-  for (const old of ["#0f766e", "#17573F", "Atkinson"]) assert.ok(!css.includes(old), `globals.css still has ${old}`);
+  for (const old of ["#0f766e", "#17573F", "Atkinson", "Instrument Sans"]) assert.ok(!css.includes(old), `globals.css still has ${old}`);
 });
 
 test("layout loads the self-hosted fonts", () => {
   const layout = readFileSync("src/app/layout.tsx", "utf8");
-  assert.match(layout, /@fontsource\/instrument-sans\/400\.css/);
+  assert.match(layout, /@fontsource\/barlow\/400\.css/);
+  assert.match(layout, /@fontsource\/barlow-semi-condensed\/600\.css/);
+  assert.ok(!layout.includes("instrument-sans"), "the old font is no longer loaded");
   assert.match(layout, /@fontsource\/ibm-plex-mono\/400\.css/);
 });

@@ -1,22 +1,39 @@
 /**
- * Design tokens from docs/DESIGN.md (Crisp Modern). Tailwind maps the colours onto the `slate` and `teal`
- * class names (see tailwind.config.ts), so pages pick them up without markup changes.
+ * Design tokens from docs/DESIGN.md (Night Desk, chosen 21 November 2026). Tailwind maps the colours onto
+ * the `slate` and `teal` class names (see tailwind.config.ts), so pages pick them up without markup changes.
  * tests/design-tokens.test.ts checks their contrast whenever they change.
  */
 
-/** Cool neutrals with a slight green cast: 50 = page, 100 = sunken, 200 = line, 500 = subtle text, 900 = ink. */
+/** Cool blue-grey neutrals for the light work area: 50 = page, 100 = sunken, 200 = line, 500 = subtle text, 900 = ink. */
 export const NEUTRAL = {
-  50: "#F6F7F6",
-  100: "#F0F2F1",
-  200: "#E6E9E7",
-  300: "#CDD3D0",
-  400: "#848D89",
-  500: "#56625C",
-  600: "#45514C",
-  700: "#333D39",
-  800: "#222A27",
-  900: "#0F1513",
-  950: "#0A0E0C",
+  50: "#F2F4F6",
+  100: "#EEF1F3",
+  200: "#E1E6EA",
+  300: "#C9D2D9",
+  400: "#7D8995",
+  500: "#5A6672",
+  600: "#46525E",
+  700: "#2A333B",
+  800: "#1A2129",
+  900: "#111820",
+  950: "#0B1015",
+} as const;
+
+/**
+ * Night chrome: the navy top bar and page headers that frame every screen (Night Desk).
+ * Text on it uses `text`, `muted` or `subtle`; `mint` marks the current page and the "now" line.
+ */
+export const NIGHT = {
+  bar: "#0B131B",
+  band: "#0E1720",
+  raised: "#1A2733",
+  line: "#1F2C38",
+  edge: "#2A3946",
+  text: "#E4ECF2",
+  muted: "#9FB0BE",
+  subtle: "#7E91A3",
+  mint: "#7FD4AE",
+  onMint: "#0B1F17",
 } as const;
 
 /** Jade green for actions, links, selection and focus. 800 is the primary green. */

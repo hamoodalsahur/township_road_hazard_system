@@ -11,6 +11,9 @@ const REBUILT = [
   "src/components/hazards/HazardChips.tsx", "src/components/hazards/ReportMiniMap.tsx",
   "src/components/management/IncidentRoadCandidates.tsx", "src/components/management/ServiceAreaStatus.tsx",
   "src/components/management/ReviewAgeQueue.tsx", "src/components/management/OperatorAuditSummary.tsx",
+  // Night Desk foundation (21 November 2026): the shared shadcn/ui components.
+  "src/components/ui/button.tsx", "src/components/ui/input.tsx", "src/components/ui/checkbox.tsx",
+  "src/components/ui/tabs.tsx", "src/components/ui/dialog.tsx",
 ];
 
 test("the type scale is defined once in Tailwind", () => {
