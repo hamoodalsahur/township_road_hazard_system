@@ -46,14 +46,16 @@ test("the OSM converter accepts an area's bounds instead of BBR's", () => {
 });
 
 test("every road reader follows the active area", () => {
+  // Since step 2.3 the readers go through loadActiveRoads() (database first, then the area's file); see road-lines-db.test.ts.
   for (const file of ["src/app/api/v2/incidents/[id]/road-candidates/route.ts", "src/app/api/v2/road-topology-quality/route.ts",
-    "src/app/api/v2/geo-source-manifest/route.ts", "src/app/api/v2/road-access-tags/route.ts"]) {
+    "src/app/api/v2/road-access-tags/route.ts", "src/lib/road-lines-server.ts"]) {
     const source = read(file);
-    assert.match(source, /activeRoadsPath\(\)/, file);
+    assert.match(source, /loadActiveRoads|activeRoadsPath\(\)/, file);
     assert.doesNotMatch(source, /bbr-roads\.geojson/, file);
   }
-  assert.match(read("src/lib/road-loader.ts"), /fetch\(roadsUrlFor\(areaId\)/);
-  assert.match(read("src/hooks/useMapWorkspace.ts"), /fetch\(roadsUrlFor\(areaId\)/);
+  assert.match(read("src/app/api/v2/geo-source-manifest/route.ts"), /activeRoadsPath\(\)/, "the source fingerprint still describes the area's file");
+  assert.match(read("src/lib/road-loader.ts"), /fetch\(ROAD_LINES_API/);
+  assert.match(read("src/hooks/useMapWorkspace.ts"), /fetch\(ROAD_LINES_API/);
   for (const file of ["src/components/hazards/OverviewMap.tsx", "src/components/hazards/ReportMiniMap.tsx"]) {
     assert.match(read(file), /if \(!loaded\) return;/, `${file} waits for the area before loading roads`);
   }

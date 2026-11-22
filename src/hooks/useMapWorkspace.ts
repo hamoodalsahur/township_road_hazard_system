@@ -11,7 +11,7 @@ import { CATEGORY_LABELS, DEMO_HAZARDS, filterDemoHazards, type HazardCategory }
 import { prepareDemoPhoto } from "@/lib/demo-photo-client";
 import { inspectDemoReportDraft } from "@/lib/v213-report-draft";
 import { useServiceArea } from "@/hooks/useServiceArea";
-import { roadsUrlFor } from "@/lib/service-area";
+import { ROAD_LINES_API } from "@/lib/road-lines";
 
 /**
  * Everything the area map needs: roads, submitted reports, filters, selection and the fictional report
@@ -116,12 +116,12 @@ export function useMapWorkspace() {
     finally{setSendingReport(false);setReportPhase("idle");}
   }
 
-  // Road lines for the active area: BBR's original file, or public/data/roads/<id>.geojson for your own area.
+  // Road lines for the active area: from the database after `npm run db:import-roads`, otherwise from the area's file.
   useEffect(() => {
     if (!serviceAreaState.loaded) return;
     let active = true;
     setRoads([]); setSelectedRoadId(null);
-    fetch(roadsUrlFor(areaId), { cache: "no-store" })
+    fetch(ROAD_LINES_API, { cache: "no-store" })
       .then(async response => {
         if (!response.ok) throw new Error("Road file unavailable");
         const data: unknown = await response.json();
@@ -129,7 +129,7 @@ export function useMapWorkspace() {
         if (active) {
           setRoads(data.features);
           setRoadMessage(data.features.length
-            ? `${data.features.length} OSM mapped road lines imported (unverified, not a connected graph).`
+            ? `${data.features.length} OSM mapped road lines imported (unverified, not a connected graph)${(data as { source?: unknown }).source === "database" ? ", read from the database" : ", read from the area's file"}.`
             : `No road lines for ${serviceArea.area.name} yet. Run ${areaId === "bbr" ? "npm run geo:import" : "npm run geo:import-area"} locally.`);
         }
       }).catch(() => { if (active) setRoadMessage(areaId === "bbr"
