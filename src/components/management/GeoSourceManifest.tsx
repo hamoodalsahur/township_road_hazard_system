@@ -30,31 +30,30 @@ export default function GeoSourceManifest({operatorKey}:{operatorKey:string}){
    ["Tagged access / motor vehicle",manifest.waysWithAccessOrVehicleTag],
    ["Tagged bridge / tunnel",manifest.waysWithBridgeOrTunnelTag]
  ] as const):[];
- return <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5" aria-label="Local geography source fingerprint">
+ return <section className="mt-6 rounded-xl border border-slate-200 bg-white p-5" aria-label="Local geography source fingerprint">
   <div className="flex flex-wrap items-center justify-between gap-3">
    <div>
-    <p className="text-xs font-bold uppercase text-teal-700">Reproducibility · geographic demo</p>
-    <h2 className="mt-1 text-xl font-bold">Local GeoJSON source fingerprint</h2>
+    <h2 className="mt-1 text-heading font-semibold">Local GeoJSON source fingerprint</h2>
    </div>
    <button type="button" disabled={busy} onClick={()=>void inspect()}
-    className="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">
+    className="inline-flex min-h-9 items-center rounded-lg border border-slate-200 bg-white px-4 text-small font-semibold text-slate-900 hover:border-slate-300 disabled:opacity-50">
     {busy?"Checking…":"Inspect local source"}</button>
   </div>
-  <p className="mt-2 text-sm text-slate-600">A read-only SHA-256 fingerprint helps compare exact local demo file copies; it is not source verification or a road safety certification.</p>
-  {error?<p role="alert" className="mt-3 text-xs text-rose-800">{error}</p>:null}
+  <p className="mt-2 text-small text-slate-600">A read-only SHA-256 fingerprint helps compare exact local demo file copies; it is not source verification or a road safety certification.</p>
+  {error?<p role="alert" className="mt-3 text-caption text-rose-800">{error}</p>:null}
   {manifest?<div className="mt-4 space-y-3">
-   <p className="text-xs text-slate-700">Source size: {manifest.sourceBytes.toLocaleString()} bytes</p>
-   <div className="rounded-lg bg-slate-50 p-3">
-    <p className="text-xs font-semibold">SHA-256 of current local GeoJSON bytes</p>
-    <code className="mt-1 block break-all text-xs">{manifest.sha256}</code>
+   <p className="text-caption text-slate-700">Source size: {manifest.sourceBytes.toLocaleString()} bytes</p>
+   <div className="rounded-lg bg-slate-100 p-3">
+    <p className="text-caption font-semibold">SHA-256 of current local GeoJSON bytes</p>
+    <code className="mt-1 block break-all text-caption">{manifest.sha256}</code>
    </div>
    <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-    {stats.map(([label,value])=><div key={label} className="rounded-lg bg-slate-50 p-3">
-     <p className="text-xs text-slate-600">{label}</p>
-     <p className="mt-1 text-xl font-bold">{value}</p>
+    {stats.map(([label,value])=><div key={label} className="rounded-lg bg-slate-100 p-3">
+     <p className="text-caption text-slate-600">{label}</p>
+     <p className="mt-1 text-heading font-semibold">{value}</p>
     </div>)}
    </div>
-   <p className="rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-950">{manifest.disclaimer}</p>
+   <p className="rounded-lg bg-slate-100 p-3 text-caption leading-5 text-slate-700">{manifest.disclaimer}</p>
   </div>:null}
  </section>;
 }
