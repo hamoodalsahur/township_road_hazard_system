@@ -14,7 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      DATABASE_URL: file:./dev.db
+      # Postgres address for type generation and the build only; no job connects to a database.
+      DATABASE_URL: postgresql://ci:ci-only@127.0.0.1:5432/ci
       DEMO_OPERATOR_KEY: ci-only-example-key-not-for-use
     steps:
       - name: Check out the repository

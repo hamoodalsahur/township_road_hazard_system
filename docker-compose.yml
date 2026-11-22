@@ -1,0 +1,31 @@
+# Local Postgres for development (roadmap step 2.2).
+# Plain Postgres 16 for now. PostGIS (map functions for whole-trip routing, phase 6) is added later on
+# purpose: its image creates a spatial_ref_sys table that Prisma would report as drift and offer to
+# reset the database for. The data volume carries over when the image changes.
+# Start: docker compose up -d     Stop: docker compose stop     Status: docker compose ps
+# The password comes from POSTGRES_PASSWORD in your .env (never commit it).
+# The port is bound to 127.0.0.1 only, so the database is reachable from this PC and not from your network.
+# Data lives in the named volume "laluan-pgdata" (inside Docker's data folder, on the drive you chose for Docker).
+name: laluan
+
+services:
+  db:
+    image: postgres:16
+    container_name: laluan-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: laluan
+      POSTGRES_USER: laluan
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env first}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - laluan-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U laluan -d laluan"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  laluan-pgdata:

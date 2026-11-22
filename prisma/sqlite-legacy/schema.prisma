@@ -1,0 +1,205 @@
+// READ-ONLY use: lets scripts/copy-sqlite-to-postgres.ts read a COPY of the old SQLite dev.db.
+// The models below must stay identical to prisma/schema.prisma (tests/postgres-migration.test.ts checks).
+// Never run db push, migrate or seed against this schema.
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/.prisma/sqlite-legacy-client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("LEGACY_SQLITE_URL")
+}
+
+model DataSource {
+  id                 String         @id
+  name               String
+  classification     String         // illustrative | map_derived | government | reported
+  verificationStatus String         @default("unverified")
+  sourceUrl          String?
+  notes              String?
+  zones              TownshipZone[]
+  graphNodes         GraphNode[]
+  roadSegments       RoadSegment[]
+
+  @@map("data_sources")
+}
+
+model TownshipZone {
+  id               String         @id
+  name             String
+  description      String?
+  coordinateSystem String         @default("schematic_xy")
+  boundaryJson     String         // JSON array of [x,y] pairs; never interpret as GPS
+  sourceId         String
+  source           DataSource     @relation(fields: [sourceId], references: [id])
+  graphNodes       GraphNode[]
+  roadSegments     RoadSegment[]
+
+  @@index([sourceId])
+  @@map("township_zones")
+}
+
+model GraphNode {
+  id              String         @id
+  label           String
+  x               Float
+  y               Float
+  zoneId          String
+  isGateway       Boolean        @default(false)
+  sourceId        String
+  zone            TownshipZone   @relation(fields: [zoneId], references: [id])
+  source          DataSource     @relation(fields: [sourceId], references: [id])
+  outgoingRoads   RoadSegment[]  @relation("RoadFrom")
+  incomingRoads   RoadSegment[]  @relation("RoadTo")
+
+  @@index([zoneId])
+  @@index([sourceId])
+  @@map("graph_nodes")
+}
+
+model RoadSegment {
+  id              String            @id
+  label           String
+  zoneId          String
+  fromNodeId      String
+  toNodeId        String
+  corridorType    String            // ingress_egress_gateway | internal | park_trail
+  lengthUnits     Float             // schematic distance; NOT metres or driving time
+  currentStatus   String            @default("unknown")
+  sourceMode      String            @default("simulation")
+  statusUpdatedAt DateTime?
+  sourceId        String
+  zone            TownshipZone      @relation(fields: [zoneId], references: [id])
+  fromNode        GraphNode         @relation("RoadFrom", fields: [fromNodeId], references: [id])
+  toNode          GraphNode         @relation("RoadTo", fields: [toNodeId], references: [id])
+  source          DataSource        @relation(fields: [sourceId], references: [id])
+  statusEvents    RoadStatusEvent[]
+  floodReports    FloodReport[]
+
+  @@index([zoneId])
+  @@index([fromNodeId])
+  @@index([toNodeId])
+  @@map("road_segments")
+}
+
+model RoadStatusEvent {
+  id          String      @id @default(cuid())
+  roadId      String
+  status      String
+  evidence    String?
+  reason      String
+  sourceMode  String
+  actorId     String?
+  observedAt  DateTime
+  createdAt   DateTime    @default(now())
+  road        RoadSegment @relation(fields: [roadId], references: [id])
+
+  @@index([roadId, observedAt])
+  @@map("road_status_events")
+}
+
+model ScenarioRun {
+  id           String   @id @default(cuid())
+  label        String
+  stage        Int
+  sourceMode   String   @default("simulation")
+  startedAt    DateTime @default(now())
+  completedAt  DateTime?
+
+  @@map("scenario_runs")
+}
+
+model FloodReport {
+  id           String   @id @default(cuid())
+  roadId       String
+  category     String
+  description  String
+  status       String   @default("unverified")
+  reviewNote   String?
+  reviewedAt   DateTime?
+  createdAt    DateTime @default(now())
+  sourceMode   String   @default("simulation")
+  road         RoadSegment @relation(fields: [roadId], references: [id])
+
+  @@index([status, createdAt])
+  @@index([roadId])
+  @@map("flood_reports")
+}
+
+model AuditEntry {
+  id         String   @id @default(cuid())
+  action     String
+  subjectId  String
+  actor      String
+  detail     String
+  sourceMode String   @default("simulation")
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("audit_entries")
+}
+
+/** Separate V2 geographic demonstration reports. Never authoritative road status. */
+model HazardReport {
+  id          String   @id @default(cuid())
+  category    String
+  description String
+  longitude   Float
+  latitude    Float
+  impact      String
+  reviewState String   @default("unverified")
+  reviewNote  String?
+  reviewedAt  DateTime?
+  sourceMode  String   @default("simulation")
+  createdAt   DateTime @default(now())
+  evidence    HazardEvidence?
+  incidentLink IncidentReportLink?
+
+  @@index([reviewState, createdAt])
+  @@index([category, createdAt])
+  @@map("hazard_reports")
+}
+
+/** Private demo evidence; never returned by public incident APIs. */
+model HazardEvidence {
+  id          String       @id @default(cuid())
+  reportId    String       @unique
+  report      HazardReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  mimeType    String
+  base64Data  String
+  bytes       Int
+  status      String       @default("private_unreviewed") // private_unreviewed | approved_public_demo | private_rejected
+  createdAt   DateTime     @default(now())
+  @@map("hazard_evidence")
+}
+
+/** Operator-created grouping of fictional reports. Never an authoritative hazard or road closure. */
+model DemoIncident {
+  id            String   @id @default(cuid())
+  title         String
+  category      String
+  status        String   @default("under_review") // under_review | corroborated | resolved
+  reviewNote    String
+  possibleRoad  String?  // free-text illustrative road reference, never authoritative road ID
+  sourceMode    String   @default("simulation")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  reports       IncidentReportLink[]
+
+  @@index([status, createdAt])
+  @@map("demo_incidents")
+}
+
+/** A report can belong to at most one incident; links are explicit operator decisions. */
+model IncidentReportLink {
+  id         String       @id @default(cuid())
+  incidentId String
+  reportId   String       @unique
+  linkedAt   DateTime     @default(now())
+  incident   DemoIncident @relation(fields:[incidentId],references:[id],onDelete:Cascade)
+  report     HazardReport @relation(fields:[reportId],references:[id],onDelete:Restrict)
+
+  @@index([incidentId])
+  @@map("incident_report_links")
+}

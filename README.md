@@ -12,7 +12,7 @@ A multi-hazard road and incident intelligence prototype connecting **resident re
 
 | Component | Link | What it contains |
 | --- | --- | --- |
-| **Website, backend and management** | **This repository** | Next.js API, local SQLite development data, management dashboard, incident/evidence review, maps and simulation |
+| **Website, backend and management** | **This repository** | Next.js API, local Postgres development database (Docker), management dashboard, incident/evidence review, maps and simulation |
 | **Resident mobile application** | [township_system_mobile](https://github.com/hamoodalsahur/township_system_mobile) | Expo / React Native app for browsing fictional incident reports, submitting reports and sample photos |
 
 The public browser-only judge demo from the hackathon was retired on 10 November 2026.
@@ -24,7 +24,7 @@ Resident iPhone (Expo app in companion repository)
         |
         | HTTP API via local Wi-Fi (PC IPv4 address, port 3000)
         v
-Next.js server (this repository) <----> SQLite development database
+Next.js server (this repository) <----> Postgres 16 in Docker (docker-compose.yml)
         ^
         |
 Operator management website on the same local server
@@ -34,22 +34,23 @@ The two repositories are **linked by API integration**, not a Git submodule or a
 
 ## Quick start — website and backend
 
-Requires Node.js, npm and Git.
+Requires Node.js, npm, Git and Docker Desktop.
 
 ```powershell
 git clone https://github.com/hamoodalsahur/township_road_hazard_system.git
 cd township_road_hazard_system
 npm ci
-Copy-Item .env.example .env
-npm run db:push
+Copy-Item .env.example .env      # then set POSTGRES_PASSWORD and the same password in DATABASE_URL
+npm run db:up                    # starts Postgres in Docker
+npm run db:migrate               # creates the tables
 npm run dev
 ```
 
-`npm ci` also prepares the database code (`prisma generate`) automatically. It reads only `prisma/schema.prisma` and never touches the database. If sign-in ever says "Could not verify the local demo key", stop the server and run `npm run db:generate`.
+`npm ci` also prepares the database code (`prisma generate`) automatically. It reads only the schema files and never touches the database. Moving an existing SQLite `dev.db` across, stopping Postgres and recovery are in [docs/database.md](docs/database.md). If sign-in ever says "Could not verify the local demo key", stop the server and run `npm run db:generate`.
 
 The service area (where reports are accepted) is Bandar Bukit Raja by default. To test somewhere else, see `config/service-areas/README.md`.
 
-Use `npm run db:seed` **only when intentionally creating a fresh fictional demo database**; do not reseed or reset an existing local database. Never commit `.env`, the private local operator key, SQLite database files, or report photos.
+Use `npm run db:seed` **only when intentionally creating a fresh fictional demo database**; do not reseed or reset an existing local database. Never commit `.env`, the private local operator key, database files or backups, or report photos.
 
 Open:
 - **Management:** `http://localhost:3000/management`
@@ -65,7 +66,7 @@ For local operator demo login, configure your private `DEMO_OPERATOR_KEY` in `.e
 4. In the mobile app go to **About → Local Backend** and enter `http://<PC-WIFI-IPv4>:3000` using the PC's actual Wi-Fi adapter address, **not** `localhost`.
 5. Submit a clearly fictional sample incident in the mobile app; review it from the management website.
 
-The real SQLite database, uncommitted local road data, and private photos are **not automatically transferred by cloning**. A reference copy of the BBR road lines (1,269 features) is kept at `data/bbr-roads-reference.geojson` for tests and mockups. The app itself still reads your local `public/data/bbr-roads.geojson`, which needs separate setup.
+Your local database, uncommitted local road data, and private photos are **not automatically transferred by cloning**. A reference copy of the BBR road lines (1,269 features) is kept at `data/bbr-roads-reference.geojson` for tests and mockups. The app itself still reads your local `public/data/bbr-roads.geojson`, which needs separate setup.
 
 ## Features
 
