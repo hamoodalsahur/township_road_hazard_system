@@ -36,20 +36,20 @@ The two are connected only through the website's API over the local network. The
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Management website: six pages (Overview, Incidents, Maps & Simulation, Evidence, AI & Research, System & Audit) | ✅ | Every page has the Night Desk frame (navy top bar, navy page header, phone tab bar). Every management page has the Night Desk layout (21 and 22 Nov 2026), including the full-screen Maps stage. The resident page keeps its older layout until step 4.3, but shows the new pins. |
+| Management website: six pages (Overview, Incidents, Maps & Simulation, Evidence, AI & Research, System & Audit) | ✅ | Every page has the Night Desk frame (navy top bar, navy page header, phone tab bar). Every management page has the Night Desk layout (21 and 22 Nov 2026), including the full-screen Maps stage. The resident website has its own Night Desk layout since step 4.3. |
 | Management sign-in | ✅ | A shared development key only. **Not real accounts.** |
 | Report review: list and detail, approve or reject with a reason | ✅ | Pinned decision bar, keyboard shortcuts (J/K, A, R, then Enter), next report opens after a decision, works at phone width |
 | Private sample photos with separate approval before anything is public | ✅ | |
 | Incident grouping with required operator reasons and an audit log | ✅ | |
 | Geographic map with BBR road lines and report markers | ✅ | The real 1,269-line road file lives only on the owner's PC. The GitHub copy of `public/data/bbr-roads.geojson` is empty. Since step 2.3 the lines are read from Postgres after `npm run db:import-roads`, and from the file before that. |
-| Resident web page (map, simulation, practice reports) | ✅ | To be restructured by the design revamp |
+| Resident website: map, report in three steps, My reports | ✅ | Step 4.3 (23 Nov 2026). The simulation lives only under management Maps & Simulation. |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 323 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 335 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
-| Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident pages follow in step 4.3. Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
-| Residents can see the full outcome of a report (including "Resolved") | ❌ | The public reports API does not expose incident status |
-| "My reports" on the resident website | ❌ | |
+| Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident website followed in step 4.3 (23 Nov 2026). Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
+| Residents can see the full outcome of a report (including "Resolved") | ✅ | `GET /api/v2/hazards/status` (step 4.3): review state, incident status and last change only |
+| "My reports" on the resident website | ✅ | Ids kept in the browser only (step 4.3) |
 | Real user accounts and sign-in | ❌ | |
 | Hosted deployment and production database | ❌ | Write APIs only work in local development by design |
 | Bahasa Malaysia | ❌ | Open question |
@@ -77,6 +77,20 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 23 November 2026: Resident website in Night Desk (roadmap step 4.3)
+- **Why:** step 4.3. The resident page still mixed the map, the flood simulation and a practice form, and residents could not see what happened to their reports.
+- **What:**
+  - Three pages in the Night Desk frame: **Map** (`/resident`), **Report a problem** (`/resident/report`) and **My reports** (`/resident/mine`). Phones get a tab bar; desktop gets the top bar links. Mockups: `docs/design/night-desk/8-resident-phone.png` and `9-resident-desktop.png`.
+  - **Map:** reports inside the active area, newest first, in "On the map now", linked to the pins. Approved photos show in the selected card. Roads come from the shared loader (the database after `npm run db:import-roads`).
+  - **Report in three steps:** what and how bad, then where (drag the map under a fixed pin, or "Use my location"), then a few words and an optional photo. It is sent to the existing `POST /api/v2/hazards` and photo route, so the server checks are unchanged. The "Sent" screen shows the progress track.
+  - **My reports:** ids, type, severity and send time only, in the browser. Progress comes from the new `GET /api/v2/hazards/status?ids=…`, which returns public fields only: Being checked, Confirmed, Could not confirm and Resolved.
+  - The flood simulation, connectivity checker and practice form left the resident page; they remain under management Maps & Simulation. The unused `GeographicReferenceWorkspace` and `ManagementControls` were removed.
+- **Privacy:** location is asked for only when "Use my location" is pressed, and it only moves the map. The browser keeps no place and no report text.
+- **Checked:**
+  - 335 tests pass (new: `resident-website`; five older tests now point at the Maps stage or the new resident files); typecheck and production build pass.
+  - Run against a test Postgres with fictional reports in every state (being checked, confirmed, rejected, resolved). Screenshots were taken at 390 px and 1440 px of the map, a selected report, each step (including the "choose a type" message), the sent screen and My reports. A real report and its storage were sent through the phone flow. No browser errors.
+  - Not checked: map tiles (the test machine cannot reach OpenStreetMap), real GPS, and the owner's iPhone.
 
 ### 23 November 2026: Road lines in the database (roadmap step 2.3)
 - **Why:** step 2.3. Road lines were plain files that every API opened on its own; later steps (closures, routing) need them in the database next to the reports.

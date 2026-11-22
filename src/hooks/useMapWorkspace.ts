@@ -15,8 +15,8 @@ import { ROAD_LINES_API } from "@/lib/road-lines";
 
 /**
  * Everything the area map needs: roads, submitted reports, filters, selection and the fictional report
- * form. Shared by the resident page's map (GeographicReferenceWorkspace) and the management Maps stage
- * (ManagementMapStage), so both behave the same and only their layout differs.
+ * form, for the management Maps stage (ManagementMapStage). The resident website has its own lighter
+ * map (src/components/resident) since step 4.3.
  */
 export function useMapWorkspace() {
   const [roads, setRoads] = useState<RoadFeature[]>([]);

@@ -69,7 +69,8 @@ test("private image approval and fictional/Osm disclaimers remain in the same es
  assert.match(incident,/V2HazardManager/);
  assert.match(evidence,/incidents#report-review/);
  assert.doesNotMatch(evidence,/<V2HazardManager\b/);
- assert.match(read("src/components/maps/GeographicReferenceWorkspace.tsx"),/Unverified map data/);
+ assert.match(read("src/components/maps/ManagementMapStage.tsx"),/Roads: OpenStreetMap, not verified/);
+ assert.match(read("src/components/resident/ResidentMapPage.tsx"),/Fictional demo reports\. They are not live road conditions/);
  assert.match(maps,/schematic/);
  assert.match(system,/read-only/);
 });

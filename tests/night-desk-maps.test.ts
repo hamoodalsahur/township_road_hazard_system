@@ -46,9 +46,8 @@ test("a map click only places a report while adding one", () => {
   assert.match(stage, /if \(reporting\) return; setSelectedHazardId\(id\)/, "pins do not steal the click while placing a report");
 });
 
-test("both map layouts share one source of data and rules", () => {
+test("the Maps stage takes its data and rules from one hook", () => {
   assert.match(stage, /const ws = useMapWorkspace\(\)/);
-  assert.match(read("src/components/maps/GeographicReferenceWorkspace.tsx"), /const ws = useMapWorkspace\(\)/);
   assert.match(stage, /<MapResearchSections ws=\{ws\} \/>/);
   assert.match(stage, /<RoadDetails ws=\{ws\} \/>/);
 });
