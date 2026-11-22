@@ -1,7 +1,7 @@
 # Design direction
 
 **Status:** approved by the owner on 9 November 2026. Style updated on 10 November 2026 (**Crisp Modern** light theme, **Night Ops** dark mode) and again on **21 November 2026**, when the owner chose **Night Desk** from six mockup options: navy chrome (top bar and page headers) around a light work area, set in Barlow. Night Desk replaces Crisp Modern; Night Ops stays the plan for a full dark mode. The order of work is in [roadmap.md](roadmap.md), phases 1, 3 and 4.
-**Reference mockups (current, Night Desk):** [overview](design/night-desk/1-overview.png), [incidents](design/night-desk/2-incidents.png), [maps](design/night-desk/3-maps.png), [evidence](design/night-desk/4-evidence.png), [system](design/night-desk/5-system.png), [operator phone](design/night-desk/6-phone-operator.png) and [resident phone](design/night-desk/7-phone-resident.png), approved 21 November 2026. The resident phone screens preview later roadmap steps (4.3 and 6).
+**Reference mockups (current, Night Desk):** [overview](design/night-desk/1-overview.png), [incidents](design/night-desk/2-incidents.png), [maps](design/night-desk/3-maps.png), [evidence](design/night-desk/4-evidence.png), [system](design/night-desk/5-system.png), [operator phone](design/night-desk/6-phone-operator.png) and [resident phone](design/night-desk/7-phone-resident.png), approved 21 November 2026. The resident phone screens preview later roadmap steps (4.3 and 6). The built resident website (step 4.3, 23 November 2026) follows [resident phone, all steps](design/night-desk/8-resident-phone.png) and [resident desktop](design/night-desk/9-resident-desktop.png).
 **Earlier mockups (superseded):** [design/reference-crisp-modern.png](design/reference-crisp-modern.png) (light) and [design/reference-night-ops-dark.png](design/reference-night-ops-dark.png) (dark). Incidents screen, approved 10 November 2026: [desktop](design/incidents-review-desktop.png) and [phone](design/incidents-review-phone.png). Overview, approved the same day: [desktop](design/overview-desktop.png). When this file and a mockup disagree, this file wins.
 **Applies to:** the management website, the resident website (this repository) and the resident mobile app (`township_system_mobile`).
 **Written:** 9 November 2026, against `main` at `71f6b50` (web) and `c8dfbdf` (mobile).
@@ -272,6 +272,12 @@ Rebuild it as the web version of the mobile app, with the same three jobs:
 
 The schematic flood simulation and connectivity checker are research tools, not resident tasks. They move to the management "Simulation" tab.
 
+**Built in step 4.3 (23 November 2026):** `/resident` (map), `/resident/report` and `/resident/mine`, in the Night Desk frame (navy top bar; white tab bar on phones).
+- **Map:** only reports inside the active service area, newest first, in "On the map now" (a bottom sheet on phones, a side panel on desktop). Picking a card or a pin selects both. An approved photo shows in the selected card. Road lines are drawn thin and grey under the pins.
+- **Report:** the web order is What, then Where, then Words and photo, as in the approved mockup (the phone app starts with Where). Step 2 keeps the pin fixed in the middle and moves the map under it. "Use my location" asks the browser only when pressed; the position only moves the map. The phone tab bar is hidden during the steps and a close button takes its place.
+- **My reports:** report ids, type, severity and send time only, in this browser (`laluan.myReports.v1`, at most 50). Progress comes from `GET /api/v2/hazards/status?ids=…`, which returns review state, incident status and the time of the last change, never notes, text, photos or places.
+- **Not built yet:** "Your way home" and notifications (phase 6); the mockup's "Near you" distances (they need the resident's location).
+
 ### Mobile app
 
 - **Tabs:** Map, Report, My reports, About. Report is a tab rather than a floating button, so it is always one tap away and keeps its label.
@@ -363,8 +369,8 @@ Several unit tests assert exact disclaimer wording (for example `tests/v211-mana
 
 The design needs these behaviours, which do not exist yet:
 
-1. **Report outcome for residents:** expose a linked incident's status (and the time of the last change) in the public reports API, so "My reports" can show the full lifecycle. Only public fields, never operator notes.
-2. **"My reports" on the resident website:** store sent report IDs in the browser, as the mobile app already does on the phone.
+1. ✅ (step 4.3) **Report outcome for residents:** expose a linked incident's status (and the time of the last change) in the public reports API, so "My reports" can show the full lifecycle. Only public fields, never operator notes.
+2. ✅ (step 4.3) **"My reports" on the resident website:** store sent report IDs in the browser, as the mobile app already does on the phone.
 3. **Clustering** for overlapping markers on both web and mobile.
 4. **Reviewer keyboard shortcuts** on the Incidents page.
 5. **Localisation plumbing:** a string catalogue in each repository.
