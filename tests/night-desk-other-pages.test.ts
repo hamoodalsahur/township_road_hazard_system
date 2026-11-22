@@ -72,7 +72,8 @@ test("the older panels follow the Night Desk type rules", () => {
   for (const file of ["src/components/management/DemoDataQuality.tsx", "src/components/management/GeoSourceManifest.tsx", "src/components/management/RoadTopologyQuality.tsx",
     "src/components/management/RoadAccessTags.tsx", "src/components/audit/AuditPanel.tsx", "src/components/management/ResearchExport.tsx",
     "src/components/management/AiEvaluationWorkbench.tsx", "src/components/management/EvidenceInventory.tsx", "src/components/management/EvidenceConsistency.tsx",
-    "src/components/maps/GeographicReferenceWorkspace.tsx", "src/components/management/pages/ResearchPage.tsx"]) {
+    "src/components/maps/GeographicReferenceWorkspace.tsx", "src/components/management/pages/ResearchPage.tsx",
+    "src/components/maps/ManagementMapStage.tsx", "src/components/maps/MapSharedSections.tsx"]) {
     const source = read(file);
     assert.doesNotMatch(source, /\buppercase\b|font-bold|font-extrabold|lucide-react|violet-|\btext-(xs|sm|lg|xl|2xl)\b/, file);
   }

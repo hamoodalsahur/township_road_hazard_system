@@ -1,20 +1,12 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
-import { validRoadCollection, type RoadFeature } from "@/lib/bbr-roads";
-import { filterRoads, roadCategory, type RoadFilter } from "@/lib/bbr-road-display";
-import { ArrowSquareOutIcon, MapPinIcon } from "@phosphor-icons/react";
-import { bbrReferencePoints } from "@/lib/bbr-reference";
-import { reviewSmallGroups } from "@/lib/bbr-small-groups";
-import { roadReviewFlags } from "@/lib/bbr-road-review-flags";
-import {reviewedDemoVicinityStrokes,DEMO_IMPACT_LEGEND,type ReviewedDemoReport} from "@/lib/v215-road-vicinity";
-import { inspectOsmNodeTopology } from "@/lib/bbr-osm-topology";
-import { CATEGORY_LABELS, DEMO_HAZARDS, HAZARD_CATEGORIES, filterDemoHazards, type HazardCategory } from "@/lib/demo-hazards";
+import { type RoadFilter } from "@/lib/bbr-road-display";
+import {DEMO_IMPACT_LEGEND} from "@/lib/v215-road-vicinity";
+import { CATEGORY_LABELS, HAZARD_CATEGORIES, type HazardCategory } from "@/lib/demo-hazards";
 import { HAZARD_SYMBOLS } from "@/lib/hazard-symbols";
-import { prepareDemoPhoto } from "@/lib/demo-photo-client";
-import {inspectDemoReportDraft} from "@/lib/v213-report-draft";
-import {useServiceArea} from "@/hooks/useServiceArea";
+import { useMapWorkspace } from "@/hooks/useMapWorkspace";
+import { MapResearchSections, RoadDetails } from "./MapSharedSections";
 
 const GeographicReferenceMap = dynamic(() => import("./GeographicReferenceMap"), {
   ssr: false,
@@ -30,138 +22,17 @@ const categories: { value: RoadFilter; label: string }[] = [
 ];
 
 export default function GeographicReferenceWorkspace() {
-  const [roads, setRoads] = useState<RoadFeature[]>([]);
-  const [roadMessage, setRoadMessage] = useState("Checking for locally imported roads…");
-  const [filter, setFilter] = useState<RoadFilter>("all");
-  const [groupNumber, setGroupNumber] = useState(0);
-  const [selectedRoadId, setSelectedRoadId] = useState<string | null>(null);
-  const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
-  const [hazardCategory, setHazardCategory] = useState<HazardCategory | "all">("all");
-  const [showExampleHazards, setShowExampleHazards] = useState(false);
-  const [selectedHazardId, setSelectedHazardId] = useState<string | null>(null);
-  const [storedHazards, setStoredHazards] = useState<typeof DEMO_HAZARDS>([]);
-  const [hazardError, setHazardError] = useState("");
-  const [draftPosition, setDraftPosition] = useState<[number,number] | null>(null);
-  const [reportCategory, setReportCategory] = useState<HazardCategory>("fallen_tree");
-  const [reportImpact, setReportImpact] = useState("unknown");
-  const [reportDescription, setReportDescription] = useState("");
-  const [sendingReport, setSendingReport] = useState(false);
-  const [reportMessage, setReportMessage] = useState("");
-  const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
-  const [photoInputKey,setPhotoInputKey] = useState(0);
-  const [reportPhase,setReportPhase] = useState<"idle"|"saving"|"attaching">("idle");
-  const serviceArea=useServiceArea().data;
-  const hints=inspectDemoReportDraft(reportDescription,draftPosition,evidenceFile,serviceArea.area);
-  const [photoApprovedIds, setPhotoApprovedIds] = useState<string[]>([]);
-  const [reviewedReports,setReviewedReports]=useState<ReviewedDemoReport[]>([]);
-  const [showVicinityStrokes,setShowVicinityStrokes]=useState(true);
-  async function loadStoredHazards() {
-    try {
-      const response=await fetch("/api/v2/hazards",{cache:"no-store"});
-      if(!response.ok) throw Error("Fictional report feed unavailable; check the existing local connection without resetting your database.");
-      const payload=await response.json() as {reports:{id:string;category:HazardCategory;description:string;longitude:number;latitude:number;impact:string;reviewState:string;createdAt:string;hasApprovedPhoto:boolean}[]};
-      setPhotoApprovedIds(payload.reports.filter(item=>item.hasApprovedPhoto).map(item=>item.id));
-      setReviewedReports(payload.reports.map(item=>({
-        id:item.id,longitude:item.longitude,latitude:item.latitude,impact:item.impact as ReviewedDemoReport["impact"],
-        reviewState:item.reviewState
-      })));
-      setStoredHazards(payload.reports.map(item=>({
-        id:item.id,category:item.category,title:CATEGORY_LABELS[item.category]+" (submitted demo)",
-        description:item.description,coordinates:[item.longitude,item.latitude],
-        impact:item.impact as typeof DEMO_HAZARDS[number]["impact"],
-        reportedAt:item.createdAt,status:"fictional_unverified",sourceMode:"simulation"
-      })));
-      setHazardError("");
-    } catch(e){setHazardError(e instanceof Error?e.message:"Could not load demo reports");}
-  }
-  useEffect(()=>{
-    void loadStoredHazards();
-    const listener=()=>{void loadStoredHazards();};
-    window.addEventListener("township-hazards-updated",listener);
-    return ()=>window.removeEventListener("township-hazards-updated",listener);
-  },[]);
-  // Submitted reports appear by default; four authored example pins are opt-in.
-  // Rejected submissions remain in the review queue but not the operational map.
-  const rejectedIds=new Set(reviewedReports.filter(item=>item.reviewState==="rejected").map(item=>item.id));
-  const submittedMapHazards=storedHazards.filter(item=>!rejectedIds.has(item.id));
-  const allHazards=[...submittedMapHazards,...(showExampleHazards?DEMO_HAZARDS:[])];
-  const visibleHazards=filterDemoHazards(hazardCategory,allHazards);
-  const selectedHazard = allHazards.find(hazard => hazard.id === selectedHazardId) ?? null;
-  async function submitDemoHazard() {
-    if(!hints.canSubmit||!draftPosition){
-      setReportMessage(hints.locationError??hints.descriptionError??hints.photoError??"Complete the fictional report form.");
-      return;
-    }
-    setSendingReport(true);setReportPhase("saving");setReportMessage("");
-    try {
-      const response=await fetch("/api/v2/hazards",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({category:reportCategory,impact:reportImpact,description:reportDescription,coordinates:draftPosition})
-      });
-      const result=await response.json() as {error?:string;report?:{id:string}};
-      if(!response.ok)throw Error(result.error??"Report not saved");
-      let photoNote = "";
-      if(evidenceFile && result.report?.id) {
-        setReportPhase("attaching");
-        try {
-          const encoded = await prepareDemoPhoto(evidenceFile);
-          const upload=await fetch(`/api/v2/hazards/${result.report.id}/evidence`,{
-            method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(encoded)
-          });
-          if(!upload.ok) {
-            const failure=await upload.json() as {error?:string};
-            throw Error(failure.error??"Photo upload failed");
-          }
-          photoNote=" Private demo photo attached for operator review.";
-        } catch (photoError) {
-          photoNote=" Report saved, but photo could not be attached: "+(photoError instanceof Error?photoError.message:"unknown issue");
-        }
-      }
-      setReportDescription("");setDraftPosition(null);setEvidenceFile(null);setPhotoInputKey(x=>x+1);
-      setReportMessage("Fictional incident submitted. No road closure created."+photoNote);
-      window.dispatchEvent(new Event("township-hazards-updated"));
-      await loadStoredHazards();
-    } catch(e){setReportMessage(e instanceof Error?e.message:"Unable to submit demo hazard");}
-    finally{setSendingReport(false);setReportPhase("idle");}
-  }
-
-  useEffect(() => {
-    let active = true;
-    fetch("/data/bbr-roads.geojson", { cache: "no-store" })
-      .then(async response => {
-        if (!response.ok) throw new Error("Road file unavailable");
-        const data: unknown = await response.json();
-        if (!validRoadCollection(data)) throw new Error("Road file failed validation");
-        if (active) {
-          setRoads(data.features);
-          setRoadMessage(data.features.length
-            ? `${data.features.length} OSM mapped road lines imported (unverified, not a connected graph).`
-            : "No road lines imported yet. Run npm run geo:import locally.");
-        }
-      }).catch(() => { if (active) setRoadMessage("Road file missing or invalid; showing reference points only."); });
-    return () => { active = false; };
-  }, []);
-
-  const smallGroups = useMemo(() => reviewSmallGroups({ type: "FeatureCollection", features: roads }).smallerGroups, [roads]);
-  const topology = useMemo(() => inspectOsmNodeTopology({ type: "FeatureCollection", features: roads }), [roads]);
-  const selectedNode = topology.reviewExamples.find(item => item.nodeId === selectedNodeId) ?? null;
-  const selectedNodePosition = selectedNode ? selectedNode.coordinate.split(",").map(Number) as [number, number] : null;
-  const activeGroup = smallGroups.find(group => group.groupNumber === groupNumber);
-  const visibleRoads = useMemo(() => {
-    const byCategory = filterRoads(roads, filter);
-    if (!activeGroup) return byCategory;
-    const ids = new Set(activeGroup.ways.map(road => road.id));
-    return byCategory.filter(road => ids.has(road.properties.id));
-  }, [roads, filter, activeGroup]);
-  const vicinityStrokes=useMemo(()=>reviewedDemoVicinityStrokes(roads,reviewedReports,serviceArea.area),[roads,reviewedReports,serviceArea.area]);
-  const selectedRoad = roads.find(road => road.properties.id === selectedRoadId) ?? null;
-  const reviewFlags = selectedRoad ? roadReviewFlags(selectedRoad) : [];
-  const counts = useMemo(() => ({
-    major: filterRoads(roads, "major").length,
-    local: filterRoads(roads, "local").length,
-    service: filterRoads(roads, "service").length,
-    other: filterRoads(roads, "other").length,
-  }), [roads]);
+  const ws = useMapWorkspace();
+  const {
+    roads, roadMessage, filter, setFilter, groupNumber, setGroupNumber, selectedRoadId, setSelectedRoadId, selectedNodeId, setSelectedNodeId,
+    hazardCategory, setHazardCategory, showExampleHazards, setShowExampleHazards, selectedHazardId, setSelectedHazardId,
+    draftPosition, setDraftPosition, reportCategory, setReportCategory, reportImpact, setReportImpact,
+    reportDescription, setReportDescription, sendingReport, reportMessage, setReportMessage, evidenceFile, setEvidenceFile, photoInputKey, setPhotoInputKey,
+    reportPhase, serviceArea, hints, photoApprovedIds, showVicinityStrokes, setShowVicinityStrokes,
+    submittedMapHazards, visibleHazards, selectedHazard, submitDemoHazard,
+    smallGroups, topology, selectedNode, selectedNodePosition, activeGroup, visibleRoads, vicinityStrokes, selectedRoad, reviewFlags, counts,
+    hazardError, reviewStates,
+  } = ws;
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6" aria-label="BBR geographic reference map">
@@ -273,7 +144,7 @@ export default function GeographicReferenceWorkspace() {
       </details>
       {hazardError?<p role="status" className="mt-2 text-caption text-slate-900">{hazardError}</p>:null}
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <GeographicReferenceMap serviceArea={serviceArea} roads={visibleRoads} vicinityStrokes={showVicinityStrokes?vicinityStrokes.filter(s=>visibleRoads.some(road=>road.properties.id===s.wayId)):[]} selectedRoadId={selectedRoadId} onSelectRoad={id => { setSelectedRoadId(id); setSelectedHazardId(null); }} focusGroup={groupNumber} selectedNodePosition={selectedNodePosition} hazards={visibleHazards} approvedPhotoIds={photoApprovedIds} onSelectHazard={id => { setSelectedHazardId(id); setSelectedRoadId(null); }} selectedHazardId={selectedHazardId} selectedLocation={draftPosition} onChooseLocation={position=>{setDraftPosition(position);setReportMessage("");}} />
+        <GeographicReferenceMap serviceArea={serviceArea} roads={visibleRoads} vicinityStrokes={showVicinityStrokes?vicinityStrokes.filter(s=>visibleRoads.some(road=>road.properties.id===s.wayId)):[]} selectedRoadId={selectedRoadId} onSelectRoad={id => { setSelectedRoadId(id); setSelectedHazardId(null); }} focusGroup={groupNumber} selectedNodePosition={selectedNodePosition} hazards={visibleHazards} approvedPhotoIds={photoApprovedIds} onSelectHazard={id => { setSelectedHazardId(id); setSelectedRoadId(null); }} selectedHazardId={selectedHazardId} selectedLocation={draftPosition} onChooseLocation={position=>{setDraftPosition(position);setReportMessage("");}} reviewStates={reviewStates} />
         <aside className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 text-small" aria-live="polite">
           {activeGroup ? <p className="mb-3 rounded-lg bg-slate-50 p-2 text-caption font-medium text-slate-900">Group {activeGroup.groupNumber}: {activeGroup.roadLineCount} mapped lines. Grouping is geometric only, not proof of disconnected roads.</p> : null}
           {selectedHazard ? (
@@ -288,38 +159,7 @@ export default function GeographicReferenceWorkspace() {
             </div>
           ) : null}
           <h3 className="text-caption font-semibold text-slate-500">Road details</h3>
-          {selectedRoad ? (
-            <div className="mt-3 space-y-2">
-              <p className="break-words font-semibold">{selectedRoad.properties.name}</p>
-              <p>OSM type: <span className="font-medium">{selectedRoad.properties.highway.replaceAll("_", " ")}</span></p>
-              <p>Category: {roadCategory(selectedRoad.properties.highway)}</p>
-              <p className="text-caption text-slate-900">Blue means OSM road type only; dashed orange/red nearby sections are fictional report-vicinity indicators and do not establish that this road is blocked.</p>
-              {reviewFlags.length > 0 ? (
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <h4 className="font-semibold text-slate-900">Mapped tags to review</h4>
-                  <ul className="mt-2 list-disc space-y-1 pl-4 text-caption text-slate-900">
-                    {reviewFlags.map(flag => <li key={flag.code}>{flag.label}</li>)}
-                  </ul>
-                  <p className="mt-2 text-caption text-slate-900">Review flags are based on unverified OSM tags, not actual road availability or flood safety.</p>
-                </div>
-              ) : <p className="text-caption text-slate-600">No review flags from the selected tags. Other restrictions may still exist.</p>}
-              <div className="rounded-lg border border-slate-200 bg-white p-3">
-                <h4 className="font-semibold">Mapped road attributes</h4>
-                <dl className="mt-2 space-y-1 text-caption">
-                  {(["oneway", "access", "bridge", "tunnel", "layer", "motor_vehicle", "junction"] as const).map(tag => (
-                    <div key={tag} className="flex justify-between gap-3">
-                      <dt className="text-slate-600">{tag.replaceAll("_", " ")}</dt>
-                      <dd className="break-words text-right font-medium">{selectedRoad.properties[tag] ?? "Not recorded"}</dd>
-                    </div>
-                  ))}
-                </dl>
-                <p className="mt-3 text-caption text-slate-900">OSM values are unverified. Missing tags do not mean unrestricted access or safe conditions.</p>
-              </div>
-              <p className="text-slate-600">Verification: mapped by OSM contributors; not independently checked.</p>
-              <a href={selectedRoad.properties.sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 break-all font-semibold text-teal-800 underline">Inspect OSM way <ArrowSquareOutIcon size={14} aria-hidden="true"/></a>
-              <button type="button" className="block rounded-lg border px-3 py-1 text-caption" onClick={() => setSelectedRoadId(null)}>Clear selection</button>
-            </div>
-          ) : <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-white p-4"><MapPinIcon size={20} className="text-slate-700" aria-hidden="true" /><p className="mt-3 font-semibold text-slate-800">Select a road to explore</p><p className="mt-1 text-small leading-6 text-slate-600">Click any road line on the map to see its name, mapped attributes and original source.</p></div>}
+          <RoadDetails ws={ws} />
           <hr className="my-4 border-slate-200"/>
           <h4 className="text-caption font-semibold text-slate-500">Mapped categories</h4>
           <ul className="mt-2 space-y-1 text-caption text-slate-600">
@@ -330,66 +170,7 @@ export default function GeographicReferenceWorkspace() {
           </ul>
         </aside>
       </div>
-      <details className="group mt-4 rounded-xl border border-slate-200 bg-slate-50/80">
-        <summary className="cursor-pointer rounded-xl px-4 py-3 text-small font-semibold text-slate-700 transition hover:bg-slate-100 focus-visible:outline-teal-600">Advanced research · Node topology and source inspection <span className="ml-1 text-caption font-normal text-slate-500">(expand)</span></summary>
-        <div className="border-t border-slate-200 p-4" aria-label="OSM source node inspection">
-        <h3 className="font-semibold">Source-node topology inspection</h3>
-        {topology.status === "missing_node_ids" ? (
-          <p className="mt-2 text-small text-slate-600">This imported file does not include original OSM node IDs. Back up the GeoJSON and refresh it using the upgraded importer to enable node-based inspection. Coordinate grouping alone is not proof of road access.</p>
-        ) : (
-          <>
-            <p className="mt-2 text-caption text-slate-600">Research only · source node references on {topology.waysWithNodeIds} of {topology.roadLines} road lines. {topology.waysWithoutNodeIds > 0 ? "Partial source coverage: unmatched ways are not assessed." : "All imported ways have source node IDs."}</p>
-            <dl className="mt-3 grid grid-cols-2 gap-3 text-caption sm:grid-cols-4">
-              <div><dt className="text-slate-500">Shared OSM nodes</dt><dd className="text-heading font-semibold">{topology.sharedOsmNodes}</dd></div>
-              <div><dt className="text-slate-500">Candidate groups</dt><dd className="text-heading font-semibold">{topology.candidateWayGroups}</dd></div>
-              <div><dt className="text-slate-500">Coordinate collisions</dt><dd className="text-heading font-semibold">{topology.coordinateCollisionLocations}</dd></div>
-              <div><dt className="text-slate-500">Review flags</dt><dd className="text-heading font-semibold">{topology.flaggedSharedNodes}</dd></div>
-            </dl>
-            {topology.reviewExamples.length > 0 ? (
-              <div className="mt-3 flex flex-wrap items-end gap-3">
-                <label className="text-small font-semibold">
-                  Inspect flagged OSM node
-                  <select value={selectedNodeId ?? ""} onChange={event => {
-                    const id = Number(event.target.value);
-                    setSelectedNodeId(event.target.value ? id : null);
-                    setGroupNumber(0); setFilter("all"); setSelectedRoadId(null);
-                  }} className="mt-1 block max-w-full rounded-lg border border-slate-300 bg-white px-3 py-2">
-                    <option value="">Choose source node</option>
-                    {topology.reviewExamples.slice(0, 30).map(item =>
-                      <option key={item.nodeId} value={item.nodeId}>Node {item.nodeId} · {item.reasons[0]}</option>
-                    )}
-                  </select>
-                </label>
-                {selectedNode ? (
-                  <div className="text-caption text-slate-700">
-                    <p>Mapped ways: {selectedNode.wayIds.join(", ")}</p>
-                    <p>Review: {selectedNode.reasons.join("; ")}</p>
-                    <a href={selectedNode.sourceUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-teal-800 underline">View OSM node source</a>
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
-            <p className="mt-3 text-caption text-slate-900">Shared source node IDs indicate OSM data relationships only. They do not verify turns, accessibility, road safety or live flooding. The map remains separate from the demonstration scenario.</p>
-          </>
-        )}
-      </div>
-      </details>
-      <p role="status" className="mt-3 text-caption text-slate-500">{roadMessage}</p>
-      <p className="mt-3 text-caption text-slate-600">Map data © OpenStreetMap contributors. The background tiles require internet access; line data comes from your imported GeoJSON file.</p>
-      <details className="mt-3 rounded-xl border border-slate-200 bg-white">
-        <summary className="cursor-pointer px-4 py-3 text-small font-semibold text-slate-700 transition hover:bg-slate-50">Reference points, attribution and source links <span className="ml-1 text-caption font-normal text-slate-500">(expand)</span></summary>
-        <div className="grid gap-3 border-t border-slate-200 p-4 md:grid-cols-2">
-        {bbrReferencePoints.features.map(feature => (
-          <article key={feature.properties.id} className="rounded-lg border border-slate-200 p-3 text-small">
-            <h4 className="font-semibold">{feature.properties.name}</h4>
-            <p className="mt-1 text-slate-600">{feature.properties.evidence}</p>
-            <p className="mt-1 text-caption text-slate-500">WGS84: {feature.geometry.coordinates[1]}, {feature.geometry.coordinates[0]}</p>
-            <a className="mt-2 inline-flex items-center gap-1 font-semibold text-teal-800 underline"
-              href={feature.properties.sourceUrl} target="_blank" rel="noopener noreferrer">View mapped source <ArrowSquareOutIcon size={14} aria-hidden="true"/></a>
-          </article>
-        ))}
-      </div>
-      </details>
+      <MapResearchSections ws={ws} />
       <p className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-caption leading-5 text-slate-900"><strong>Geographic reference only.</strong> This OSM layer is not an official township boundary or verified connected network, and cannot establish actual flood conditions, road access or safe directions. The simulation below uses separate fictional data.</p>
     </section>
   );

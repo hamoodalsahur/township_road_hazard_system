@@ -29,15 +29,7 @@ a { text-decoration: none; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
 }
 
-/* Category-specific markers on the research map. Text labels accompany every symbol. */
-.hazard-map-marker { background: transparent; border: 0; }
-.hazard-map-marker__symbol {
-  display: flex; align-items: center; justify-content: center;
-  width: 40px; height: 40px; border: 3px solid white;
-  border-radius: 14px 14px 14px 4px;
-  background: var(--hazard-color); box-shadow: 0 3px 12px rgba(16, 40, 64, 0.26);
-  color: #fff; font-size: 22px; line-height: 1; transform: rotate(-7deg);
-  transition: transform .15s ease;
-}
-.hazard-map-marker__symbol--selected { outline: 3px solid #0B7350; outline-offset: 2px; transform: scale(1.12) rotate(-7deg); }
-.leaflet-marker-icon.hazard-map-marker:focus-visible { outline: 3px solid #0B7350; outline-offset: 3px; }
+/* Night Desk pins on the Leaflet map, and calmer background tiles so hazards stand out. */
+.hazard-map-pin { background: transparent; border: 0; }
+.leaflet-marker-icon.hazard-map-pin:focus-visible { outline: 3px solid #1F5A94; outline-offset: 2px; border-radius: 10px; }
+.map-tiles-quiet { filter: grayscale(0.85) brightness(1.04) contrast(0.92); }
