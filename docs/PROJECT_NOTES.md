@@ -45,7 +45,7 @@ The two are connected only through the website's API over the local network. The
 | Resident web page (map, simulation, practice reports) | ✅ | To be restructured by the design revamp |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 308 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 315 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
 | Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident pages follow in step 4.3. Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
 | Residents can see the full outcome of a report (including "Resolved") | ❌ | The public reports API does not expose incident status |
@@ -77,6 +77,18 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 22 November 2026: Road lines for your own area
+- **Why:** the owner wants to try the system around where they actually are, not the hackathon's BBR. Step 2.1 already moved the accepted area; the road lines were still BBR-only.
+- **What:**
+  - Each area has its own road file: BBR keeps `public/data/bbr-roads.geojson` (never touched); any other area uses `public/data/roads/<area>.geojson`, which is gitignored.
+  - `npm run geo:import-area` downloads that file from OpenStreetMap for the active area (bounding box plus about 200 m, roads touching the area only, no footpaths). It refuses BBR and a broken area file, will not overwrite an existing file without `--replace`, keeps the old one in `backup/`, and tries two public mirrors if the main server is busy.
+  - Every road reader follows the active area: the Maps stage, the Overview and report mini maps, road candidates, topology, source manifest and access tags.
+  - The Overview map only draws reports inside the active area, and says how many older ones are outside it. They stay in Incidents.
+- **Privacy:** the owner's area file and road file exist only on their PC. No coordinates are in Git, the PR or these notes.
+- **Checked:**
+  - 315 tests pass (new: `area-road-files`); typecheck and build pass.
+  - The importer's refusals were run by hand (missing area file, BBR). The download itself could not be tried here (no access to OpenStreetMap's servers from the test machine); it is the owner's step.
 
 ### 22 November 2026: Postgres in Docker (roadmap step 2.2)
 - **Why:** SQLite was fine for a demo, but routing, hosting later (Supabase) and several people using the system need a real database server. The owner chose Postgres in Docker on their PC.

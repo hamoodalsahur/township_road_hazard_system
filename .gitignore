@@ -27,6 +27,8 @@ yarn-error.log*
 # IDE
 .vscode/
 .idea/
+# Road lines for your own areas (npm run geo:import-area). BBR keeps public/data/bbr-roads.geojson.
+/public/data/roads/
 # Local backups made before switching branches (never commit these)
 /backup/
 # Service areas: only the BBR default and the template are shared. Personal test areas stay local.

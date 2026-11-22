@@ -1,7 +1,7 @@
 // Server only: uses the file system. Browsers get the area from GET /api/service-area.
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { AREA_ID_PATTERN, DEFAULT_SERVICE_AREA, parseServiceArea, type ServiceArea } from "./service-area";
+import { AREA_ID_PATTERN, DEFAULT_SERVICE_AREA, parseServiceArea, roadsFileFor, type ServiceArea } from "./service-area";
 
 export type LoadedServiceArea = { area: ServiceArea; configuredId: string; fallbackReason: string | null };
 
@@ -28,6 +28,11 @@ export function loadServiceAreaFrom(directory: string, configured: string | unde
   } catch (error) {
     return fallback(`config/service-areas/${configuredId}.geojson could not be used: ${error instanceof Error ? error.message : "invalid file"}.`);
   }
+}
+
+/** Full path of the active area's road file (BBR: public/data/bbr-roads.geojson). */
+export function activeRoadsPath(): string {
+  return path.join(process.cwd(), "public", "data", roadsFileFor(loadServiceArea().area.id));
 }
 
 let cached: LoadedServiceArea | null = null;
