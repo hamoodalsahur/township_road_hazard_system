@@ -13,13 +13,16 @@ export type OsmWay = {
 
 const RETAINED_TAGS = ["oneway", "bridge", "tunnel", "layer", "access", "motor_vehicle", "junction"] as const;
 
-export function convertOsmWay(element: OsmWay): RoadFeature | null {
+export type OsmBounds = { south: number; west: number; north: number; east: number };
+
+/** Turns one Overpass way into a road line, or null. Points must lie within `bounds` plus `margin` degrees. */
+export function convertOsmWay(element: OsmWay, bounds: OsmBounds = RESEARCH_BOUNDS, margin = 0.02): RoadFeature | null {
   if (element.type !== "way" || !Number.isSafeInteger(element.id) || element.id <= 0 || !Array.isArray(element.geometry)) return null;
   const coordinates = element.geometry.map(point => [point.lon, point.lat] as [number, number]);
   if (coordinates.length < 2 || coordinates.length > 5000 || coordinates.some(([lon, lat]) =>
     !Number.isFinite(lon) || !Number.isFinite(lat) ||
-    lat < RESEARCH_BOUNDS.south - 0.02 || lat > RESEARCH_BOUNDS.north + 0.02 ||
-    lon < RESEARCH_BOUNDS.west - 0.02 || lon > RESEARCH_BOUNDS.east + 0.02
+    lat < bounds.south - margin || lat > bounds.north + margin ||
+    lon < bounds.west - margin || lon > bounds.east + margin
   )) return null;
 
   // A malformed node array must not be paired with otherwise valid geometry.

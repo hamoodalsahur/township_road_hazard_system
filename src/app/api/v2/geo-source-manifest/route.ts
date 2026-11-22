@@ -1,9 +1,9 @@
 import {readFile} from "node:fs/promises";
-import path from "node:path";
 import {createHash} from "node:crypto";
 import {NextResponse} from "next/server";
 import {canUseDemoOperatorApi} from "@/lib/demo-access";
 import {validRoadCollection} from "@/lib/bbr-roads";
+import {activeRoadsPath} from "@/lib/service-area-server";
 import {summarizeLocalGeoSource} from "@/lib/v2-geo-source-manifest";
 export const dynamic="force-dynamic";
 
@@ -14,7 +14,7 @@ export async function GET(request:Request){
   {status:403,headers:{"Cache-Control":"private, no-store"}}
  );
  try{
-  const bytes=await readFile(path.join(process.cwd(),"public","data","bbr-roads.geojson"));
+  const bytes=await readFile(activeRoadsPath());
   const raw:unknown=JSON.parse(bytes.toString("utf8"));
   if(!validRoadCollection(raw))return NextResponse.json(
     {error:"Local GeoJSON is missing or invalid"},

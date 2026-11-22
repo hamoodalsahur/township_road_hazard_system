@@ -11,6 +11,7 @@ import { CATEGORY_LABELS, DEMO_HAZARDS, filterDemoHazards, type HazardCategory }
 import { prepareDemoPhoto } from "@/lib/demo-photo-client";
 import { inspectDemoReportDraft } from "@/lib/v213-report-draft";
 import { useServiceArea } from "@/hooks/useServiceArea";
+import { roadsUrlFor } from "@/lib/service-area";
 
 /**
  * Everything the area map needs: roads, submitted reports, filters, selection and the fictional report
@@ -38,7 +39,9 @@ export function useMapWorkspace() {
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
   const [photoInputKey,setPhotoInputKey] = useState(0);
   const [reportPhase,setReportPhase] = useState<"idle"|"saving"|"attaching">("idle");
-  const serviceArea=useServiceArea().data;
+  const serviceAreaState=useServiceArea();
+  const serviceArea=serviceAreaState.data;
+  const areaId=serviceArea.area.id;
   const hints=inspectDemoReportDraft(reportDescription,draftPosition,evidenceFile,serviceArea.area);
   const [photoApprovedIds, setPhotoApprovedIds] = useState<string[]>([]);
   const [reviewedReports,setReviewedReports]=useState<ReviewedDemoReport[]>([]);
@@ -113,9 +116,12 @@ export function useMapWorkspace() {
     finally{setSendingReport(false);setReportPhase("idle");}
   }
 
+  // Road lines for the active area: BBR's original file, or public/data/roads/<id>.geojson for your own area.
   useEffect(() => {
+    if (!serviceAreaState.loaded) return;
     let active = true;
-    fetch("/data/bbr-roads.geojson", { cache: "no-store" })
+    setRoads([]); setSelectedRoadId(null);
+    fetch(roadsUrlFor(areaId), { cache: "no-store" })
       .then(async response => {
         if (!response.ok) throw new Error("Road file unavailable");
         const data: unknown = await response.json();
@@ -124,11 +130,13 @@ export function useMapWorkspace() {
           setRoads(data.features);
           setRoadMessage(data.features.length
             ? `${data.features.length} OSM mapped road lines imported (unverified, not a connected graph).`
-            : "No road lines imported yet. Run npm run geo:import locally.");
+            : `No road lines for ${serviceArea.area.name} yet. Run ${areaId === "bbr" ? "npm run geo:import" : "npm run geo:import-area"} locally.`);
         }
-      }).catch(() => { if (active) setRoadMessage("Road file missing or invalid; showing reference points only."); });
+      }).catch(() => { if (active) setRoadMessage(areaId === "bbr"
+        ? "Road file missing or invalid; showing reference points only."
+        : `No road lines for ${serviceArea.area.name} yet. Run npm run geo:import-area to download them from OpenStreetMap.`); });
     return () => { active = false; };
-  }, []);
+  }, [serviceAreaState.loaded, areaId]);
 
   const smallGroups = useMemo(() => reviewSmallGroups({ type: "FeatureCollection", features: roads }).smallerGroups, [roads]);
   const topology = useMemo(() => inspectOsmNodeTopology({ type: "FeatureCollection", features: roads }), [roads]);

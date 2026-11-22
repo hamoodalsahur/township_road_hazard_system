@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { CaretRightIcon } from "@phosphor-icons/react";
 import type { RoadFeature } from "@/lib/bbr-roads";
 import { loadRoads } from "@/lib/road-loader";
+import { useServiceArea } from "@/hooks/useServiceArea";
+import { isInsideServiceArea } from "@/lib/service-area";
 import { fitView, projectPercent, viewRoadPaths } from "@/lib/overview-map";
 import { categoryLabel, reviewStateOf, severityOf, SEVERITY } from "@/lib/hazard-presentation";
 import HazardMarker from "./HazardMarker";
@@ -25,21 +27,29 @@ export default function OverviewMap({ reports, selectedId, onSelect, wait, revie
   reviewHref: (id: string) => string;
 }) {
   const [roads, setRoads] = useState<RoadFeature[] | null>(null);
+  const { data: serviceArea, loaded } = useServiceArea();
+  const areaId = serviceArea.area.id;
   useEffect(() => {
+    if (!loaded) return; // wait for the active area, so the right road file is loaded
     let live = true;
-    void loadRoads().then(result => { if (live) setRoads(result); });
+    void loadRoads(areaId).then(result => { if (live) setRoads(result); });
     return () => { live = false; };
-  }, []);
-  const view = useMemo(() => fitView(reports, W, H), [reports]);
+  }, [loaded, areaId]);
+  // Only reports inside the active area are drawn, so old reports from another area do not
+  // stretch the map across the country. They still appear in the decision list and in Incidents.
+  const inArea = useMemo(() => reports.filter(r => isInsideServiceArea(serviceArea.area, r.longitude, r.latitude)), [reports, serviceArea.area]);
+  const outside = reports.length - inArea.length;
+  const view = useMemo(() => fitView(inArea, W, H), [inArea]);
   const paths = useMemo(() => (roads && view ? viewRoadPaths(roads, view) : []), [roads, view]);
   if (!view) return <div className="flex aspect-square items-center justify-center rounded-xl border border-slate-200 bg-slate-100 p-6 text-center text-small text-slate-600">
-    No reports with a location yet. New reports appear here as pins.
+    {outside ? `No reports inside ${serviceArea.area.name} yet. ${outside} older ${outside === 1 ? "report is" : "reports are"} outside this area and listed under Incidents.`
+      : "No reports with a location yet. New reports appear here as pins."}
   </div>;
 
   // Waiting reports are drawn above approved ones, and the selected one above everything.
   const order = (r: MapReport) => (r.id === selectedId ? 2 : reviewStateOf(r.reviewState).needsReview ? 1 : 0);
-  const pins = reports.slice().sort((a, b) => order(a) - order(b));
-  const selected = reports.find(r => r.id === selectedId) ?? null;
+  const pins = inArea.slice().sort((a, b) => order(a) - order(b));
+  const selected = inArea.find(r => r.id === selectedId) ?? null;
   const at = selected ? projectPercent(view, selected.longitude, selected.latitude) : null;
   const selectedWait = selected ? wait(selected.id) : null;
 
@@ -73,6 +83,7 @@ export default function OverviewMap({ reports, selectedId, onSelect, wait, revie
         <span aria-hidden="true" className="h-2 w-2 rounded-[3px]" style={{ background: s.solid }} />{s.label}</span>)}
       <span className="inline-flex items-center gap-2"><span aria-hidden="true" className="h-3 w-3 rounded-full border-2 border-slate-900" />Outlined: needs review</span>
       {roads !== null && paths.length === 0 ? <span className="text-slate-500">Road lines not loaded</span> : null}
+      {outside ? <span className="text-slate-500">{outside} outside {serviceArea.area.name} not shown</span> : null}
     </figcaption>
   </figure>;
 }

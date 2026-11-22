@@ -67,6 +67,19 @@ export function parseServiceArea(input: unknown, expectedId?: string): ServiceAr
   return area;
 }
 
+/**
+ * The road-line file for an area, under public/data/. BBR keeps its original file; every other area
+ * gets its own file in public/data/roads/ (gitignored), made by `npm run geo:import-area`.
+ * The id is checked against AREA_ID_PATTERN first, so it can never point outside that folder.
+ */
+export function roadsFileFor(areaId: string): string {
+  if (areaId === DEFAULT_SERVICE_AREA.id) return "bbr-roads.geojson";
+  if (!AREA_ID_PATTERN.test(areaId)) throw new Error("invalid area id");
+  return `roads/${areaId}.geojson`;
+}
+/** The same file as a browser address. */
+export const roadsUrlFor = (areaId: string) => `/data/${roadsFileFor(areaId)}`;
+
 export function areaBounds(area: ServiceArea): Bounds {
   const outer = area.rings[0];
   return {

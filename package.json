@@ -18,6 +18,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "geo:import": "tsx scripts/import-bbr-roads.ts",
+    "geo:import-area": "tsx scripts/import-area-roads.ts",
     "geo:audit": "tsx scripts/audit-bbr-roads.ts",
     "geo:vertices": "tsx scripts/audit-bbr-vertices.ts",
     "geo:review": "tsx scripts/review-bbr-geometry.ts",

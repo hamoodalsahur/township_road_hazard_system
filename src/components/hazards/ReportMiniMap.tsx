@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import type { RoadFeature } from "@/lib/bbr-roads";
 import { loadRoads } from "@/lib/road-loader";
+import { useServiceArea } from "@/hooks/useServiceArea";
 import HazardMarker from "./HazardMarker";
 import { MINI_MAP_HEIGHT as H, MINI_MAP_WIDTH as W, miniMapPaths } from "@/lib/mini-map";
 
@@ -10,11 +11,14 @@ export default function ReportMiniMap({ longitude, latitude, category, impact, r
   longitude: number; latitude: number; category: string; impact: string; reviewState: string;
 }) {
   const [roads, setRoads] = useState<RoadFeature[] | null>(null);
+  const { data: serviceArea, loaded } = useServiceArea();
+  const areaId = serviceArea.area.id;
   useEffect(() => {
+    if (!loaded) return; // wait for the active area, so the right road file is loaded
     let live = true;
-    void loadRoads().then(result => { if (live) setRoads(result); });
+    void loadRoads(areaId).then(result => { if (live) setRoads(result); });
     return () => { live = false; };
-  }, []);
+  }, [loaded, areaId]);
   const paths = roads ? miniMapPaths(roads, longitude, latitude) : [];
   return <figure className="relative h-44 overflow-hidden rounded-2xl bg-[#EEF1EF]" aria-label="Report location on unverified OpenStreetMap road lines">
     <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 h-full w-full" aria-hidden="true">
