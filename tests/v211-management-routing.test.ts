@@ -15,7 +15,7 @@ const componentPaths={
 const retained={
   overview:["ReviewAgeQueue","OperatorAuditSummary"],
   incidents:["IncidentManager","V2HazardManager","ReportWorkspace"],
-  maps:["GeographicReferenceWorkspace","DemoController","MapWorkspace","ConnectivityPanel"],
+  maps:["ManagementMapStage","DemoController","MapWorkspace","ConnectivityPanel"],
   evidence:["EvidenceInventory","EvidenceConsistency"],
   research:["AiEvaluationWorkbench","ResearchExport"],
   system:["DemoDataQuality","RoadTopologyQuality","GeoSourceManifest","RoadAccessTags","AuditPanel"]

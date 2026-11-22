@@ -16,6 +16,8 @@ const REBUILT = [
   "src/components/ui/tabs.tsx", "src/components/ui/dialog.tsx",
   // Night Desk Overview and Incidents (21 November 2026).
   "src/components/hazards/OverviewMap.tsx", "src/components/management/TodayTimeline.tsx",
+  // Night Desk Maps stage (22 November 2026).
+  "src/components/maps/ManagementMapStage.tsx",
 ];
 
 test("the type scale is defined once in Tailwind", () => {

@@ -36,7 +36,7 @@ The two are connected only through the website's API over the local network. The
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Management website: six pages (Overview, Incidents, Maps & Simulation, Evidence, AI & Research, System & Audit) | ✅ | Every page has the Night Desk frame (navy top bar, navy page header, phone tab bar). Overview, Incidents, Evidence, System & Audit and AI & Research have the Night Desk layout (21 Nov 2026). Maps has the new panel styling; its full-screen layout is next (step 4b). |
+| Management website: six pages (Overview, Incidents, Maps & Simulation, Evidence, AI & Research, System & Audit) | ✅ | Every page has the Night Desk frame (navy top bar, navy page header, phone tab bar). Every management page has the Night Desk layout (21 and 22 Nov 2026), including the full-screen Maps stage. The resident page keeps its older layout until step 4.3, but shows the new pins. |
 | Management sign-in | ✅ | A shared development key only. **Not real accounts.** |
 | Report review: list and detail, approve or reject with a reason | ✅ | Pinned decision bar, keyboard shortcuts (J/K, A, R, then Enter), next report opens after a decision, works at phone width |
 | Private sample photos with separate approval before anything is public | ✅ | |
@@ -45,9 +45,9 @@ The two are connected only through the website's API over the local network. The
 | Resident web page (map, simulation, practice reports) | ✅ | To be restructured by the design revamp |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 292 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 299 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
-| Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Foundation, Overview, Incidents, Evidence, System and AI & Research done. Next: the full-screen Maps layout (4b). Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
+| Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident pages follow in step 4.3. Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
 | Residents can see the full outcome of a report (including "Resolved") | ❌ | The public reports API does not expose incident status |
 | "My reports" on the resident website | ❌ | |
 | Real user accounts and sign-in | ❌ | |
@@ -77,6 +77,21 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 22 November 2026: Maps stage in Night Desk (step 4b, roadmap 4.1)
+- **Why:** the last part of the restyle, following the approved Maps mockup.
+- **What:**
+  - **Full-screen map** under the page header. On wide screens a **Layers** panel floats on the left (Needs review / Approved / Built-in examples switches with counts, type, road category, "Near approved reports", road groups) and the **selected report or road** floats on the right. The legend sits along the bottom. On phones the map comes first, then the selected item, then the layers.
+  - **New pins on the map:** the same Phosphor pins as everywhere else (glyph = category, colour = severity, outlined = needs review, solid = approved), replacing the emoji markers. Built from fixed values only, never from report text. The resident page's map shows them too.
+  - **Selected report panel:** chips, description, the approved photo if there is one, and "Review this report" or "Open the report", linking to that exact report in Incidents.
+  - **Add report:** a mode in the left panel. Only while adding does a map click place the report; otherwise clicks select pins and roads.
+  - Background tiles are greyed so pins and road lines stand out. Leaflet's layers are kept under the top bar and the panels.
+- **Under the hood:** the map's data and rules moved into `useMapWorkspace`, shared by the resident page's map and the new `ManagementMapStage`, so both behave the same. Road details and the research sections are shared components. The old emoji marker styles were removed.
+- **Unchanged:** which reports appear (rejected never), the report form's checks and photo handling, road data, the flood simulation.
+- **Checked:**
+  - 299 tests pass (new: `night-desk-maps`); typecheck and production build pass.
+  - Screenshots with mocked data at 1440 and 390 px: layers, a selected report, adding a report, and the resident page. No console errors.
+  - Not checked: background tiles (the test machine cannot reach the tile server), a real phone, and your real roads and reports.
 
 ### 21 November 2026: Evidence, System & Audit, AI & Research in Night Desk (step 4a)
 - **Why:** the last pages of the restyle, following the approved mockups. Maps was split off (4b) because its map code is large and fragile.
