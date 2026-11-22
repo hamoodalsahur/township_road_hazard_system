@@ -4,8 +4,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Postgres 16 in Docker since step 2.2 (docker-compose.yml). The old SQLite file is kept as a
+// read-only archive; prisma/sqlite-legacy/schema.prisma reads copies of it for the one-way copy script.
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

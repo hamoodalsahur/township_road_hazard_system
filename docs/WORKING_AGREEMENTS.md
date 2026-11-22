@@ -55,7 +55,8 @@ How the owner and Claude work on this project. Read this at the start of every s
 These come from the hackathon handoff and still apply:
 
 - **Never overwrite, re-import or regenerate the owner's local `public/data/bbr-roads.geojson`.** It holds the real road lines. The GitHub copy is empty.
-- **Never reset, seed, migrate or push the schema of the owner's SQLite database.** That covers `prisma/dev.db` and its `-wal`, `-shm` and `-journal` files.
+- **Postgres (since step 2.2):** never run `docker compose down -v`, `prisma migrate reset` or `db push --force-reset` on the owner's database, and never seed it before the SQLite copy. Schema changes go through committed migration files applied with `npm run db:migrate`.
+- **Never reset, seed, migrate or push the schema of the owner's SQLite database.** It is a read-only archive since step 2.2; the copy script reads only a snapshot of it. That covers `prisma/dev.db` and its `-wal`, `-shm` and `-journal` files.
 - **Back up `.env` and `.env.local` before risky steps,** outside the repository. Never share the operator key.
 - **No destructive Git commands on the owner's machine:** no `git reset --hard`, `git clean` or forced checkout.
 - **Never expose the development write APIs to the internet.** No public tunnels.
@@ -121,6 +122,8 @@ Phases 0 and 1 are done. The incident review half of roadmap step 4.2 was brough
 The Overview (the other half of 4.2) and step 2.1 (service area) followed the same day. Next is **step 2.2**: move to Postgres. For decision G2, Postgres with PostGIS in Docker on the owner's PC was recommended on 21 Nov 2026 as the easier option, with Supabase kept for hosting later. It needs the owner's confirmation and a short plan first, because it involves a one-way copy of the owner's `dev.db`, which must only ever be read.
 
 On 21 Nov 2026 the owner chose the **Night Desk** look and asked for it before 2.2. It is built in four PRs: foundation (with the audit fixes folded in), Overview, Incidents, then the remaining pages. Step 2.2 (Postgres in Docker, confirmed by the owner) follows, with a short plan first, because it involves a one-way copy of the owner's `dev.db`, which must only ever be read.
+
+**Update 22 Nov 2026:** Night Desk is finished on every management page (PRs #109 to #112) and step 2.2 moved the database to Postgres 16 in Docker (PostGIS deferred, see `docs/database.md`). Next: the owner's own area as the service area, with its own OpenStreetMap road file. The owner's coordinates go only into gitignored files on their PC, never into Git, PRs or notes.
 
 **Identity on GitHub (owner's request, 21 Nov 2026):** commits are authored and committed as the owner, PRs are opened and merged through the owner's account, and no co-author or session trailers are added to commits.
 

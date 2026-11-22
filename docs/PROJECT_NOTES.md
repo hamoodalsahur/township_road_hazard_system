@@ -45,7 +45,7 @@ The two are connected only through the website's API over the local network. The
 | Resident web page (map, simulation, practice reports) | ✅ | To be restructured by the design revamp |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 299 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 308 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
 | Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident pages follow in step 4.3. Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
 | Residents can see the full outcome of a report (including "Resolved") | ❌ | The public reports API does not expose incident status |
@@ -77,6 +77,20 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 22 November 2026: Postgres in Docker (roadmap step 2.2)
+- **Why:** SQLite was fine for a demo, but routing, hosting later (Supabase) and several people using the system need a real database server. The owner chose Postgres in Docker on their PC.
+- **What:**
+  - `docker-compose.yml`: Postgres 16, reachable from this PC only (`127.0.0.1:5432`), password from `.env`, data in the `laluan-pgdata` volume.
+  - `prisma/schema.prisma` now uses Postgres, with the first migration committed (`prisma/migrations/20261122000000_init`, 12 tables, same structure as before).
+  - **One-way copy** `npm run db:copy-from-sqlite` (`--dry-run` to preview): snapshots `dev.db` and its WAL files into `backup/`, reads only the snapshot through a separate read-only client (`prisma/sqlite-legacy/schema.prisma`), refuses a non-empty target, copies in one transaction and checks counts and ids per table.
+  - Scripts: `db:up`, `db:down`, `db:migrate` (apply only), `db:migrate:new`, `db:copy-from-sqlite`; `db:push` removed. Guide in `docs/database.md`.
+  - **PostGIS deferred** (plan change, explained in `docs/database.md`): its image adds a table Prisma treats as drift and offers to reset the database for. Added deliberately when routing needs it.
+- **Checked:**
+  - 308 tests pass (new: `postgres-migration`); typecheck and production build pass.
+  - End-to-end on a real Postgres 16: migration applied; dry run changed nothing; a 160-row sample (with 30 photos of 200 KB) copied and matched; a second run refused; a WAL-mode database with unsaved changes copied them too, with dates intact; the source file's checksum was unchanged throughout.
+  - The app ran against Postgres: report feed, groups, Overview counts, creating a report, approving it, and the audit log.
+  - Not checked: Docker on the owner's PC (Windows) and the owner's real `dev.db`. Those are the owner's steps in the PR.
 
 ### 22 November 2026: Maps stage in Night Desk (step 4b, roadmap 4.1)
 - **Why:** the last part of the restyle, following the approved Maps mockup.

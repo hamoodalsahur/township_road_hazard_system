@@ -16,7 +16,7 @@ We have two views of the same system: one for residents and one for township man
 | --- | --- | --- |
 | Website | Next.js, React, TypeScript and Tailwind | One project for both interfaces |
 | Map | Leaflet with `CRS.Simple` | Interactive schematic network, not actual GPS locations |
-| Database | Prisma and SQLite | Saves roads, zones, scenario history and reports locally |
+| Database | Prisma and Postgres 16 in Docker (since 22 Nov 2026; SQLite before) | Saves roads, zones, scenario history and reports locally. See `docs/database.md` |
 | Backend | Next.js API routes | Reads and updates the shared data |
 | Risk logic | Rules written in TypeScript | Explains the result of each fictional stage |
 | Network analysis | Graph traversal | Checks connections in the test graph, without claiming road safety |
