@@ -60,6 +60,14 @@ test("every road reader follows the active area", () => {
   assert.match(read("src/components/hazards/OverviewMap.tsx"), /isInsideServiceArea\(serviceArea\.area, r\.longitude, r\.latitude\)/);
 });
 
+test("the importer tries several servers, waits once when one is busy, and says why one failed", () => {
+  const script = read("scripts/import-area-roads.ts");
+  assert.ok((script.match(/https:\/\/[a-z0-9.-]+\/[a-z/]*interpreter/g) ?? []).length >= 5);
+  assert.match(script, /const BUSY = new Set\(\[429, 502, 503, 504\]\)/);
+  assert.match(script, /await pause\(15_000\)/);
+  assert.match(script, /server name not found/);
+});
+
 test("the importer never writes the BBR file and keeps an old file before replacing it", () => {
   const script = read("scripts/import-area-roads.ts");
   assert.doesNotMatch(script, /bbr-roads\.geojson"/);

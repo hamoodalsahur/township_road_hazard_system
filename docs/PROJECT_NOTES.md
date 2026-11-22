@@ -45,7 +45,7 @@ The two are connected only through the website's API over the local network. The
 | Resident web page (map, simulation, practice reports) | ✅ | To be restructured by the design revamp |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 315 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 316 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
 | Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident pages follow in step 4.3. Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
 | Residents can see the full outcome of a report (including "Resolved") | ❌ | The public reports API does not expose incident status |
@@ -77,6 +77,11 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 23 November 2026: Area road download copes with busy servers
+- **Why:** on the owner's PC the main OpenStreetMap server answered 502 (overloaded) and both mirrors failed without saying why.
+- **What:** `npm run geo:import-area` now tries six Overpass servers (the three overpass-api.de machines, then three public mirrors), waits 15 s and tries once more when a server says it is busy (429, 502, 503, 504), and prints why a server failed (timed out, name not found, connection refused).
+- **Checked:** 316 tests pass. The retry path ran here end to end (the test machine's own network refuses these servers, which exercised every branch). A real download is still the owner's step.
 
 ### 22 November 2026: Road lines for your own area
 - **Why:** the owner wants to try the system around where they actually are, not the hackathon's BBR. Step 2.1 already moved the accepted area; the road lines were still BBR-only.
