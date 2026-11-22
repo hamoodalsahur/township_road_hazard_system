@@ -203,3 +203,45 @@ model IncidentReportLink {
   @@index([incidentId])
   @@map("incident_report_links")
 }
+
+/**
+ * Road lines for a service area (roadmap step 2.3): unverified OpenStreetMap reference, one row per way.
+ * Copied from the area's GeoJSON file by `npm run db:import-roads`, which only reads that file.
+ * Not proof of access, safety, flooding or a road closure.
+ */
+model RoadLine {
+  areaId      String
+  wayId       String // "osm-way-123", the GeoJSON feature's properties.id
+  position    Int // order in the source file, so maps and checks see the same order as before
+  name        String
+  highway     String
+  coordinates Json // [[longitude, latitude], ...]
+  properties  Json // the feature's full properties, as in the file
+  west        Float
+  south       Float
+  east        Float
+  north       Float
+  importId    String
+  import      RoadImport @relation(fields: [importId], references: [id], onDelete: Cascade)
+
+  @@id([areaId, wayId])
+  @@index([areaId, position])
+  @@index([importId])
+  @@map("road_lines")
+}
+
+/**
+ * One row per `npm run db:import-roads` run: which file, its fingerprint and how many lines.
+ */
+model RoadImport {
+  id         String     @id @default(cuid())
+  areaId     String
+  sourceFile String // path under public/data/, e.g. roads/local.geojson
+  sha256     String
+  lineCount  Int
+  importedAt DateTime   @default(now())
+  lines      RoadLine[]
+
+  @@index([areaId, importedAt])
+  @@map("road_imports")
+}

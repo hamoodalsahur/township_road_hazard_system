@@ -1,9 +1,7 @@
-import {readFile} from "node:fs/promises";
 import {NextResponse} from "next/server";
 import {prisma} from "@/lib/db";
 import {canUseDemoOperatorApi} from "@/lib/demo-access";
-import {validRoadCollection} from "@/lib/bbr-roads";
-import {activeRoadsPath} from "@/lib/service-area-server";
+import {loadActiveRoads} from "@/lib/road-lines-server";
 import {candidateRoads,type RoadCandidate} from "@/lib/v2-road-candidates";
 import {summarizeRoadObservations} from "@/lib/v2-road-observation-summary";
 export const dynamic="force-dynamic";
@@ -16,8 +14,8 @@ export async function GET(request:Request,context:{params:Promise<{id:string}>})
   if(!incident||incident.sourceMode!=="simulation")return NextResponse.json({error:"Fictional incident not found"},{status:404});
   const locations=incident.reports.map(x=>x.report).filter(x=>x.sourceMode==="simulation"&&x.reviewState!=="rejected");
   if(locations.length===0)return NextResponse.json({candidates:[],reportLocations:0,disclaimer:"No eligible fictional report locations."});
-  const raw:unknown=JSON.parse(await readFile(activeRoadsPath(),"utf8"));
-  if(!validRoadCollection(raw))return NextResponse.json({error:"Local OSM road file is missing or invalid"},{status:422});
+  const raw=(await loadActiveRoads()).collection;
+  if(!raw)return NextResponse.json({error:"Local OSM road file is missing or invalid"},{status:422});
   const map=new Map<string,RoadCandidate>();
   for(const location of locations){
    for(const candidate of candidateRoads([location.longitude,location.latitude],raw.features)){

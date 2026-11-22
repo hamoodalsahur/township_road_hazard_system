@@ -2,7 +2,7 @@
 
 The running record of what the system can do, what changed and why. Update it with every change. Other people and other AIs work from this file.
 
-**Last updated:** 21 November 2026
+**Last updated:** 23 November 2026
 **Rules for working on this project:** [WORKING_AGREEMENTS.md](WORKING_AGREEMENTS.md)
 **Where we are going:** [roadmap.md](roadmap.md) (approved 9 November 2026)
 **Older history:** [progress.md](progress.md), [archive/roadmap-hackathon.md](archive/roadmap-hackathon.md) and the `v2*` files in this folder describe the hackathon milestones. Parts of them are out of date. Where they disagree with this file, this file and the code are authoritative.
@@ -41,11 +41,11 @@ The two are connected only through the website's API over the local network. The
 | Report review: list and detail, approve or reject with a reason | ✅ | Pinned decision bar, keyboard shortcuts (J/K, A, R, then Enter), next report opens after a decision, works at phone width |
 | Private sample photos with separate approval before anything is public | ✅ | |
 | Incident grouping with required operator reasons and an audit log | ✅ | |
-| Geographic map with BBR road lines and report markers | ✅ | The real 1,269-line road file lives only on the owner's PC. The GitHub copy of `public/data/bbr-roads.geojson` is empty. |
+| Geographic map with BBR road lines and report markers | ✅ | The real 1,269-line road file lives only on the owner's PC. The GitHub copy of `public/data/bbr-roads.geojson` is empty. Since step 2.3 the lines are read from Postgres after `npm run db:import-roads`, and from the file before that. |
 | Resident web page (map, simulation, practice reports) | ✅ | To be restructured by the design revamp |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 316 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 323 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
 | Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident pages follow in step 4.3. Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
 | Residents can see the full outcome of a report (including "Resolved") | ❌ | The public reports API does not expose incident status |
@@ -77,6 +77,18 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 23 November 2026: Road lines in the database (roadmap step 2.3)
+- **Why:** step 2.3. Road lines were plain files that every API opened on its own; later steps (closures, routing) need them in the database next to the reports.
+- **What:**
+  - Two new tables in one committed migration: `road_lines` (one row per OpenStreetMap way and area, with its full properties, coordinates, bounds and file order) and `road_imports` (one row per import: file, SHA-256 fingerprint, line count).
+  - `npm run db:import-roads` copies the active area's GeoJSON file in (`--area bbr` for BBR, `--dry-run` to only check). It only reads the file, replaces that area's rows in one transaction, and then checks the database holds the same lines in the same order.
+  - Maps, the Overview and report mini maps, road candidates, topology and access tags now read through one loader: the table first, then the area's file if the table is empty. A new `GET /api/v2/road-lines` serves the lines to browsers. The source fingerprint still describes the file itself.
+- **Not changed:** the GeoJSON files, including the protected BBR file. Nothing is copied from SQLite; the copy script ignores the new tables.
+- **Checked:**
+  - 323 tests pass (new: `road-lines-db`; `postgres-migration` and `area-road-files` updated); typecheck passes; Prisma reports no drift between the migrations and the schema.
+  - On a test Postgres 16: the migration applied; the importer ran on a copy of the BBR reference file (1,269 lines; the file's SHA-256 was unchanged afterwards); a second run replaced the rows; the empty GitHub BBR stub and a missing file were refused with clear messages.
+  - The lines read back from the database equal the file's lines value for value, and the topology and access-tag results were byte-identical whether read from the database or the file. With the table emptied, the app fell back to the file.
 
 ### 23 November 2026: Area road download copes with busy servers
 - **Why:** on the owner's PC the main OpenStreetMap server answered 502 (overloaded) and both mirrors failed without saying why.

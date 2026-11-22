@@ -88,7 +88,7 @@ Recommended answer to decision G2: move to **Supabase**, a hosted Postgres datab
 | --- | --- | --- |
 | 2.1 | ✅ **Service area setting.** Replace the BBR rectangle hard-coded in 3 files with one setting. BBR stays the default. Done 10 Nov 2026: a polygon file in `config/service-areas/`, picked by the server-only `SERVICE_AREA` setting. | Needed to test at the owner's own location. Personal areas are gitignored. |
 | 2.2 | ✅ **Move to Postgres.** Done 22 Nov 2026: Postgres 16 in Docker on the owner's PC (Supabase later, for hosting), schema as a committed migration, plus a one-way copy script that reads a snapshot of the owner's `dev.db` and writes only to an empty database. See `docs/database.md`. | The original `dev.db` is only read, never changed. The script is tested on a copy first. |
-| 2.3 | **Roads into the database.** The road import writes to a database table | Reads the owner's GeoJSON file and never overwrites it |
+| 2.3 | ✅ **Roads into the database.** Done 23 Nov 2026: `road_lines` and `road_imports` tables (one committed migration); `npm run db:import-roads` copies an area's GeoJSON file in, and the maps and road checks read the table, falling back to the file before the first import. See `docs/database.md`. | Reads the owner's GeoJSON file and never overwrites it |
 | 2.4 | **Photos to private storage.** Approved photos get a public link; others never do | Same privacy rules as today |
 | 2.5 | **Operator accounts.** Real sign-in replaces the shared key, with roles (operator, admin) and audit entries showing who did what | The shared development key is retired |
 | 2.6 | **Hosting.** Website on Vercel's free tier, with local mode kept for development | Writes need sign-in or rate limits; the demo label stays |

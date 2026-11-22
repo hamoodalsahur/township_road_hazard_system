@@ -11,6 +11,7 @@ Since 22 November 2026 (roadmap step 2.2) the app stores its data in **Postgres 
 | Stop it (data is kept) | `npm run db:down` |
 | Apply new migrations after a `git pull` | `npm run db:migrate` |
 | Browse the data | `npm run db:studio` |
+| Copy your area's road lines into the database | `npm run db:import-roads` |
 
 Postgres listens on `127.0.0.1:5432` only: reachable from this PC, not from your Wi-Fi network. The password is `POSTGRES_PASSWORD` in `.env`, and the same password is inside `DATABASE_URL`. Use letters and digits only.
 
@@ -35,6 +36,21 @@ What the copy does, and never does:
 - It refuses to run unless every Postgres table is empty, so it can never overwrite or mix data. Do **not** run `npm run db:seed` before copying.
 - It copies everything in one transaction (all or nothing), keeping the same ids and dates, then compares counts and ids table by table.
 
+## Road lines in the database (step 2.3)
+
+Since 23 November 2026 the maps and the road checks read road lines from the `road_lines` table. `npm run db:import-roads` fills it from the active area's GeoJSON file (`SERVICE_AREA` in `.env`):
+
+1. `npm run db:migrate` once, to create the two road tables.
+2. `npm run db:import-roads -- --dry-run` reads the file and shows the line count; it writes nothing.
+3. `npm run db:import-roads` copies the lines in. Run it again after downloading new roads; it replaces that area's rows in one transaction.
+4. For BBR: `npm run db:import-roads -- --area bbr` reads your local `public/data/bbr-roads.geojson`.
+
+What it does, and never does:
+- It only **reads** the GeoJSON file. It never writes, moves or replaces it, including the protected BBR file.
+- It touches only the rows for that one area, and records each run in `road_imports` (file, SHA-256 fingerprint, line count).
+- Until an area has been imported, the app keeps reading that area's file, exactly as before. The Maps page says which one it used ("read from the database" or "read from the area's file").
+- Postgres stores the line properties as JSONB, which may reorder keys inside each line. The lines, their order and every value are unchanged.
+
 ## Undo
 
 Stop the dev server, put the old line back in `.env` (`DATABASE_URL="file:./dev.db"`, remove the Postgres one) and check out a commit from before step 2.2 (`git checkout 720648c`). `dev.db` is exactly as it was. To return to Postgres, check out `main` again and restore the Postgres line; the data in Docker is still there.
@@ -47,7 +63,7 @@ Stop the dev server, put the old line back in `.env` (`DATABASE_URL="file:./dev.
 
 ## Changing the database structure (developers)
 
-Edit `prisma/schema.prisma`, then `npm run db:migrate:new -- --name what_changed` to create a migration file without applying it, review the SQL, commit it, and apply it with `npm run db:migrate`. Keep `prisma/sqlite-legacy/schema.prisma` unchanged; it only describes the old file for the copy script (a test checks the two still match until the archive is retired).
+Edit `prisma/schema.prisma`, then `npm run db:migrate:new -- --name what_changed` to create a migration file without applying it, review the SQL, commit it, and apply it with `npm run db:migrate`. Keep `prisma/sqlite-legacy/schema.prisma` unchanged; it only describes the old file for the copy script (a test checks it still matches the tables that existed in SQLite). Tables added later, such as the road tables, go after them in `schema.prisma` and are not copied.
 
 ## PostGIS later
 

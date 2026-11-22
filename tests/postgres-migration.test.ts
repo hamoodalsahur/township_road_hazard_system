@@ -10,18 +10,20 @@ const read = (file: string) => readFileSync(file, "utf8");
 const schema = read("prisma/schema.prisma");
 const legacy = read("prisma/sqlite-legacy/schema.prisma");
 const models = (source: string) => source.slice(source.indexOf("model DataSource"));
+// Tables added after the copy (step 2.3 onwards) exist only in Postgres; the old SQLite file never had them.
+const copiedModels = (source: string) => { const all = models(source); const end = all.indexOf("\n/**\n * Road lines for a service area"); return end >= 0 ? all.slice(0, end) : all; };
 const zero = () => Object.fromEntries(COPY_ORDER.map(model => [model, 0])) as Counts;
 
 test("the app uses Postgres, and the legacy schema matches it model for model", () => {
   assert.match(schema, /provider = "postgresql"/);
   assert.match(legacy, /provider = "sqlite"/);
   assert.match(legacy, /output\s+= "\.\.\/\.\.\/node_modules\/\.prisma\/sqlite-legacy-client"/);
-  assert.equal(models(legacy), models(schema), "the copy reads exactly the tables the app writes");
+  assert.equal(models(legacy), copiedModels(schema), "the copy reads exactly the tables the old SQLite file had");
 });
 
-test("there is one committed migration that creates every table", () => {
+test("the first committed migration creates every copied table", () => {
   const folders = readdirSync("prisma/migrations").filter(name => /^\d{14}_/.test(name));
-  assert.deepEqual(folders, ["20261122000000_init"]);
+  assert.equal(folders[0], "20261122000000_init");
   const sql = read("prisma/migrations/20261122000000_init/migration.sql");
   assert.equal((sql.match(/CREATE TABLE/g) ?? []).length, 12);
   assert.match(read("prisma/migrations/migration_lock.toml"), /provider = "postgresql"/);
@@ -53,10 +55,12 @@ test("scripts only apply migrations and never reset or push", () => {
 
 test("tables are copied parents first", () => {
   // Every relation field points at a model that is earlier in COPY_ORDER.
-  const modelNames = [...schema.matchAll(/^model (\w+) \{/gm)].map(m => m[1]);
+  // Road tables (step 2.3) are filled from the road files by npm run db:import-roads, not copied from SQLite.
+  const copied = copiedModels(schema);
+  const modelNames = [...copied.matchAll(/^model (\w+) \{/gm)].map(m => m[1]);
   const lower = (name: string) => name[0].toLowerCase() + name.slice(1);
-  assert.deepEqual([...COPY_ORDER].sort(), modelNames.map(lower).sort(), "every model is copied");
-  for (const block of schema.split(/^model /m).slice(1)) {
+  assert.deepEqual([...COPY_ORDER].sort(), modelNames.map(lower).sort(), "every model the SQLite file had is copied");
+  for (const block of copied.split(/^model /m).slice(1)) {
     const owner = lower(block.slice(0, block.indexOf(" ")));
     for (const match of block.matchAll(/^\s+\w+\s+(\w+)\s+@relation\([^)]*fields:/gm)) {
       assert.ok(COPY_ORDER.indexOf(lower(match[1]) as never) < COPY_ORDER.indexOf(owner as never), `${match[1]} before ${owner}`);
