@@ -16,8 +16,28 @@ import { areaBounds, roadsFileFor } from "../src/lib/service-area";
 import { loadServiceAreaFrom, SERVICE_AREA_DIR } from "../src/lib/service-area-server";
 import { AREA_MARGIN, importAreaProblem, overpassQueryFor, roadsTouchingArea } from "../src/lib/area-road-import";
 
-// The main Overpass server first, then two public mirrors if it is busy or unreachable.
-const ENDPOINTS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter", "https://overpass.private.coffee/api/interpreter"];
+// Overpass servers, tried in turn. overpass-api.de has three separate machines (main, lz4, z);
+// the others are public mirrors. Busy answers (429, 502, 503, 504) get one more try after a pause.
+const ENDPOINTS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://lz4.overpass-api.de/api/interpreter",
+  "https://z.overpass-api.de/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter",
+];
+const BUSY = new Set([429, 502, 503, 504]);
+const pause = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+/** "timed out", "server name not found (ENOTFOUND)", "connection refused"… so a failure says why. */
+function reason(error: unknown): string {
+  if (error instanceof Error && error.name === "AbortError") return "timed out after 60 s";
+  const cause = (error as { cause?: { code?: string; message?: string } })?.cause;
+  if (cause?.code === "ENOTFOUND" || cause?.code === "EAI_AGAIN") return `server name not found (${cause.code})`;
+  if (cause?.code === "ECONNREFUSED") return "connection refused";
+  if (cause?.code === "ECONNRESET") return "connection dropped";
+  if (cause?.code) return `network error ${cause.code}`;
+  return error instanceof Error ? error.message : "no answer";
+}
 const exists = (file: string) => access(file, constants.F_OK).then(() => true, () => false);
 
 async function main() {
@@ -39,21 +59,26 @@ async function main() {
 
   console.log(`Downloading roads for ${area.name} from OpenStreetMap…`);
   let data: { elements?: OsmWay[] } | null = null;
-  for (const endpoint of ENDPOINTS) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 90_000);
-    try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": "LaluanLocalPrototype/0.3 (academic project, local use)" },
-        body: new URLSearchParams({ data: overpassQueryFor(area) }),
-        signal: controller.signal,
-      });
-      if (response.ok) { data = await response.json() as { elements?: OsmWay[] }; break; }
-      console.log(`  ${new URL(endpoint).host} answered ${response.status}, trying the next server…`);
-    } catch {
-      console.log(`  ${new URL(endpoint).host} did not answer, trying the next server…`);
-    } finally { clearTimeout(timer); }
+  outer: for (const endpoint of ENDPOINTS) {
+    const host = new URL(endpoint).host;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 60_000);
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": "LaluanLocalPrototype/0.3 (academic project, local use)" },
+          body: new URLSearchParams({ data: overpassQueryFor(area) }),
+          signal: controller.signal,
+        });
+        if (response.ok) { data = await response.json() as { elements?: OsmWay[] }; console.log(`  ${host} answered.`); break outer; }
+        if (BUSY.has(response.status) && attempt === 1) { console.log(`  ${host} is busy (${response.status}), trying again in 15 s…`); await pause(15_000); continue; }
+        console.log(`  ${host} answered ${response.status}, trying the next server…`);
+      } catch (error) {
+        console.log(`  ${host}: ${reason(error)}, trying the next server…`);
+      } finally { clearTimeout(timer); }
+      break;
+    }
   }
   if (!data) throw Error("No OpenStreetMap server answered. Check your internet connection, wait a few minutes and try again. Nothing was written.");
   if (!Array.isArray(data.elements)) throw Error("Unexpected answer from OpenStreetMap. Nothing was written.");
