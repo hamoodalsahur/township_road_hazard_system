@@ -292,7 +292,9 @@ The schematic flood simulation and connectivity checker are research tools, not 
 
 ## 10. The map
 
-**Basemap (open decision):**
+**Basemap (decided 23 November 2026, roadmap 3.1):** OpenFreeMap's "Positron" style, drawn by MapLibre (`src/components/maps/BaseMap.tsx`). Free, no key, no cookies; MapLibre shows the required credit from the style. The schematic flood simulation keeps its own Leaflet drawing.
+
+**Basemap (background to the decision):**
 - **The problem:** the standard OpenStreetMap tiles are colourful and busy, which works against "quiet interface, loud hazards". The OSM Foundation's tile usage policy also discourages relying on its servers for an app.
 - **The fix:** switch to a muted basemap, for example CARTO Positron, Stadia Alidade Smooth or MapTiler.
 - **Before choosing:** check each provider's terms, free-tier limits and whether it needs an API key.
@@ -304,6 +306,7 @@ The schematic flood simulation and connectivity checker are research tools, not 
 - **Report vicinity:** the dashed strokes near confirmed reports stay, recoloured to the severity scale.
 - **Layer order, bottom to top:** basemap, road overlay, report vicinity, resolved markers, active markers, selected marker, draft pin.
 - **Legend:** shows only what is currently on the map.
+- **Built (23 November 2026):** clustering bubbles take the colour of their most serious report and zoom in when selected; the selected pin is never clustered. Residents see no road overlay; operators turn on "Inspect road lines" on Maps. Pins are buttons (keyboard and screen reader), not drawn into the map canvas.
 
 ## 11. Motion
 

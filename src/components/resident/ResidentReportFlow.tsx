@@ -9,8 +9,6 @@ import { LifecycleTrack } from "@/components/hazards/HazardChips";
 import { Button } from "@/components/ui/button";
 import { useResidentFocus } from "./ResidentShell";
 import { useServiceArea } from "@/hooks/useServiceArea";
-import { loadRoads } from "@/lib/road-loader";
-import type { RoadFeature } from "@/lib/bbr-roads";
 import { prepareDemoPhoto } from "@/lib/demo-photo-client";
 import { inspectDemoReportDraft } from "@/lib/v213-report-draft";
 import { SEVERITY, categoryLabel } from "@/lib/hazard-presentation";
@@ -19,9 +17,9 @@ import {
   DESCRIPTION_MAX, DESCRIPTION_MIN, EMPTY_DRAFT, MY_REPORTS_KEY, RESIDENT_CATEGORIES, RESIDENT_IMPACTS,
   addStoredReport, parseStoredReports, stepProblem, submissionBody, type ReportDraft, type StoredReport,
 } from "@/lib/resident-reports";
-import type { ResidentMapReport } from "./ResidentLeafletMap";
+import type { ResidentMapReport } from "./ResidentMap";
 
-const ResidentLeafletMap = dynamic(() => import("./ResidentLeafletMap"), {
+const ResidentMap = dynamic(() => import("./ResidentMap"), {
   ssr: false,
   loading: () => <div className="flex h-full items-center justify-center bg-slate-100 text-small text-slate-600">Loading the map…</div>,
 });
@@ -59,7 +57,6 @@ export default function ResidentReportFlow() {
   const [sending, setSending] = useState<"idle" | "saving" | "photo">("idle");
   const [error, setError] = useState("");
   const [sent, setSent] = useState<{ report: StoredReport; photoNote: string } | null>(null);
-  const [roads, setRoads] = useState<RoadFeature[]>([]);
   const [reports, setReports] = useState<ResidentMapReport[]>([]);
   const [flyTo, setFlyTo] = useState<{ lonLat: [number, number]; key: number } | null>(null);
   const [locating, setLocating] = useState<"idle" | "busy" | "denied" | "failed">("idle");
@@ -70,7 +67,6 @@ export default function ResidentReportFlow() {
   useEffect(() => {
     if (!loaded) return;
     let live = true;
-    void loadRoads(serviceArea.area.id).then(result => { if (live) setRoads(result); });
     fetch("/api/v2/hazards", { cache: "no-store" })
       .then(r => (r.ok ? r.json() as Promise<{ reports: ResidentMapReport[] }> : { reports: [] }))
       .then(data => { if (live) setReports(data.reports.filter(r => isInsideServiceArea(serviceArea.area, r.longitude, r.latitude))); })
@@ -183,8 +179,8 @@ export default function ResidentReportFlow() {
 
   return <div className="flex min-h-0 flex-1 flex-col lg:h-[calc(100dvh-59px)] lg:flex-none lg:flex-row">
     {mapVisible ? <div className="relative order-3 min-h-[320px] flex-1 lg:order-1">
-      <ResidentLeafletMap area={serviceArea} roads={roads} reports={reports} picking={step === 2} onCentre={setCentre} flyTo={flyTo}
-        label={step === 2 ? "Map for placing your report. Drag the map; the pin stays in the middle." : `Map of ${serviceArea.area.name}`} />
+      {loaded ? <ResidentMap area={serviceArea} reports={reports} picking={step === 2} onCentre={setCentre} flyTo={flyTo}
+        label={step === 2 ? "Map for placing your report. Drag the map; the pin stays in the middle." : `Map of ${serviceArea.area.name}`} /> : null}
       {step === 2 ? <>
         <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 z-[500] -translate-x-1/2 -translate-y-full">
           <svg width="44" height="56" viewBox="0 0 44 56"><path d="M22 2C11 2 3 10 3 21c0 14 19 32 19 32s19-18 19-32C41 10 33 2 22 2z" fill="#0E1720" stroke="#fff" strokeWidth="3" /><circle cx="22" cy="21" r="7" fill="#7FD4AE" /></svg>
@@ -194,8 +190,8 @@ export default function ResidentReportFlow() {
         </p>
         <div className="absolute inset-x-3 bottom-7 z-[500] flex items-end justify-between gap-2 lg:inset-x-5 lg:bottom-7">
           <span role="status" className={"inline-flex h-8 min-w-0 items-center gap-1.5 truncate whitespace-nowrap rounded-full border px-3 text-small font-medium " +
-            (draft.locationInside ? "border-[#CFE3D8] bg-[#F1F8F4] text-[#0B5A3F]" : "border-[#E7B4AC] bg-white text-[#A8321F]")}>
-            {draft.locationInside ? <><CheckIcon size={14} weight="bold" className="shrink-0" aria-hidden="true" />Inside {serviceArea.area.name}</> : <><WarningCircleIcon size={14} weight="bold" className="shrink-0" aria-hidden="true" />Outside the area we cover</>}
+            (!draft.location ? "border-slate-200 bg-white text-slate-600" : draft.locationInside ? "border-[#CFE3D8] bg-[#F1F8F4] text-[#0B5A3F]" : "border-[#E7B4AC] bg-white text-[#A8321F]")}>
+            {!draft.location ? "Loading the map…" : draft.locationInside ? <><CheckIcon size={14} weight="bold" className="shrink-0" aria-hidden="true" />Inside {serviceArea.area.name}</> : <><WarningCircleIcon size={14} weight="bold" className="shrink-0" aria-hidden="true" />Outside the area we cover</>}
           </span>
           <button type="button" onClick={useMyLocation} disabled={locating === "busy"}
             className="mr-12 inline-flex h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-slate-200 bg-white px-4 text-small font-semibold shadow-md disabled:opacity-60">

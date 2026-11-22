@@ -8,7 +8,9 @@ import { useMapWorkspace } from "@/hooks/useMapWorkspace";
 import { CATEGORY_LABELS, HAZARD_CATEGORIES, type HazardCategory } from "@/lib/demo-hazards";
 import type { RoadFilter } from "@/lib/bbr-road-display";
 import { DEMO_IMPACT_LEGEND } from "@/lib/v215-road-vicinity";
-import { SEVERITY, categoryLabel, formatAgeLong } from "@/lib/hazard-presentation";
+import { categoryLabel, formatAgeLong } from "@/lib/hazard-presentation";
+import type { PinPoint } from "@/lib/map-platform";
+import MapLegend from "./MapLegend";
 import { reportLink } from "@/lib/overview-queue";
 import { mapStageCounts, stageHazards } from "@/lib/map-stage";
 import HazardMarker from "@/components/hazards/HazardMarker";
@@ -61,6 +63,9 @@ export default function ManagementMapStage() {
   const [showWaiting, setShowWaiting] = useState(true);
   const [showApproved, setShowApproved] = useState(true);
   const [reporting, setReporting] = useState(false);
+  // Road-inspection mode (DESIGN.md section 10): Positron already shows roads, so our own lines are drawn only on request.
+  const [inspectRoads, setInspectRoads] = useState(false);
+  const [onScreen, setOnScreen] = useState<PinPoint[]>([]);
   const [now] = useState(() => Date.now());
 
   const shown = useMemo(() => stageHazards(visibleHazards, reviewStates, { waiting: showWaiting, approved: showApproved }), [visibleHazards, reviewStates, showWaiting, showApproved]);
@@ -147,15 +152,19 @@ export default function ManagementMapStage() {
     </section>
     <section aria-labelledby="layer-roads">
       <h2 id="layer-roads" className="mb-1 text-small font-semibold text-slate-600">Roads</h2>
-      <label className="block text-small font-semibold text-slate-900">Show
+      <Toggle id="layer-road-lines" checked={inspectRoads} onChange={value => { setInspectRoads(value); if (!value) { setSelectedRoadId(null); setGroupNumber(0); } }}
+        label="Inspect road lines" count={inspectRoads ? roadsShown : undefined}
+        swatch={<span aria-hidden="true" className="h-1 w-5 rounded-full bg-slate-800" />} />
+      {inspectRoads ? <><label className="block text-small font-semibold text-slate-900">Show
         <select value={filter} onChange={e => { setFilter(e.target.value as RoadFilter); setSelectedRoadId(null); setSelectedNodeId(null); }} className={cn(select, "mt-1")}>
           {ROAD_FILTERS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
         </select>
       </label>
+      </> : null}
       <Toggle id="layer-vicinity" checked={showVicinityStrokes} onChange={setShowVicinityStrokes} label="Near approved reports" count={vicinityStrokes.length}
         swatch={<span aria-hidden="true" className="h-1 w-5 rounded-full" style={{ background: "repeating-linear-gradient(90deg,#B9480F 0 6px,transparent 6px 9px)" }} />} />
-      <p className="text-caption text-slate-600">{roadsShown.toLocaleString()} of {roads.length.toLocaleString()} road lines shown</p>
-      {smallGroups.length ? <details className="group mt-2">
+      <p className="text-caption text-slate-600">{inspectRoads ? `${roadsShown.toLocaleString()} of ${roads.length.toLocaleString()} road lines shown` : `${roads.length.toLocaleString()} road lines available. The background map already shows every road.`}</p>
+      {inspectRoads && smallGroups.length ? <details className="group mt-2">
         <summary className="flex min-h-9 cursor-pointer list-none items-center gap-2 text-small font-semibold text-slate-700"><CaretRightIcon size={14} className="transition-transform group-open:rotate-90" aria-hidden="true" />Road groups (advanced)</summary>
         <select value={groupNumber} onChange={e => { setGroupNumber(Number(e.target.value)); setFilter("all"); setSelectedRoadId(null); setSelectedNodeId(null); }} className={cn(select, "mt-1")} aria-label="Road group to inspect">
           <option value={0}>All imported roads</option>
@@ -169,11 +178,11 @@ export default function ManagementMapStage() {
   return <>
     {/* Phones: map, then the selected item, then layers. Wide screens: panels float over the map. */}
     <div className="relative -mx-4 -mt-6 flex flex-col sm:-mx-8 lg:block">
-      <div className="order-1 h-[62svh] min-h-[420px] lg:h-[max(560px,calc(100svh-13.5rem))]">
-        <GeographicReferenceMap layout="fill" popups={false} serviceArea={serviceArea} roads={visibleRoads}
+      <div className="relative order-1 h-[62svh] min-h-[420px] lg:h-[max(560px,calc(100svh-13.5rem))]">
+        <GeographicReferenceMap serviceArea={serviceArea} roads={inspectRoads ? visibleRoads : []} onVisibleChange={setOnScreen}
           vicinityStrokes={showVicinityStrokes ? vicinityStrokes.filter(s => visibleRoads.some(road => road.properties.id === s.wayId)) : []}
           selectedRoadId={ws.selectedRoadId} onSelectRoad={id => { if (reporting) return; setSelectedRoadId(id); setSelectedHazardId(null); }}
-          focusGroup={groupNumber} selectedNodePosition={selectedNodePosition} hazards={shown} approvedPhotoIds={photoApprovedIds}
+          focusGroup={groupNumber} selectedNodePosition={selectedNodePosition} hazards={shown}
           onSelectHazard={id => { if (reporting) return; setSelectedHazardId(id); setSelectedRoadId(null); }} selectedHazardId={selectedHazardId}
           selectedLocation={reporting ? draftPosition : null} reviewStates={reviewStates}
           onChooseLocation={reporting ? position => { setDraftPosition(position); setReportMessage(""); } : undefined} />
@@ -198,11 +207,10 @@ export default function ManagementMapStage() {
         {detail}
       </aside> : null}
 
-      <div className="z-10 hidden flex-wrap items-center gap-x-4 gap-y-1 rounded-full bg-white px-4 py-2 text-caption text-slate-700 shadow-[0_8px_20px_-14px_rgba(14,23,32,.5)] lg:absolute lg:bottom-6 lg:left-6 lg:flex">
-        {[SEVERITY.suspected_closure, SEVERITY.partial_obstruction, SEVERITY.caution].map(s => <span key={s.key} className="inline-flex items-center gap-2">
-          <span aria-hidden="true" className="h-2 w-2 rounded-[3px]" style={{ background: s.solid }} />{s.label}</span>)}
-        <span className="inline-flex items-center gap-2"><span aria-hidden="true" className="h-3 w-3 rounded-full border-2 border-slate-900" />Outlined: needs review</span>
-        <span className="text-slate-500">Roads: OpenStreetMap, not verified</span>
+      {/* Legend: only what is on screen (roadmap 3.2). */}
+      <div className="z-10 hidden flex-wrap items-center gap-x-4 gap-y-1 rounded-full bg-white px-4 py-2 shadow-[0_8px_20px_-14px_rgba(14,23,32,.5)] lg:absolute lg:bottom-6 lg:left-6 lg:flex">
+        <MapLegend visible={onScreen} audience="operator" />
+        <span className="text-caption text-slate-500">Roads: OpenStreetMap, not verified</span>
       </div>
     </div>
 
@@ -213,11 +221,11 @@ export default function ManagementMapStage() {
       </summary>
       <div className="space-y-3 px-5 pb-5 text-small text-slate-700">
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-caption">
-          {[["#2563eb", "Main roads"], ["#60a5fa", "Local streets"], ["#93c5fd", "Service"], ["#bfdbfe", "Other"]].map(([color, label]) =>
-            <span key={label} className="inline-flex items-center gap-2"><span aria-hidden="true" style={{ background: color }} className="inline-block h-1 w-7 rounded-full" />{label}</span>)}
+          {[[3, "Main roads"], [2, "Local streets"], [1, "Service and other"]].map(([weight, label]) =>
+            <span key={label} className="inline-flex items-center gap-2"><span aria-hidden="true" style={{ height: Number(weight) + 1 }} className="inline-block w-7 rounded-full bg-slate-800" />{label}</span>)}
           {DEMO_IMPACT_LEGEND.map(item => <span key={item.impact} className="inline-flex items-center gap-2"><span aria-hidden="true" style={{ background: item.color }} className="inline-block h-1 w-7 rounded-full" />{item.label}</span>)}
         </div>
-        <p>Blue lines show the OpenStreetMap road type only. Coloured dashed sections mark the rough vicinity of <strong>approved fictional</strong> reports, not closures or traffic. Reports waiting or rejected never colour a road, and unclear matches are left out.</p>
+        <p>With "Inspect road lines" on, our imported lines are drawn in dark grey, thicker for bigger roads, and the selected road in green. They show the OpenStreetMap road type only. Coloured dashed sections mark the rough vicinity of <strong>approved fictional</strong> reports, not closures or traffic. Reports waiting or rejected never colour a road, and unclear matches are left out.</p>
       </div>
     </details>
     <MapResearchSections ws={ws} />
