@@ -5,7 +5,7 @@
  * A row keeps the feature's full properties and coordinates, so turning rows back into a
  * FeatureCollection gives the same lines, in the same order, as the GeoJSON file they came from.
  */
-import { validRoadCollection, type RoadCollection, type RoadFeature } from "./bbr-roads";
+import { MAX_ROAD_LINES, validRoadCollection, type RoadCollection, type RoadFeature } from "./bbr-roads";
 
 export type RoadLineRow = {
   areaId: string;
@@ -70,7 +70,7 @@ export function collectionFromRows(rows: readonly StoredRow[]): RoadCollection |
 
 /** Plain-English reason the import should not run, or null. `parsed` is the file's JSON. */
 export function roadImportProblem(fileLabel: string, parsed: unknown, areaId: string): string | null {
-  if (!validRoadCollection(parsed)) return `${fileLabel} is not a valid road file (it must be the GeoJSON made by the road import, up to 2,000 lines).`;
+  if (!validRoadCollection(parsed)) return `${fileLabel} is not a valid road file (it must be the GeoJSON made by the road import, up to ${MAX_ROAD_LINES.toLocaleString("en-GB")} lines).`;
   if (parsed.features.length === 0) {
     return areaId === "bbr"
       ? `${fileLabel} has no road lines. The copy on GitHub is an empty placeholder; BBR's real lines exist only on the PC that imported them.`

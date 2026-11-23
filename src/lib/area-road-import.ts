@@ -15,7 +15,7 @@ export const AREA_MARGIN = 0.002;
 export function overpassQueryFor(area: ServiceArea, margin = AREA_MARGIN): string {
   const b = areaBounds(area);
   const box = [b.south - margin, b.west - margin, b.north + margin, b.east + margin].map(n => n.toFixed(6)).join(",");
-  return `[out:json][timeout:60];way["highway"]["highway"!~"${EXCLUDED_HIGHWAYS}"](${box});out geom;`;
+  return `[out:json][timeout:120];way["highway"]["highway"!~"${EXCLUDED_HIGHWAYS}"](${box});out geom;`;
 }
 
 /** Keep roads that touch the area: at least one point inside, or within the bounding box margin. */
