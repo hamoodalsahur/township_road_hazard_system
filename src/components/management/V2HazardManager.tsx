@@ -17,7 +17,8 @@ import {
   decisionMessage, moveSelection, nextReportAfterDecision, reasonIsValid, reviewShortcut, MIN_REASON_LENGTH,
 } from "@/lib/incident-review-queue";
 import HazardMarker from "@/components/hazards/HazardMarker";
-import CloseRoadsDialog from "@/components/closures/CloseRoadsDialog";
+import CloseRoadsDialog, { type ClosureSource } from "@/components/closures/CloseRoadsDialog";
+import { closureAfterApproval, type ClosureKind } from "@/lib/road-closures";
 import { ClosureSwatch } from "@/components/closures/ClosureLines";
 import ReportMiniMap from "@/components/hazards/ReportMiniMap";
 import { LifecycleTrack, ReviewStateChip, SeverityChip } from "@/components/hazards/HazardChips";
@@ -33,6 +34,8 @@ export default function V2HazardManager({ operatorKey, onCountsChange, onSummary
   onSummaryChange?: (summary: string) => void;
 }) {
   const [closing, setClosing] = useState(false); // "Close roads" dialog (roadmap 5.1)
+  // Approve and close: the report just approved, when it says the road is blocked.
+  const [afterApprove, setAfterApprove] = useState<{ source: ClosureSource; start: { kind: ClosureKind; reason: string } } | null>(null);
   const [items, setItems] = useState<RecordItem[]>([]);
   const [photoStates, setPhotoStates] = useState<Record<string, PrivatePhotoState> | null>(null);
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
@@ -207,7 +210,8 @@ export default function V2HazardManager({ operatorKey, onCountsChange, onSummary
     setBusy(true); setMessage(""); setDecisionError("");
     const publishPhoto = decision === "corroborated" && photoStates?.[id] === "private_unreviewed" && publishPhotos[id] === true;
     const next = nextReportAfterDecision(visibleItems, id);
-    const category = categoryLabel(items.find(item => item.id === id)?.category ?? "");
+    const item = items.find(entry => entry.id === id);
+    const category = categoryLabel(item?.category ?? "");
     try {
       const response = await fetch(`/api/v2/hazards/${id}/review`, {
         method: "PATCH", headers: { "Content-Type": "application/json", "x-demo-operator-key": operatorKey },
@@ -222,6 +226,9 @@ export default function V2HazardManager({ operatorKey, onCountsChange, onSummary
         setEvidenceUrls(old => { const copy = { ...old }; delete copy[id]; return copy; });
       }
       setMessage(decisionMessage({ category, decision, photoPublished: publishPhoto, remaining: Math.max(0, counts.unverified - 1) }));
+      const start = decision === "corroborated" && item ? closureAfterApproval(item.impact, item.category, notes[id] ?? "") : null;
+      if (start && item) setAfterApprove({ start, source: { kind: "report", id: item.id, title: categoryLabel(item.category), summary: item.description,
+        category: item.category, impact: item.impact, points: [[item.longitude, item.latitude]] } });
       window.dispatchEvent(new Event("township-hazards-updated"));
       selectReport(next);
       await reload({ id: next });
@@ -247,6 +254,10 @@ export default function V2HazardManager({ operatorKey, onCountsChange, onSummary
       <span className="flex-1">{message}</span>
       <button type="button" onClick={() => setMessage("")} className="-m-2 flex h-9 w-9 items-center justify-center rounded-lg text-white/70 hover:text-white" aria-label="Dismiss message"><XIcon size={16} aria-hidden="true" /></button>
     </div>}
+
+    {afterApprove ? <CloseRoadsDialog open onOpenChange={value => { if (!value) setAfterApprove(null); }} operatorKey={operatorKey}
+      source={afterApprove.source} start={afterApprove.start}
+      onDone={() => setMessage(`${afterApprove.source.title}: road closed. Residents see it on the map, and their way home goes around it.`)} /> : null}
 
     {loadError && <div role="alert" className="flex max-w-xl gap-3 rounded-xl bg-rose-50 p-4 text-small leading-5 text-rose-800">
       <WarningCircleIcon size={20} weight="bold" className="shrink-0" aria-hidden="true" />

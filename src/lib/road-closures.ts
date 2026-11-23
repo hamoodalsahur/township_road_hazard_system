@@ -163,3 +163,16 @@ export function lineMiddle(coordinates: readonly [number, number][]): [number, n
 export function residentLine(c: Pick<PublicClosure, "title" | "kind" | "endsAt" | "categoryLabel">, now: Date = new Date()): string {
   return `${c.title} ${c.kind === "one_lane" ? "down to one lane" : "closed"} ${untilLabel(c.endsAt, now)} · ${c.categoryLabel}`;
 }
+
+/**
+ * Approve and close (24 Nov 2026): after an operator approves a report that says the road is blocked,
+ * the desk opens "Close roads" straight away with the nearest road picked. Partly blocked suggests one lane.
+ * Other reports return null: approval alone never changes a road.
+ */
+export function closureAfterApproval(impact: string, category: string, note: string): { kind: ClosureKind; reason: string } | null {
+  const kind: ClosureKind | null = impact === "suspected_closure" ? "closed" : impact === "partial_obstruction" ? "one_lane" : null;
+  if (!kind) return null;
+  const trimmed = note.trim();
+  const reason = trimmed.length >= 8 ? trimmed : `${categoryLabel(category)} report approved by the operator`;
+  return { kind, reason: reason.slice(0, 400) };
+}
