@@ -74,8 +74,8 @@ test("residents see no road overlay; operators draw it only in road-inspection m
   const stage = read("src/components/maps/ManagementMapStage.tsx");
   assert.match(stage, /const \[inspectRoads, setInspectRoads\] = useState\(false\)/);
   assert.match(stage, /roads=\{inspectRoads \? visibleRoads : \[\]\}/);
-  assert.match(stage, /<MapLegend visible=\{onScreen\} audience="operator" \/>/);
-  assert.match(read("src/components/resident/ResidentMapPage.tsx"), /<MapLegend visible=\{onScreen\} audience="resident" \/>/);
+  assert.match(stage, /<MapLegend visible=\{onScreen\} audience="operator"/);
+  assert.match(read("src/components/resident/ResidentMapPage.tsx"), /<MapLegend visible=\{onScreen\} audience="resident"/);
 });
 
 test("pins are buttons with a spoken name, and a click on a pin does not also select a road", () => {

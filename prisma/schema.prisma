@@ -245,3 +245,47 @@ model RoadImport {
   @@index([areaId, importedAt])
   @@map("road_imports")
 }
+
+/**
+ * Road closure (roadmap step 5.1): an operator closes one or more road lines, from an approved report
+ * or an incident group, with a reason and a required end time. Fictional demo data. The operator's
+ * reason is never public. Each road keeps a copy of its name and line, so a later road import cannot
+ * change or hide an existing closure.
+ */
+model RoadClosure {
+  id         String            @id @default(cuid())
+  areaId     String
+  kind       String            // closed | one_lane
+  reason     String            // operators only
+  startsAt   DateTime
+  endsAt     DateTime
+  endedAt    DateTime?
+  endReason  String?
+  reportId   String?           // the approved report it came from, if any
+  incidentId String?           // or the incident group
+  category   String            // hazard category shown to residents, e.g. road_obstruction
+  createdBy  String            @default("LOCAL_DEMO_OPERATOR")
+  sourceMode String            @default("simulation")
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  roads      RoadClosureRoad[]
+
+  @@index([areaId, endsAt])
+  @@index([reportId])
+  @@index([incidentId])
+  @@map("road_closures")
+}
+
+/** One road line covered by a closure, with a copy of its name and coordinates at closing time. */
+model RoadClosureRoad {
+  closureId   String
+  areaId      String
+  wayId       String
+  name        String
+  coordinates Json
+  closure     RoadClosure @relation(fields: [closureId], references: [id], onDelete: Cascade)
+
+  @@id([closureId, wayId])
+  @@index([areaId, wayId])
+  @@map("road_closure_roads")
+}

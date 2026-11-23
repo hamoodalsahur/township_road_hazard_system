@@ -11,6 +11,7 @@ import { DEMO_IMPACT_LEGEND } from "@/lib/v215-road-vicinity";
 import { categoryLabel, formatAgeLong } from "@/lib/hazard-presentation";
 import type { PinPoint } from "@/lib/map-platform";
 import MapLegend from "./MapLegend";
+import { useClosures } from "@/hooks/useClosures";
 import { reportLink } from "@/lib/overview-queue";
 import { mapStageCounts, stageHazards } from "@/lib/map-stage";
 import HazardMarker from "@/components/hazards/HazardMarker";
@@ -66,6 +67,7 @@ export default function ManagementMapStage() {
   // Road-inspection mode (DESIGN.md section 10): Positron already shows roads, so our own lines are drawn only on request.
   const [inspectRoads, setInspectRoads] = useState(false);
   const [onScreen, setOnScreen] = useState<PinPoint[]>([]);
+  const { closures } = useClosures();
   const [now] = useState(() => Date.now());
 
   const shown = useMemo(() => stageHazards(visibleHazards, reviewStates, { waiting: showWaiting, approved: showApproved }), [visibleHazards, reviewStates, showWaiting, showApproved]);
@@ -179,7 +181,7 @@ export default function ManagementMapStage() {
     {/* Phones: map, then the selected item, then layers. Wide screens: panels float over the map. */}
     <div className="relative -mx-4 -mt-6 flex flex-col sm:-mx-8 lg:block">
       <div className="relative order-1 h-[62svh] min-h-[420px] lg:h-[max(560px,calc(100svh-13.5rem))]">
-        <GeographicReferenceMap serviceArea={serviceArea} roads={inspectRoads ? visibleRoads : []} onVisibleChange={setOnScreen}
+        <GeographicReferenceMap serviceArea={serviceArea} roads={inspectRoads ? visibleRoads : []} onVisibleChange={setOnScreen} closures={closures}
           vicinityStrokes={showVicinityStrokes ? vicinityStrokes.filter(s => visibleRoads.some(road => road.properties.id === s.wayId)) : []}
           selectedRoadId={ws.selectedRoadId} onSelectRoad={id => { if (reporting) return; setSelectedRoadId(id); setSelectedHazardId(null); }}
           focusGroup={groupNumber} selectedNodePosition={selectedNodePosition} hazards={shown}
@@ -209,7 +211,7 @@ export default function ManagementMapStage() {
 
       {/* Legend: only what is on screen (roadmap 3.2). */}
       <div className="z-10 hidden flex-wrap items-center gap-x-4 gap-y-1 rounded-full bg-white px-4 py-2 shadow-[0_8px_20px_-14px_rgba(14,23,32,.5)] lg:absolute lg:bottom-6 lg:left-6 lg:flex">
-        <MapLegend visible={onScreen} audience="operator" />
+        <MapLegend visible={onScreen} audience="operator" closures={closures.length > 0} />
         <span className="text-caption text-slate-500">Roads: OpenStreetMap, not verified</span>
       </div>
     </div>

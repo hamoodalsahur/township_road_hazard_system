@@ -9,8 +9,11 @@ import { reasonIsValid } from "@/lib/incident-review-queue";
 import { requestedId } from "@/lib/overview-queue";
 import HazardMarker from "@/components/hazards/HazardMarker";
 import { SeverityChip, StatusChip } from "@/components/hazards/HazardChips";
+import CloseRoadsDialog from "@/components/closures/CloseRoadsDialog";
+import { ClosureSwatch } from "@/components/closures/ClosureLines";
+import { closureSourceProblem } from "@/lib/road-closures";
 
-type Report = { id: string; category: string; description: string; reviewState: string; createdAt: string; impact?: string };
+type Report = { id: string; category: string; description: string; reviewState: string; createdAt: string; impact?: string; longitude?: number; latitude?: number };
 type Incident = {
   id: string; title: string; category: string; status: string; reviewNote: string; possibleRoad: string | null; createdAt: string;
   reports: { reportId: string; linkedAt: string; report: { category: string; description: string; reviewState: string; createdAt?: string; impact?: string } }[];
@@ -27,6 +30,7 @@ export default function IncidentManager({ operatorKey, onCountsChange }: { opera
   const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
   const [creating, setCreating] = useState(false);
+  const [closing, setClosing] = useState(false); // "Close roads" dialog (roadmap 5.1)
   const [newReport, setNewReport] = useState(""); const [title, setTitle] = useState(""); const [reason, setReason] = useState("");
   const [notes, setNotes] = useState<Record<string, string>>({}), [roads, setRoads] = useState<Record<string, string>>({}), [statuses, setStatuses] = useState<Record<string, string>>({}), [links, setLinks] = useState<Record<string, string>>({});
   const [error, setError] = useState(""), [message, setMessage] = useState(""), [busy, setBusy] = useState(false);
@@ -218,6 +222,18 @@ export default function IncidentManager({ operatorKey, onCountsChange }: { opera
               <p className="basis-full text-caption text-slate-500 sm:basis-auto sm:text-right">Created {formatAgeLong(selected.createdAt)}<span className="block font-mono">INC {selected.id}</span></p>
             </div>
             <p className="text-small text-slate-600">Possible road: <span className="text-slate-900">{selected.possibleRoad || "Not assessed"}</span> · Last reason: <span className="text-slate-900">{selected.reviewNote}</span></p>
+            {(() => {
+              // Road closures (roadmap 5.1): an open group with at least one approved report can close roads near its reports.
+              const problem = closureSourceProblem({ kind: "incident", status: selected.status, reviewStates: selected.reports.map(r => r.report.reviewState) });
+              const points = selected.reports.flatMap(link => { const r = reports.find(x => x.id === link.reportId); return r && typeof r.longitude === "number" && typeof r.latitude === "number" ? [[r.longitude, r.latitude] as [number, number]] : []; });
+              if (selected.status === "resolved") return null;
+              return <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 px-4 py-3">
+                <p className="min-w-0 flex-1 text-small text-slate-600">{problem ?? "Close roads near this group's reports, with an end time. Residents see it on the map."}</p>
+                <button type="button" disabled={!!problem || points.length === 0} onClick={() => setClosing(true)} className={smallButton}><ClosureSwatch />Close roads…</button>
+                {!problem && points.length ? <CloseRoadsDialog open={closing} onOpenChange={setClosing} operatorKey={operatorKey}
+                  source={{ kind: "incident", id: selected.id, title: selected.title, summary: `${selected.reports.length} linked ${selected.reports.length === 1 ? "report" : "reports"}`, category: selected.category, impact: groupSeverity(selected), points }} /> : null}
+              </div>;
+            })()}
 
             <div>
               <h3 className={label + " mb-2"}>Linked reports</h3>

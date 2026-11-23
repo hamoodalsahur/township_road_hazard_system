@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Layer, Marker, Source, useMap, type MapLayerMouseEvent } from "@vis.gl/react-maplibre";
 import BaseMap from "./BaseMap";
 import HazardPins from "./HazardPins";
+import ClosureLines from "@/components/closures/ClosureLines";
+import type { PublicClosure } from "@/lib/road-closures";
 import { reviewStateOf } from "@/lib/hazard-presentation";
 import { bbrReferencePoints, isValidLonLat } from "@/lib/bbr-reference";
 import { candidateVicinityColor, type CandidateVicinityStroke } from "@/lib/v215-road-vicinity";
@@ -47,7 +49,7 @@ function FocusGroup({ roads, group }: { roads: RoadFeature[]; group: number }) {
  */
 export default function GeographicReferenceMap({
   roads = [], vicinityStrokes = [], selectedRoadId, onSelectRoad, focusGroup = 0, selectedNodePosition = null, hazards = [],
-  onSelectHazard = () => {}, selectedHazardId = null, onChooseLocation, selectedLocation = null, serviceArea, reviewStates = {}, onVisibleChange,
+  onSelectHazard = () => {}, selectedHazardId = null, onChooseLocation, selectedLocation = null, serviceArea, reviewStates = {}, onVisibleChange, closures = [],
 }: {
   serviceArea: ServiceAreaResponse;
   roads?: RoadFeature[];
@@ -65,6 +67,8 @@ export default function GeographicReferenceMap({
   reviewStates?: Readonly<Record<string, string>>;
   /** Reports inside the current view, for the legend. */
   onVisibleChange?: (visible: PinPoint[]) => void;
+  /** Road closures active now (roadmap 5.1). */
+  closures?: readonly PublicClosure[];
 }) {
   const [hover, setHover] = useState<{ name: string; x: number; y: number } | null>(null);
   const points: PinPoint[] = useMemo(() => hazards.map(h => ({ id: h.id, category: h.category, impact: h.impact, reviewState: reviewStates[h.id] ?? "unverified", longitude: h.coordinates[0], latitude: h.coordinates[1] })), [hazards, reviewStates]);
@@ -104,6 +108,7 @@ export default function GeographicReferenceMap({
       <Source id="vicinity" type="geojson" data={vicinity}>
         <Layer id="vicinity-line" type="line" paint={{ "line-color": ["get", "color"], "line-width": 7, "line-opacity": 0.92, "line-dasharray": [1.6, 1] }} />
       </Source>
+      <ClosureLines closures={closures} />
       <Source id="reference-points" type="geojson" data={referencePoints}>
         <Layer id="reference-points" type="circle" paint={{ "circle-radius": 6, "circle-color": "#0B7350", "circle-stroke-color": "#FFFFFF", "circle-stroke-width": 2 }} />
       </Source>

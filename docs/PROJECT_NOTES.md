@@ -45,7 +45,7 @@ The two are connected only through the website's API over the local network. The
 | Resident website: map, report in three steps, My reports | ✅ | Step 4.3 (23 Nov 2026). The simulation lives only under management Maps & Simulation. |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 342 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 351 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
 | Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident website followed in step 4.3 (23 Nov 2026). Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps use the same pins since the MapLibre move (roadmap 3.1). |
 | Residents can see the full outcome of a report (including "Resolved") | ✅ | `GET /api/v2/hazards/status` (step 4.3): review state, incident status and last change only |
@@ -77,6 +77,21 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 23 November 2026: Road closures (roadmap step 5.1)
+- **Why:** step 5.1, and the groundwork for "way home" (phase 6), which will route around these closures. Decision G5 is now made: operator-only closures with a required end time.
+- **What:**
+  - **Close roads** on an approved report, or on an open incident group with at least one approved report. A dialog shows the roads within 250 m on the map (and as a list, for keyboard users). The operator picks roads, "Closed to cars" or "One lane only", an end time (2 h, 6 h, tomorrow 09:00 or a picked time, at most 14 days) and a reason, and sees exactly what residents will read.
+  - **Incidents → Road closures** tab: active, upcoming, past-end-time and recently ended closures, a small map, history, and **End closure now** or **Extend**, both with a required reason.
+  - Closed roads show on the resident map (red line with a white dashed centre and a "Closed until…" label), first in "On the map now", and on management Maps. Residents see only closures active right now (owner's choice).
+  - Two new tables in one committed migration (`road_closures`, `road_closure_roads`). Each road keeps a copy of its name and line, so a later road import cannot change an existing closure. A road can be in only one open closure at a time.
+  - APIs: `GET/POST /api/v2/closures` and `PATCH /api/v2/closures/[id]` (operators), and `GET /api/v2/closures/public` (public fields only: roads, how closed, end time, report type). Every create, end and extend is in the audit log.
+- **Not changed:** reports, groups and road lines. Closures are fictional demo data, like the reports.
+- **Checked:**
+  - 351 tests pass (new: `road-closures`); typecheck and production build pass; Prisma reports no drift.
+  - On a test Postgres with the real map background: closed two roads from an approved report in the browser, saw them in the Road closures tab, on management Maps and on the resident map (desktop and phone), and checked the dialog at phone width.
+  - By API: an unchecked report, a road not in the database, a second closure on the same road and an end time beyond 14 days were refused; ending twice was refused; extend and end were audited; the public API had no reason or ids.
+  - Not checked: an iPhone, and waiting for a closure to pass its end time on its own (covered by unit tests).
 
 ### 23 November 2026: New map platform (roadmap 3.1 and 3.2)
 - **Why:** the OpenStreetMap tiles were busy and their usage policy discourages apps relying on them; overlapping pins were hard to pick; the legend listed things that were not on screen.

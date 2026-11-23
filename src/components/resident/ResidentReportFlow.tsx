@@ -8,6 +8,7 @@ import HazardMarker, { categoryIcon } from "@/components/hazards/HazardMarker";
 import { LifecycleTrack } from "@/components/hazards/HazardChips";
 import { Button } from "@/components/ui/button";
 import { useResidentFocus } from "./ResidentShell";
+import { useClosures } from "@/hooks/useClosures";
 import { useServiceArea } from "@/hooks/useServiceArea";
 import { prepareDemoPhoto } from "@/lib/demo-photo-client";
 import { inspectDemoReportDraft } from "@/lib/v213-report-draft";
@@ -61,6 +62,7 @@ export default function ResidentReportFlow() {
   const [flyTo, setFlyTo] = useState<{ lonLat: [number, number]; key: number } | null>(null);
   const [locating, setLocating] = useState<"idle" | "busy" | "denied" | "failed">("idle");
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const { closures } = useClosures();
 
   useEffect(() => { setFocused(step !== "sent"); return () => setFocused(false); }, [step, setFocused]);
   useEffect(() => { headingRef.current?.focus(); setTried(false); setError(""); }, [step]);
@@ -179,7 +181,7 @@ export default function ResidentReportFlow() {
 
   return <div className="flex min-h-0 flex-1 flex-col lg:h-[calc(100dvh-59px)] lg:flex-none lg:flex-row">
     {mapVisible ? <div className="relative order-3 min-h-[320px] flex-1 lg:order-1">
-      {loaded ? <ResidentMap area={serviceArea} reports={reports} picking={step === 2} onCentre={setCentre} flyTo={flyTo}
+      {loaded ? <ResidentMap area={serviceArea} reports={reports} closures={closures} picking={step === 2} onCentre={setCentre} flyTo={flyTo}
         label={step === 2 ? "Map for placing your report. Drag the map; the pin stays in the middle." : `Map of ${serviceArea.area.name}`} /> : null}
       {step === 2 ? <>
         <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 z-[500] -translate-x-1/2 -translate-y-full">

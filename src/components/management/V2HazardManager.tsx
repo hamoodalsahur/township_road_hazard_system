@@ -17,6 +17,8 @@ import {
   decisionMessage, moveSelection, nextReportAfterDecision, reasonIsValid, reviewShortcut, MIN_REASON_LENGTH,
 } from "@/lib/incident-review-queue";
 import HazardMarker from "@/components/hazards/HazardMarker";
+import CloseRoadsDialog from "@/components/closures/CloseRoadsDialog";
+import { ClosureSwatch } from "@/components/closures/ClosureLines";
 import ReportMiniMap from "@/components/hazards/ReportMiniMap";
 import { LifecycleTrack, ReviewStateChip, SeverityChip } from "@/components/hazards/HazardChips";
 
@@ -30,6 +32,7 @@ export default function V2HazardManager({ operatorKey, onCountsChange, onSummary
   /** The one-line summary ("3 reports need your decision. Oldest waiting 2d 4h."), shown in the page header. */
   onSummaryChange?: (summary: string) => void;
 }) {
+  const [closing, setClosing] = useState(false); // "Close roads" dialog (roadmap 5.1)
   const [items, setItems] = useState<RecordItem[]>([]);
   const [photoStates, setPhotoStates] = useState<Record<string, PrivatePhotoState> | null>(null);
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
@@ -440,9 +443,12 @@ export default function V2HazardManager({ operatorKey, onCountsChange, onSummary
               </div> : <p className="min-w-0 flex-1 text-caption text-slate-600">Approval means a person checked this fictional report, not that the hazard is verified.</p>}
               <ShortcutHelp />
             </div>
-          </div> : <p className="mt-auto border-t border-slate-200 px-5 py-4 text-small text-slate-600 sm:px-6">
-            Decision recorded in the audit history. Approval does not change any road status.
-          </p>}
+          </div> : <div className="mt-auto flex flex-wrap items-center gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">
+            <p className="min-w-0 flex-1 text-small text-slate-600">Decision recorded in the audit history. Approval does not change any road status.{selectedReport.reviewState === "corroborated" ? " To close roads, choose them yourself." : ""}</p>
+            {selectedReport.reviewState === "corroborated" ? <Button variant="secondary" onClick={() => setClosing(true)}><ClosureSwatch />Close roads…</Button> : null}
+            {selectedReport.reviewState === "corroborated" ? <CloseRoadsDialog open={closing} onOpenChange={setClosing} operatorKey={operatorKey}
+              source={{ kind: "report", id: selectedReport.id, title: categoryLabel(selectedReport.category), summary: selectedReport.description, category: selectedReport.category, impact: selectedReport.impact, points: [[selectedReport.longitude, selectedReport.latitude]] }} /> : null}
+          </div>}
         </> : <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 py-16 text-center text-slate-600">
           {counts.unverified === 0 && items.length > 0 ? <>
             <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-teal-100"><CheckIcon size={24} weight="bold" className="text-teal-800" aria-hidden="true" /></span>
