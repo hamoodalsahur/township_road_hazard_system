@@ -5,6 +5,8 @@ import { Layer, Source, useMap } from "@vis.gl/react-maplibre";
 import BaseMap from "@/components/maps/BaseMap";
 import HazardPins from "@/components/maps/HazardPins";
 import ClosureLines from "@/components/closures/ClosureLines";
+import RouteLines from "@/components/maps/RouteLines";
+import type { LonLat, WayHomeAnswer } from "@/lib/routing";
 import { lineMiddle, type PublicClosure } from "@/lib/road-closures";
 import { areaOutline, type PinPoint } from "@/lib/map-platform";
 import { residentStateLabel } from "@/lib/resident-reports";
@@ -51,7 +53,7 @@ function FlyTo({ target }: { target: { lonLat: [number, number]; key: number } |
  * Resident map (roadmap 4.3 on the 3.1 platform). Positron already shows the roads, so our own road
  * lines are not drawn here (owner's choice, 23 Nov 2026); operators can still inspect them on Maps.
  */
-export default function ResidentMap({ area, reports, selectedId = null, onSelect, picking = false, onCentre, flyTo = null, label, sheet = false, onVisibleChange, closures = [], selectedClosureId = null, onSelectClosure }: {
+export default function ResidentMap({ area, reports, selectedId = null, onSelect, picking = false, onCentre, flyTo = null, label, sheet = false, onVisibleChange, closures = [], selectedClosureId = null, onSelectClosure, wayHome = null }: {
   area: ServiceAreaResponse;
   reports: readonly ResidentMapReport[];
   selectedId?: string | null;
@@ -68,6 +70,8 @@ export default function ResidentMap({ area, reports, selectedId = null, onSelect
   closures?: readonly PublicClosure[];
   selectedClosureId?: string | null;
   onSelectClosure?: (id: string) => void;
+  /** Way home (roadmap 6.4): the answer, home and start to draw. */
+  wayHome?: { answer: WayHomeAnswer | null; home: LonLat | null; from: LonLat | null } | null;
 }) {
   const [covered, setCovered] = useState(0);
   useEffect(() => { setCovered(sheet && window.innerWidth < 1024 ? Math.min(window.innerHeight * 0.4, 320) : 0); }, [sheet]);
@@ -79,6 +83,7 @@ export default function ResidentMap({ area, reports, selectedId = null, onSelect
     <Source id="area" type="geojson" data={areaOutline(area.area)}>
       <Layer id="area-line" type="line" paint={{ "line-color": "#0E1720", "line-width": 1.5, "line-opacity": 0.55, "line-dasharray": [3, 3] }} />
     </Source>
+    {wayHome && !picking ? <RouteLines answer={wayHome.answer} home={wayHome.home} from={wayHome.from} padding={covered ? { top: 200, bottom: covered + 40 } : undefined} /> : null}
     <ClosureLines closures={closures} selectedId={selectedClosureId} onSelect={picking ? undefined : onSelectClosure} labels={!picking} />
     <HazardPins points={reports} selectedId={selectedId} onSelect={onSelect} interactive={!picking} faded={picking}
       describe={point => residentStateLabel(point.reviewState)} onVisibleChange={onVisibleChange} />
