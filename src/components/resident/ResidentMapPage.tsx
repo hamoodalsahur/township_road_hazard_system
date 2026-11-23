@@ -15,6 +15,8 @@ import type { ResidentMapReport } from "./ResidentMap";
 import MapLegend from "@/components/maps/MapLegend";
 import { ClosureChip } from "@/components/closures/ClosureLines";
 import { useClosures } from "@/hooks/useClosures";
+import { useWayHome } from "@/hooks/useWayHome";
+import WayHomeCard from "./WayHomeCard";
 import { untilLabel } from "@/lib/road-closures";
 
 const ResidentMap = dynamic(() => import("./ResidentMap"), {
@@ -32,6 +34,7 @@ export default function ResidentMapPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [closureId, setClosureId] = useState<string | null>(null);
   const { closures } = useClosures();
+  const way = useWayHome(closures.map(c => `${c.id}:${c.endsAt}`).join("|"));
   const [legendOpen, setLegendOpen] = useState(false);
   const [onScreen, setOnScreen] = useState<ResidentMapReport[]>([]);
 
@@ -119,6 +122,7 @@ export default function ResidentMapPage() {
       <div className="relative h-[calc(100dvh-56px-4rem-env(safe-area-inset-bottom))] lg:h-auto lg:flex-1">
         {loaded ? <ResidentMap area={serviceArea} reports={inArea} selectedId={selectedId} onSelect={id => pickReport(id)} sheet onVisibleChange={setOnScreen}
           closures={closures} selectedClosureId={closureId} onSelectClosure={id => pickClosure(id)}
+          wayHome={way.settings ? { answer: way.answer, home: way.settings.home, from: way.from } : null}
           label={`Map of ${serviceArea.area.name} with fictional road reports`} /> : null}
         <div className="pointer-events-none absolute inset-x-3 top-3 z-[500] flex items-start gap-2 lg:inset-x-5 lg:top-5">
           <span className="pointer-events-auto inline-flex h-9 items-center gap-2 rounded-full bg-night px-3 text-small text-night-text shadow-lg">
@@ -129,6 +133,7 @@ export default function ResidentMapPage() {
             <InfoIcon size={16} aria-hidden="true" />What the pins mean
           </button>
         </div>
+        <div className="absolute inset-x-3 top-[3.75rem] z-[500] lg:hidden"><WayHomeCard state={way} onCheck={way.check} compact /></div>
         {legendOpen ? <div className="absolute inset-x-3 top-14 z-[500] rounded-xl border border-slate-200 bg-white p-3 shadow-lg lg:hidden">{legend}</div> : null}
         <div className="absolute bottom-5 left-5 z-[500] hidden rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm lg:block">{legend}</div>
         {/* Phones: the main action floats above the sheet. */}
@@ -151,7 +156,7 @@ export default function ResidentMapPage() {
           </div>
           <p className="mt-1 hidden text-body text-night-muted lg:block">{countLine}. Pins with a ring are still being checked.</p>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto">{closureList}{list}
+        <div className="min-h-0 flex-1 overflow-y-auto"><div className="hidden px-4 pt-4 lg:block"><WayHomeCard state={way} onCheck={way.check} /></div>{closureList}{list}
           <p className="px-4 pb-4 text-caption text-slate-600 lg:px-6">Fictional demo reports. They are not live road conditions and are not directions.</p>
         </div>
         <div className="hidden shrink-0 border-t border-slate-200 bg-white p-4 lg:block">

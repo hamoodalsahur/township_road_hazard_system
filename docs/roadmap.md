@@ -139,11 +139,11 @@ Decision G6 is now **which routing provider**, chosen before 6.1:
 
 | Step | What |
 | --- | --- |
-| 6.1 | **Routing provider.** One interface with the chosen provider behind it, the key server-side only, and a test mode with recorded answers so tests never call the real service. Closures become avoid shapes. |
-| 6.2 | **Route API.** Given a start and an end, return a route that avoids active closures, plus whether the usual route was affected. Locations are passed to the provider for the answer and **not stored** by us. The privacy notice says which provider sees them. |
-| 6.3 | **Home pin.** The resident sets home by tapping the map. It is stored in the browser only, never on the server. "Start from where I am" is opt-in and uses the browser's location permission. |
-| 6.4 | **"Your way home" card.** When the resident opens the site, it shows "clear", or "affected" with the detour on the map. |
-| 6.5 | **Own-area test pack.** Import the owner's area locally, add fictional closures, and work through a checklist. Home coordinates never go into Git. |
+| 6.1 | ✅ (23 Nov 2026) **Routing provider.** One interface with the chosen provider behind it, the key server-side only, and a test mode with recorded answers so tests never call the real service. Closures become avoid shapes. |
+| 6.2 | ✅ (23 Nov 2026) **Route API.** Given a start and an end, return a route that avoids active closures, plus whether the usual route was affected. Locations are passed to the provider for the answer and **not stored** by us. The privacy notice says which provider sees them. |
+| 6.3 | ✅ (23 Nov 2026) **Home pin.** The resident sets home by tapping the map. It is stored in the browser only, never on the server. "Start from where I am" is opt-in and uses the browser's location permission. |
+| 6.4 | ✅ (23 Nov 2026) **"Your way home" card.** When the resident opens the site, it shows "clear", or "affected" with the detour on the map. |
+| 6.5 | ✅ (23 Nov 2026) **Own-area test pack.** Import the owner's area locally, add fictional closures, and work through a checklist. Home coordinates never go into Git. |
 
 **Done when:** at the owner's own location, a fictional closure on the usual route triggers "affected" and a sensible detour, and removing it returns to "clear".
 
@@ -193,7 +193,7 @@ Picked up after phase 6. The Expo app keeps working against the API in the meant
 | G3 | Background map | Phase 3 | **Decided 23 Nov 2026: OpenFreeMap "Positron".** OpenFreeMap "Positron" (free, no key, commercial use allowed) |
 | G4 | How the phone app shows the map | Phone app step P.3 | Decided by how it feels on the iPhone |
 | G5 | Operator-confirmed closures may affect routes | Phase 5 | **Decided 23 Nov 2026: yes, operator-only, with a required end time (closures are built; routing uses them in phase 6).** Yes, operator-only, with an end or review date |
-| G6 | Which routing provider (whole trips, owner's choice on 10 Nov 2026) | Phase 6 | OpenRouteService to start, or Valhalla on the owner's PC for privacy. Decide before 6.1. |
+| G6 | Which routing provider (whole trips, owner's choice on 10 Nov 2026) | Phase 6 | **Decided 23 Nov 2026: OpenRouteService** (Valhalla stays possible behind the same interface). OpenRouteService to start, or Valhalla on the owner's PC for privacy. Decide before 6.1. |
 | G7 | Alerts while the app is closed | Phase 7 | Installable web app with web push |
 | G8 | When to add Bahasa Malaysia | Phase 8 | Prepare early, translate after the screens settle |
 | G9 | Merge the two repositories into one | Not now | No; the compatibility tests (2.7) and P.8 are enough for now |

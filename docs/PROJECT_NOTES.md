@@ -45,7 +45,7 @@ The two are connected only through the website's API over the local network. The
 | Resident website: map, report in three steps, My reports | ✅ | Step 4.3 (23 Nov 2026). The simulation lives only under management Maps & Simulation. |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 351 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 362 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
 | Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident website followed in step 4.3 (23 Nov 2026). Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps use the same pins since the MapLibre move (roadmap 3.1). |
 | Residents can see the full outcome of a report (including "Resolved") | ✅ | `GET /api/v2/hazards/status` (step 4.3): review state, incident status and last change only |
@@ -77,6 +77,20 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 23 November 2026: Way home (roadmap phase 6)
+- **Why:** phase 6, the feature the owner wants for their own area. Decision G6 is made: **OpenRouteService** (hosted, free daily allowance), behind one interface so Valhalla can replace it later.
+- **What:**
+  - **Set your home** (`/resident/home`): a house pin on the map, and where checks start ("Where I am", which asks for location each time, or a saved usual starting place). Kept in this browser only (`laluan.wayHome.v1`, rounded to about 1 m).
+  - **"Your way home" card** on the resident map (top of the side panel on desktop, under the chips on phones): clear, affected (closure named, detour in blue, usual way dotted, extra minutes), no way found, not set up, or the service's message. It checks by itself when the start is a saved place or location was already allowed, and again when closures change.
+  - **`POST /api/v2/route`**: the usual route first; if it runs along at least 25 m of an active closure, it asks again with every active closure as thin avoid rectangles (about 24 m wide). A detour that still uses a closed road is not offered. Trips may start anywhere up to 300 km away; closures and reports stay limited to the service area.
+  - **Providers** (`src/lib/routing-server.ts`): OpenRouteService with `OPENROUTESERVICE_API_KEY` (server only), "recorded" (one fictional BBR trip, for tests and screenshots, never the network), or off. At most 10 checks a minute per address.
+  - **Test pack** for the owner's own area: `docs/way-home-test-pack.md` (no coordinates in it).
+- **Privacy:** home never reaches our database; the route request uses POST (points never in addresses or logs) and the API writes and logs nothing. The set-home page says the points go to OpenRouteService.
+- **Checked:**
+  - 362 tests pass (new: `way-home`, with a fake fetch for OpenRouteService: key in the header, avoid shapes in the body, "no route", refused key and daily limit); typecheck and production build pass.
+  - In the browser with recorded routes and the real map background: affected (desktop and phone), clear after ending the closure, not set up, and the set-home steps.
+  - Not checked: a real OpenRouteService answer (no key here; the owner's step in the test pack), real GPS, and an iPhone.
 
 ### 23 November 2026: Road closures (roadmap step 5.1)
 - **Why:** step 5.1, and the groundwork for "way home" (phase 6), which will route around these closures. Decision G5 is now made: operator-only closures with a required end time.

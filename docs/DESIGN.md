@@ -306,6 +306,7 @@ The schematic flood simulation and connectivity checker are research tools, not 
 - **Report vicinity:** the dashed strokes near confirmed reports stay, recoloured to the severity scale.
 - **Layer order, bottom to top:** basemap, road overlay, report vicinity, resolved markers, active markers, selected marker, draft pin.
 - **Legend:** shows only what is currently on the map.
+- **Way home (phase 6, 23 November 2026):** a clear route is solid ink; when a closure is on it, the usual way turns dotted grey and the detour is blue (#1F5A94) with a white casing. Home is a navy disc with a mint house; the start is a white disc with a navy ring. Mockups: [desktop](design/night-desk/12-way-home-desktop.png) and [phone](design/night-desk/13-way-home-phone.png).
 - **Road closures (step 5.1, 23 November 2026):** closed roads are red (the "Possibly closed" severity colour) with a white casing and a white dashed centre, so they do not rely on colour alone; "one lane only" drops the dashes. A label reads "Closed until 23:40". Residents see only active closures, listed first in "On the map now". Mockups: [operator](design/night-desk/10-closures-operator.png) and [resident](design/night-desk/11-closures-resident.png).
 - **Built (23 November 2026):** clustering bubbles take the colour of their most serious report and zoom in when selected; the selected pin is never clustered. Residents see no road overlay; operators turn on "Inspect road lines" on Maps. Pins are buttons (keyboard and screen reader), not drawn into the map canvas.
 

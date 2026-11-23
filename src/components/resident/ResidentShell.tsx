@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 import { InfoIcon, ListChecksIcon, MapTrifoldIcon, PathIcon, PlusIcon, XIcon } from "@phosphor-icons/react";
 import { useServiceArea } from "@/hooks/useServiceArea";
 import { PRODUCT_NAME } from "@/lib/product";
@@ -28,7 +28,7 @@ export default function ResidentShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const active = activeResidentTab(pathname);
   const [focused, setFocused] = useState(false);
-  useEffect(() => { if (active !== "/resident/report") setFocused(false); }, [active]);
+  // Pages that hide the tab bar (report steps, way-home setup) turn it back on when they unmount.
   const { data: serviceArea } = useServiceArea();
 
   return (
