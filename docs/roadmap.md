@@ -122,7 +122,7 @@ Order follows `DESIGN.md`, section 15. Each step needs mockups approved first.
 
 | Step | What |
 | --- | --- |
-| 5.1 | **Road closure records.** An operator links a confirmed report or incident to one or more road segments, with a reason, a start time and an end or review time. The closure shows on the map and is audited. |
+| 5.1 | ✅ (23 Nov 2026) **Road closure records.** An operator links a confirmed report or incident to one or more road segments, with a reason, a start time and an end or review time. The closure shows on the map and is audited. |
 | 5.2 | ✅ (done with 4.3, 23 Nov 2026) **Report outcome in the public API:** received, being checked, confirmed or not, resolved. Operator notes are never included. |
 | 5.3 | ✅ (done with 4.3, 23 Nov 2026) **Lifecycle track** on the website, and "My reports" showing live status |
 
@@ -192,7 +192,7 @@ Picked up after phase 6. The Expo app keeps working against the API in the meant
 | G2 | Move to Supabase (Postgres, accounts, storage) | Phase 2 | Yes |
 | G3 | Background map | Phase 3 | **Decided 23 Nov 2026: OpenFreeMap "Positron".** OpenFreeMap "Positron" (free, no key, commercial use allowed) |
 | G4 | How the phone app shows the map | Phone app step P.3 | Decided by how it feels on the iPhone |
-| G5 | Operator-confirmed closures may affect routes | Phase 5 | Yes, operator-only, with an end or review date |
+| G5 | Operator-confirmed closures may affect routes | Phase 5 | **Decided 23 Nov 2026: yes, operator-only, with a required end time (closures are built; routing uses them in phase 6).** Yes, operator-only, with an end or review date |
 | G6 | Which routing provider (whole trips, owner's choice on 10 Nov 2026) | Phase 6 | OpenRouteService to start, or Valhalla on the owner's PC for privacy. Decide before 6.1. |
 | G7 | Alerts while the app is closed | Phase 7 | Installable web app with web push |
 | G8 | When to add Bahasa Malaysia | Phase 8 | Prepare early, translate after the screens settle |

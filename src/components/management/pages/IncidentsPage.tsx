@@ -5,12 +5,13 @@ import { useManagementOperatorKey } from "@/components/management/ManagementShel
 import IncidentManager from "@/components/management/IncidentManager";
 import V2HazardManager from "@/components/management/V2HazardManager";
 import ReportWorkspace from "@/components/reports/ReportWorkspace";
+import RoadClosuresPanel from "@/components/closures/RoadClosuresPanel";
 
-type Tab = "report-review" | "incident-groups" | "simulator-reports";
-const TABS: Tab[] = ["report-review", "incident-groups", "simulator-reports"];
+type Tab = "report-review" | "incident-groups" | "road-closures" | "simulator-reports";
+const TABS: Tab[] = ["report-review", "incident-groups", "road-closures", "simulator-reports"];
 
 /**
- * Incidents (roadmap step 4.2): report review and incident groups as tabs.
+ * Incidents (roadmap step 4.2): report review, incident groups and road closures (5.1) as tabs.
  * All three panels stay mounted so filters, drafts and selections survive tab switches.
  */
 export default function IncidentsPage() {
@@ -18,6 +19,7 @@ export default function IncidentsPage() {
   const [tab, setTab] = useState<Tab>("report-review");
   const [needsReview, setNeedsReview] = useState<number | null>(null);
   const [underReview, setUnderReview] = useState<number | null>(null);
+  const [activeClosures, setActiveClosures] = useState<number | null>(null);
   const [reviewSummary, setReviewSummary] = useState("");
 
   // Links such as /management/incidents#incident-groups open the matching tab.
@@ -55,6 +57,8 @@ export default function IncidentsPage() {
           onClick={() => choose("report-review")} className={tabClass("report-review")}>Review reports{count(needsReview)}</button>
         <button type="button" role="tab" id="tab-incident-groups" aria-selected={tab === "incident-groups"} aria-controls="incident-groups" tabIndex={tab === "incident-groups" ? 0 : -1}
           onClick={() => choose("incident-groups")} className={tabClass("incident-groups")}>Incident groups{count(underReview)}</button>
+        <button type="button" role="tab" id="tab-road-closures" aria-selected={tab === "road-closures"} aria-controls="road-closures" tabIndex={tab === "road-closures" ? 0 : -1}
+          onClick={() => choose("road-closures")} className={tabClass("road-closures")}>Road closures{count(activeClosures)}</button>
         <button type="button" role="tab" id="tab-simulator-reports" aria-selected={tab === "simulator-reports"} aria-controls="simulator-reports" tabIndex={tab === "simulator-reports" ? 0 : -1}
           onClick={() => choose("simulator-reports")} className={tabClass("simulator-reports")}>Older simulator reports</button>
       </div>} />
@@ -63,6 +67,9 @@ export default function IncidentsPage() {
     </section>
     <section id="incident-groups" role="tabpanel" aria-labelledby="tab-incident-groups" hidden={tab !== "incident-groups"} className="scroll-mt-28">
       <IncidentManager operatorKey={operatorKey} onCountsChange={setUnderReview} />
+    </section>
+    <section id="road-closures" role="tabpanel" aria-labelledby="tab-road-closures" hidden={tab !== "road-closures"} className="scroll-mt-28">
+      <RoadClosuresPanel operatorKey={operatorKey} onCountsChange={setActiveClosures} />
     </section>
     <section id="simulator-reports" role="tabpanel" aria-labelledby="tab-simulator-reports" hidden={tab !== "simulator-reports"} className="scroll-mt-28">
       <p className="mb-4 max-w-3xl text-body leading-6 text-slate-600">Historical simulator reports, kept for the original schematic road-network demonstration. They are separate from resident reports and incident groups.</p>

@@ -2,7 +2,7 @@
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, type ReactNode } from "react";
-import { Map, NavigationControl, type MapLayerMouseEvent, type MapRef } from "@vis.gl/react-maplibre";
+import { AttributionControl, Map, NavigationControl, type MapLayerMouseEvent, type MapRef } from "@vis.gl/react-maplibre";
 import { MAP_MAX_ZOOM, MAP_MIN_ZOOM, MAP_STYLE_URL, type Bounds4 } from "@/lib/map-platform";
 
 export type FitPadding = { top: number; bottom: number; left: number; right: number };
@@ -12,7 +12,7 @@ export type FitPadding = { top: number; bottom: number; left: number; right: num
  * It fits `fit` when first drawn and again whenever `fitKey` changes (for example once the real service
  * area arrives). Children are sources, layers and markers.
  */
-export default function BaseMap({ fit, fitKey, padding, label, children, onClick, onMouseMove, onMouseLeave, onMoveEnd, onReady, interactiveLayerIds, cursor, controls = "bottom-right" }: {
+export default function BaseMap({ fit, fitKey, padding, label, children, onClick, onMouseMove, onMouseLeave, onMoveEnd, onReady, interactiveLayerIds, cursor, controls = "bottom-right", compactCredit = false }: {
   fit: Bounds4;
   fitKey: string;
   padding?: Partial<FitPadding>;
@@ -26,6 +26,8 @@ export default function BaseMap({ fit, fitKey, padding, label, children, onClick
   interactiveLayerIds?: string[];
   cursor?: string;
   controls?: "bottom-right" | "top-right" | "none";
+  /** Small maps: the map credit folds into an "i" button (still shown, as OpenFreeMap requires). */
+  compactCredit?: boolean;
 }) {
   const ref = useRef<MapRef>(null);
   const pad = { top: 24, bottom: 24, left: 24, right: 24, ...padding };
@@ -47,10 +49,11 @@ export default function BaseMap({ fit, fitKey, padding, label, children, onClick
     <Map ref={ref} mapStyle={MAP_STYLE_URL}
       initialViewState={{ bounds: [[fit[0], fit[1]], [fit[2], fit[3]]], fitBoundsOptions: { padding: pad, maxZoom: 17 } }}
       minZoom={MAP_MIN_ZOOM} maxZoom={MAP_MAX_ZOOM} dragRotate={false} pitchWithRotate={false} touchPitch={false}
-      style={{ position: "absolute", inset: 0 }} cursor={cursor} interactiveLayerIds={interactiveLayerIds}
+      style={{ position: "absolute", inset: 0 }} cursor={cursor} attributionControl={compactCredit ? false : undefined} interactiveLayerIds={interactiveLayerIds}
       onLoad={() => { loaded.current = true; refit(); if (ref.current) onReady?.(ref.current); }}
       onClick={onClick} onMouseMove={onMouseMove} onMouseLeave={onMouseLeave}
       onMoveEnd={() => { if (ref.current) onMoveEnd?.(ref.current); }}>
+      {compactCredit ? <AttributionControl compact position="bottom-right" /> : null}
       {controls === "none" ? null : <NavigationControl position={controls} showCompass={false} />}
       {children}
     </Map>

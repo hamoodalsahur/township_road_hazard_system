@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Layer, Source, useMap } from "@vis.gl/react-maplibre";
 import BaseMap from "@/components/maps/BaseMap";
 import HazardPins from "@/components/maps/HazardPins";
+import ClosureLines from "@/components/closures/ClosureLines";
+import { lineMiddle, type PublicClosure } from "@/lib/road-closures";
 import { areaOutline, type PinPoint } from "@/lib/map-platform";
 import { residentStateLabel } from "@/lib/resident-reports";
 import type { ServiceAreaResponse } from "@/lib/service-area";
@@ -25,6 +27,16 @@ function FollowSelection({ report }: { report: ResidentMapReport | null }) {
   return null;
 }
 
+/** Shows a picked closure. */
+function FollowClosure({ closure }: { closure: PublicClosure | null }) {
+  const { current: map } = useMap();
+  useEffect(() => {
+    const middle = closure ? lineMiddle(closure.roads[0]?.coordinates ?? []) : null;
+    if (map && middle) map.easeTo({ center: middle, zoom: Math.max(map.getZoom(), 16), duration: 500 });
+  }, [map, closure?.id]);
+  return null;
+}
+
 /** Moves the map when the resident asks for their location. */
 function FlyTo({ target }: { target: { lonLat: [number, number]; key: number } | null }) {
   const { current: map } = useMap();
@@ -39,7 +51,7 @@ function FlyTo({ target }: { target: { lonLat: [number, number]; key: number } |
  * Resident map (roadmap 4.3 on the 3.1 platform). Positron already shows the roads, so our own road
  * lines are not drawn here (owner's choice, 23 Nov 2026); operators can still inspect them on Maps.
  */
-export default function ResidentMap({ area, reports, selectedId = null, onSelect, picking = false, onCentre, flyTo = null, label, sheet = false, onVisibleChange }: {
+export default function ResidentMap({ area, reports, selectedId = null, onSelect, picking = false, onCentre, flyTo = null, label, sheet = false, onVisibleChange, closures = [], selectedClosureId = null, onSelectClosure }: {
   area: ServiceAreaResponse;
   reports: readonly ResidentMapReport[];
   selectedId?: string | null;
@@ -52,6 +64,10 @@ export default function ResidentMap({ area, reports, selectedId = null, onSelect
   /** On phones the map page's bottom sheet covers the lower part of the map. */
   sheet?: boolean;
   onVisibleChange?: (visible: ResidentMapReport[]) => void;
+  /** Road closures active now (roadmap 5.1). */
+  closures?: readonly PublicClosure[];
+  selectedClosureId?: string | null;
+  onSelectClosure?: (id: string) => void;
 }) {
   const [covered, setCovered] = useState(0);
   useEffect(() => { setCovered(sheet && window.innerWidth < 1024 ? Math.min(window.innerHeight * 0.4, 320) : 0); }, [sheet]);
@@ -63,9 +79,11 @@ export default function ResidentMap({ area, reports, selectedId = null, onSelect
     <Source id="area" type="geojson" data={areaOutline(area.area)}>
       <Layer id="area-line" type="line" paint={{ "line-color": "#0E1720", "line-width": 1.5, "line-opacity": 0.55, "line-dasharray": [3, 3] }} />
     </Source>
+    <ClosureLines closures={closures} selectedId={selectedClosureId} onSelect={picking ? undefined : onSelectClosure} labels={!picking} />
     <HazardPins points={reports} selectedId={selectedId} onSelect={onSelect} interactive={!picking} faded={picking}
       describe={point => residentStateLabel(point.reviewState)} onVisibleChange={onVisibleChange} />
     {picking ? null : <FollowSelection report={reports.find(r => r.id === selectedId) ?? null} />}
+    {picking ? null : <FollowClosure closure={closures.find(c => c.id === selectedClosureId) ?? null} />}
     <FlyTo target={flyTo} />
   </BaseMap>;
 }
