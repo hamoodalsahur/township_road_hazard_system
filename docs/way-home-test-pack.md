@@ -5,7 +5,7 @@ Your home and your area stay on your PC: never write coordinates into Git, pull 
 
 ## 1. One-time setup
 
-1. Get a free OpenRouteService key: sign up at openrouteservice.org, open the dashboard, and create a token (the free plan is enough).
+1. Get a free OpenRouteService key: create a HeiGIT account at account.heigit.org (OpenRouteService is run by HeiGIT), open the dashboard and copy the key under tokens. The free Standard plan is enough. New keys are long and may start with "eyJ"; that is normal.
 2. Back up `.env` (`Copy-Item .env backup\.env.before-way-home`), then add this line to `.env`:
    ```
    OPENROUTESERVICE_API_KEY="<your key>"

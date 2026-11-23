@@ -157,7 +157,7 @@ export default function ResidentMapPage() {
           <p className="mt-1 hidden text-body text-night-muted lg:block">{countLine}. Pins with a ring are still being checked.</p>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto"><div className="hidden px-4 pt-4 lg:block"><WayHomeCard state={way} onCheck={way.check} /></div>{closureList}{list}
-          <p className="px-4 pb-4 text-caption text-slate-600 lg:px-6">Fictional demo reports. They are not live road conditions and are not directions.</p>
+          <p className="px-4 pb-4 text-caption text-slate-600 lg:px-6">Fictional demo reports. They are not live road conditions and are not directions. <Link href="/resident/about" className="underline underline-offset-2">About and privacy</Link></p>
         </div>
         <div className="hidden shrink-0 border-t border-slate-200 bg-white p-4 lg:block">
           <Button asChild variant="approve" className="h-12 w-full text-body"><Link href="/resident/report"><PlusIcon size={18} weight="bold" aria-hidden="true" />Report a problem</Link></Button>

@@ -12,6 +12,7 @@ const ACTIONS: Record<string, string> = {
   v2_road_closure_created: "Road closed",
   v2_road_closure_ended: "Road closure ended",
   v2_road_closure_extended: "Road closure end time changed",
+  v2_demo_reports_archived: "Reports outside the area archived",
 };
 
 /** "Approved", "Rejected", "Group opened"… Unknown actions are shown as their stored name, made readable. */

@@ -52,6 +52,7 @@ export default function ResidentShell({ children }: { children: ReactNode }) {
               })}
             </nav>
             <div className="ml-auto flex items-center gap-2">
+              <Link href="/resident/about" className="hidden px-2 text-body text-night-muted hover:text-white lg:inline">About</Link>
               <span className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-night-edge px-3 py-1 text-caption text-night-muted"
                 title="Fictional demo reports, not live road conditions">
                 <InfoIcon size={14} aria-hidden="true" /><span className="hidden sm:inline">{serviceArea.area.name} ·</span> Demo data

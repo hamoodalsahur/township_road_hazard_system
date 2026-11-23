@@ -2,7 +2,8 @@
 import { RoutingUnavailable, isLonLat, metres, type AvoidShape, type LonLat, type RouteLine, type RoutingProvider } from "./routing";
 import { RECORDED_BBR_TRIP } from "./routing-recorded";
 
-export const ORS_URL = "https://api.openrouteservice.org/v2/directions/driving-car/geojson";
+// api.openrouteservice.org is being retired in favour of api.heigit.org (HeiGIT, Nov 2026). Same key, same answers.
+export const ORS_URL = "https://api.heigit.org/openrouteservice/v2/directions/driving-car/geojson";
 
 /** OpenRouteService (decision G6, 23 Nov 2026): hosted, free daily allowance, key in OPENROUTESERVICE_API_KEY. */
 export function openRouteService(apiKey: string, fetcher: typeof fetch = fetch): RoutingProvider {
