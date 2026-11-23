@@ -17,7 +17,7 @@ const SECTIONS: { title: string; items: string[] }[] = [
     "Your home for way home: kept in this browser only, rounded to about 1 metre. It is never saved on the server.",
   ] },
   { title: "Who else sees what", items: [
-    "When you check your way home, the start and home points are sent to OpenRouteService (run by HeiGIT) to work out the route. This app does not store or log them.",
+    "When you check your way home, the start and home points are used to work out the route: on this computer from your area's own road lines, or, if the server is set up for it, by OpenRouteService (run by HeiGIT). This app does not store or log them.",
     "Your location is only asked for when you press \"Use my location\" or check your way home from where you are, and only used for that moment.",
     "The map background is loaded from OpenFreeMap, which does not use cookies.",
   ] },
