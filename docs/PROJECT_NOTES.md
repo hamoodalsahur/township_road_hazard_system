@@ -45,7 +45,7 @@ The two are connected only through the website's API over the local network. The
 | Resident website: map, report in three steps, My reports | ✅ | Step 4.3 (23 Nov 2026). The simulation lives only under management Maps & Simulation. |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 372 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 377 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
 | Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident website followed in step 4.3 (23 Nov 2026). Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps use the same pins since the MapLibre move (roadmap 3.1). |
 | Residents can see the full outcome of a report (including "Resolved") | ✅ | `GET /api/v2/hazards/status` (step 4.3): review state, incident status and last change only |
@@ -77,6 +77,11 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 24 November 2026: Approve and close in one go
+- **Why:** in the owner's demo flow, approving a blocking report and then closing its road were two separate trips through the desk.
+- **What:** approving a report marked "Possibly closed" now opens Close roads straight away, with the nearest road picked, "Closed to cars" chosen and the approval reason filled in. "Partly blocked" opens it with "One lane only". The operator can change anything, or press "Not now" to leave the road open. Other reports open nothing: approval alone still never changes a road. After closing, the desk says the residents' way home now goes around it.
+- **Checked:** 377 tests pass (5 new in `approve-and-close`). In a real browser on the sandbox area: sent a "Possibly closed" report, approved it, the dialog opened with the road 11 m away picked, and "Close 1 road" created the closure (shown in the public closures API).
 
 ### 23 November 2026: Bigger service areas
 - **Why:** the owner widened their own area to a 10 km square (5 km out from home) so trips from their university are inside it. A square that size holds several thousand road lines, over the old 2,000 limit.

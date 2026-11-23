@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { InfoIcon, XIcon } from "@phosphor-icons/react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -43,8 +43,10 @@ const localInput = (d: Date) => new Date(d.getTime() - d.getTimezoneOffset() * 6
  * "Close roads" (roadmap 5.1, mockup closures-operator.png): pick roads near the report on the map,
  * how they are closed, until when, and a reason. Nothing is saved until "Close N roads".
  */
-export default function CloseRoadsDialog({ open, onOpenChange, source, operatorKey, onDone }: {
+export default function CloseRoadsDialog({ open, onOpenChange, source, operatorKey, onDone, start }: {
   open: boolean;
+  /** Opened right after approving a report: start with this kind and reason, and the nearest road picked. */
+  start?: { kind: ClosureKind; reason: string };
   onOpenChange: (open: boolean) => void;
   source: ClosureSource;
   operatorKey: string;
@@ -60,11 +62,13 @@ export default function CloseRoadsDialog({ open, onOpenChange, source, operatorK
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [now, setNow] = useState(() => new Date());
+  const picked = useRef(false);
 
   useEffect(() => {
     if (!open || !loaded) return;
     let live = true;
-    setNow(new Date()); setSelected([]); setKind("closed"); setChoice(1); setCustom(""); setReason(""); setError("");
+    setNow(new Date()); setSelected([]); setKind(start?.kind ?? "closed"); setChoice(1); setCustom(""); setReason(start?.reason ?? ""); setError("");
+    picked.current = false;
     void loadRoads(serviceArea.area.id).then(result => { if (live) setRoads(result); });
     return () => { live = false; };
   }, [open, loaded, serviceArea.area.id, source.id]);
@@ -79,6 +83,12 @@ export default function CloseRoadsDialog({ open, onOpenChange, source, operatorK
     }
     return [...best.values()].sort((a, b) => a.distanceMetres - b.distanceMetres);
   }, [roads, source.points]);
+  // After approval: pick the nearest road once, so "Close 1 road" is one click away.
+  useEffect(() => {
+    if (!open || !start || picked.current || !candidates.length) return;
+    picked.current = true;
+    setSelected([candidates[0].id]);
+  }, [open, start, candidates]);
   const byId = useMemo(() => new Map(candidates.map(c => [c.id, c])), [candidates]);
   const candidateRoadsOnMap = useMemo(() => (roads ?? []).filter(r => byId.has(r.properties.id)), [roads, byId]);
 
@@ -189,7 +199,7 @@ export default function CloseRoadsDialog({ open, onOpenChange, source, operatorK
         <div className="border-t border-slate-200 bg-slate-50 px-5 py-4">
           {error ? <p role="alert" className="mb-2 text-small font-medium text-[#A8321F]">{error}</p> : null}
           <div className="flex gap-2">
-            <Button variant="secondary" className="h-12 w-28" onClick={() => onOpenChange(false)} disabled={busy}>Cancel</Button>
+            <Button variant="secondary" className="h-12 w-28" onClick={() => onOpenChange(false)} disabled={busy}>{start ? "Not now" : "Cancel"}</Button>
             <Button className="h-12 flex-1 bg-[#B42318] text-white hover:bg-[#8F1C13]" onClick={() => void save()} disabled={!canSave}>
               {busy ? "Saving…" : selected.length === 0 ? "Choose roads to close" : `Close ${selected.length} ${selected.length === 1 ? "road" : "roads"}`}
             </Button>
