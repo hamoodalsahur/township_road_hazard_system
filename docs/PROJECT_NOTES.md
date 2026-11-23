@@ -45,7 +45,7 @@ The two are connected only through the website's API over the local network. The
 | Resident website: map, report in three steps, My reports | ✅ | Step 4.3 (23 Nov 2026). The simulation lives only under management Maps & Simulation. |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 362 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 366 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
 | Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident website followed in step 4.3 (23 Nov 2026). Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps use the same pins since the MapLibre move (roadmap 3.1). |
 | Residents can see the full outcome of a report (including "Resolved") | ✅ | `GET /api/v2/hazards/status` (step 4.3): review state, incident status and last change only |
@@ -77,6 +77,15 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 23 November 2026: Ready to present
+- **Why:** the owner asked for the essentials that make the app presentable (presenting from their own laptop, so hosting waits).
+- **What:**
+  - **Front page** (`/`) rebuilt in Night Desk: what the service does, "Open the map", "Report a problem", "Operator sign in", how it works in four steps. The old hackathon header and notice are removed.
+  - **About and privacy** (`/resident/about`): fictional data, what is kept where (reports on the server, My reports and home in the browser), and that way-home points go to OpenRouteService. Linked from the front page, the resident header and the map list.
+  - **`npm run demo:prepare`**: shows a plan; with `-- --apply` it archives reports outside the active area (nothing deleted, `-- --restore` undoes it) and adds one fictional set on the owner's own road lines (two approved, one closure, one group, three waiting, one rejected).
+  - **Route address**: OpenRouteService requests now go to `api.heigit.org`, as HeiGIT is retiring `api.openrouteservice.org`. The test pack explains the HeiGIT sign-up.
+- **Checked:** 366 tests pass (new: `presentable`); typecheck and build pass. The script ran on a copy of the test database (plan, apply, second run adds nothing, restore). Screenshots of the front page (desktop and phone), About, the resident map and the Overview after preparing.
 
 ### 23 November 2026: Way home (roadmap phase 6)
 - **Why:** phase 6, the feature the owner wants for their own area. Decision G6 is made: **OpenRouteService** (hosted, free daily allowance), behind one interface so Valhalla can replace it later.

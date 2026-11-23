@@ -81,6 +81,7 @@ test("OpenRouteService gets the key in a header, the points and avoid shapes in 
   const line = await ok.route(trip.start, trip.home, { type: "MultiPolygon", coordinates: [] });
   assert.equal(line?.distanceM, 3175);
   assert.equal(calls[0].url, ORS_URL);
+  assert.equal(ORS_URL, "https://api.heigit.org/openrouteservice/v2/directions/driving-car/geojson", "the current HeiGIT address");
   assert.equal((calls[0].init.headers as Record<string, string>).Authorization, "test-key");
   const body = JSON.parse(String(calls[0].init.body));
   assert.deepEqual(body.coordinates, [trip.start, trip.home]);

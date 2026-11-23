@@ -16,6 +16,7 @@
     "db:migrate:new": "prisma migrate dev --create-only",
     "db:copy-from-sqlite": "tsx scripts/copy-sqlite-to-postgres.ts",
     "db:import-roads": "tsx scripts/import-roads-to-db.ts",
+    "demo:prepare": "tsx scripts/prepare-demo.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "geo:import": "tsx scripts/import-bbr-roads.ts",

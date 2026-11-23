@@ -51,6 +51,14 @@ What it does, and never does:
 - Until an area has been imported, the app keeps reading that area's file, exactly as before. The Maps page says which one it used ("read from the database" or "read from the area's file").
 - Postgres stores the line properties as JSONB, which may reorder keys inside each line. The lines, their order and every value are unchanged.
 
+## Getting ready to present (`npm run demo:prepare`)
+
+1. `npm run demo:prepare` shows the plan and changes nothing.
+2. `npm run demo:prepare -- --apply`:
+   - archives reports outside your active area (for example the old BBR ones) by marking them `archived_other_area`. Nothing is deleted; they just stop appearing;
+   - adds one small fictional set on your own road lines: two approved reports (one with a 6-hour road closure, one in a group), three waiting, one rejected. It never adds a second set.
+3. Undo the archiving: `npm run demo:prepare -- --restore`. The new ids are saved in `backup/demo-seed-<time>.json`.
+
 ## Undo
 
 Stop the dev server, put the old line back in `.env` (`DATABASE_URL="file:./dev.db"`, remove the Postgres one) and check out a commit from before step 2.2 (`git checkout 720648c`). `dev.db` is exactly as it was. To return to Postgres, check out `main` again and restore the Postgres line; the data in Docker is still there.

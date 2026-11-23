@@ -5,7 +5,7 @@ import { PRODUCT_NAME } from "../src/lib/product";
 
 const NAME_FILES = [
   "src/app/layout.tsx",
-  "src/components/SiteHeader.tsx",
+  "src/app/page.tsx",
   "src/components/management/ManagementShell.tsx",
 ];
 const OLD_NAMES = ["Township Flood Intelligence", "Hazard Intelligence"];

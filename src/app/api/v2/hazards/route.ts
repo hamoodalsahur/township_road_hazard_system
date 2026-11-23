@@ -7,7 +7,7 @@ import { loadServiceArea } from "@/lib/service-area-server";
 export const dynamic = "force-dynamic";
 export async function GET() {
   try {
-    const records = await prisma.hazardReport.findMany({ orderBy:{createdAt:"desc"}, take:100,
+    const records = await prisma.hazardReport.findMany({ where:{sourceMode:"simulation",reviewState:{not:"rejected"}}, orderBy:{createdAt:"desc"}, take:100,
       select:{id:true,category:true,description:true,longitude:true,latitude:true,impact:true,reviewState:true,createdAt:true,sourceMode:true,evidence:{select:{status:true}}} });
     return NextResponse.json({mode:"simulation", reports:records.filter(x=>x.sourceMode==="simulation"&&x.reviewState!=="rejected").map(({evidence,...report})=>({...report,hasApprovedPhoto:report.reviewState==="corroborated"&&evidence?.status==="approved_public_demo"})), disclaimer:"FICTIONAL geographic report examples. Not verified road conditions or real travel advice."});
   } catch {
