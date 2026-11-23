@@ -45,7 +45,7 @@ The two are connected only through the website's API over the local network. The
 | Resident website: map, report in three steps, My reports | ✅ | Step 4.3 (23 Nov 2026). The simulation lives only under management Maps & Simulation. |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 371 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 372 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
 | Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident website followed in step 4.3 (23 Nov 2026). Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps use the same pins since the MapLibre move (roadmap 3.1). |
 | Residents can see the full outcome of a report (including "Resolved") | ✅ | `GET /api/v2/hazards/status` (step 4.3): review state, incident status and last change only |
@@ -77,6 +77,11 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 23 November 2026: Bigger service areas
+- **Why:** the owner widened their own area to a 10 km square (5 km out from home) so trips from their university are inside it. A square that size holds several thousand road lines, over the old 2,000 limit.
+- **What:** an area road file may now hold up to 15,000 lines (`MAX_ROAD_LINES`); the road download asks Overpass for up to 120 seconds instead of 60. The owner's area file itself stays on their PC, out of Git.
+- **Checked:** 372 tests pass. A 7,320-line test grid is accepted (2 MB), builds its route graph in about 25 ms and finds a cross-town route in about 20 ms; 15,001 lines are refused.
 
 ### 23 November 2026: Local roads routing for way home
 - **Why:** the owner's new HeiGIT key is refused by OpenRouteService (403 "Access to this API has been disallowed", a known problem with some new accounts), and the owner chose the keyless alternative.

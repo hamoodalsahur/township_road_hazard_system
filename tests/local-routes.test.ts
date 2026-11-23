@@ -54,3 +54,18 @@ test("the way-home check works end to end on local roads: clear, then affected w
   assert.equal(answer.status, "affected");
   assert.equal(usesClosedRoad(answer.detour!.coordinates, closed), false);
 });
+
+test("an area file may hold up to 15,000 road lines, and routing stays fast at that size", async () => {
+  const { MAX_ROAD_LINES, validRoadCollection } = await import("../src/lib/bbr-roads");
+  assert.equal(MAX_ROAD_LINES, 15_000);
+  const grid: RoadFeature[] = [];
+  for (let i = 0; i <= 60; i++) for (let j = 0; j < 60; j++) {
+    grid.push(road(`osm-way-${grid.length + 1}`, [[100 + j * 0.0015, 5 + i * 0.0015], [100 + (j + 1) * 0.0015, 5 + i * 0.0015]]));
+    grid.push(road(`osm-way-${grid.length + 1}`, [[100 + i * 0.0015, 5 + j * 0.0015], [100 + i * 0.0015, 5 + (j + 1) * 0.0015]]));
+  }
+  assert.equal(validRoadCollection({ type: "FeatureCollection", features: grid }), true, `${grid.length} lines, a 10 km town`);
+  assert.equal(validRoadCollection({ type: "FeatureCollection", features: Array.from({ length: 15_001 }, () => grid[0]) }), false);
+  const started = Date.now();
+  const line = localRoute(buildRoadGraph(grid), [100.001, 5.001], [100.085, 5.085]);
+  assert.ok(line && Date.now() - started < 2000, "under two seconds");
+});

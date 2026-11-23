@@ -19,6 +19,8 @@ export type RoadFeature = {
     junction?: string;
   };
 };
+/** Most road lines one area file may hold. A 10 km square of town roads is a few thousand (raised from 2,000 on 23 Nov 2026). */
+export const MAX_ROAD_LINES = 15_000;
 export type RoadCollection = { type: "FeatureCollection"; features: RoadFeature[] };
 
 export function validCoordinate(value: unknown): value is [number, number] {
@@ -29,7 +31,7 @@ export function validCoordinate(value: unknown): value is [number, number] {
 export function validRoadCollection(value: unknown): value is RoadCollection {
   if (!value || typeof value !== "object") return false;
   const collection = value as { type?: unknown; features?: unknown };
-  if (collection.type !== "FeatureCollection" || !Array.isArray(collection.features) || collection.features.length > 2000) return false;
+  if (collection.type !== "FeatureCollection" || !Array.isArray(collection.features) || collection.features.length > MAX_ROAD_LINES) return false;
   return collection.features.every(feature => {
     if (!feature || typeof feature !== "object") return false;
     const record = feature as Partial<RoadFeature>;
