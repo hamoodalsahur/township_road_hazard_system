@@ -104,7 +104,7 @@ export default function WayHomeSetup() {
             </label>)}
         </fieldset> : null}
         <p className="mt-4 flex gap-2 rounded-xl bg-slate-100 p-3 text-small text-slate-700"><LockSimpleIcon size={18} className="shrink-0" aria-hidden="true" />
-          Your home is kept in this browser only. To work out a route, the start and home points are sent to OpenRouteService; we don&apos;t keep them.</p>
+          Your home is kept in this browser only. To work out a route, the start and home points go to the route service this app uses (your area&apos;s own road lines on this computer, or OpenRouteService); we don&apos;t keep them.</p>
         {existing ? <Button variant="ghost" className="mt-3 text-[#A8321F]" onClick={remove}><TrashIcon size={16} aria-hidden="true" />Remove my home from this browser</Button> : null}
       </div>
       <div className="sticky bottom-0 order-4 mt-auto flex gap-2 border-t border-slate-200 bg-white px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3 sm:px-8 lg:px-4 lg:pb-4">

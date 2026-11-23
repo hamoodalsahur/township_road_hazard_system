@@ -45,7 +45,7 @@ The two are connected only through the website's API over the local network. The
 | Resident website: map, report in three steps, My reports | ✅ | Step 4.3 (23 Nov 2026). The simulation lives only under management Maps & Simulation. |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 366 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 371 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
 | Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident website followed in step 4.3 (23 Nov 2026). Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps use the same pins since the MapLibre move (roadmap 3.1). |
 | Residents can see the full outcome of a report (including "Resolved") | ✅ | `GET /api/v2/hazards/status` (step 4.3): review state, incident status and last change only |
@@ -77,6 +77,11 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 23 November 2026: Local roads routing for way home
+- **Why:** the owner's new HeiGIT key is refused by OpenRouteService (403 "Access to this API has been disallowed", a known problem with some new accounts), and the owner chose the keyless alternative.
+- **What:** a third route provider, **local roads** (`src/lib/local-router.ts`): fastest drive over the active area's own road lines (database, or the area's file before the first import), with one-way streets respected, roads tagged `access=no` left out, typical speeds by road class, and closures avoided through the same avoid shapes. No key, no network. Start and home must be within 300 m of a road line, so only trips inside the area. It is the default when no OpenRouteService key is set, or chosen with `ROUTING_PROVIDER="local"`. Privacy wording on the setup and About pages now names both options.
+- **Checked:** 371 tests pass (new: `local-routes`, on the BBR reference lines: a real drive, the detour around a closed road, one-way streets, far points refused, clear then affected end to end). In the browser with local roads: affected with the detour drawn. A route check took under a second.
 
 ### 23 November 2026: Ready to present
 - **Why:** the owner asked for the essentials that make the app presentable (presenting from their own laptop, so hosting waits).

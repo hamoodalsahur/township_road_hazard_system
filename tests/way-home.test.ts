@@ -93,8 +93,10 @@ test("OpenRouteService gets the key in a header, the points and avoid shapes in 
 });
 
 test("the provider comes from settings: OpenRouteService with a key, recorded for tests, otherwise off", async () => {
-  assert.equal(routingConfig({}).provider, null);
-  assert.match(routingConfig({}).reason ?? "", /not set up/);
+  assert.equal(routingConfig({}).provider?.name, "your area's road lines", "without a key, local roads are used");
+  assert.equal(routingConfig({ ROUTING_PROVIDER: "off" }).provider, null);
+  assert.match(routingConfig({ ROUTING_PROVIDER: "off" }).reason ?? "", /not set up/);
+  assert.equal(routingConfig({ ROUTING_PROVIDER: "local", OPENROUTESERVICE_API_KEY: "abc" }).provider?.name, "your area's road lines", "local can be chosen even with a key");
   assert.equal(routingConfig({ OPENROUTESERVICE_API_KEY: "abc" }).provider?.name, "OpenRouteService");
   assert.match(routingConfig({ ROUTING_PROVIDER: "openrouteservice" }).reason ?? "", /OPENROUTESERVICE_API_KEY/);
   assert.equal(routingConfig({ ROUTING_PROVIDER: "recorded" }).provider?.name, "Recorded test routes");
@@ -128,7 +130,7 @@ test("the route API stores and logs nothing, uses POST so points never sit in ad
   assert.doesNotMatch(api, /console\.|\.create\(|\.update\(|auditEntry/, "no logging and no writes");
   assert.match(api, /allow\(who\)/);
   assert.match(read("src/hooks/useWayHome.ts"), /fetch\("\/api\/v2\/route", \{ method: "POST"/);
-  assert.match(read("src/components/resident/WayHomeSetup.tsx"), /sent to OpenRouteService; we don&apos;t keep them/);
+  assert.match(read("src/components/resident/WayHomeSetup.tsx"), /or OpenRouteService\); we don&apos;t keep them/);
   assert.doesNotMatch(read("src/lib/routing-recorded.ts"), /5\.71|100\.43/, "never the owner's own area");
   assert.match(read("src/hooks/useWayHome.ts"), /settings\.start\.kind === "place"[\s\S]*permissions\?\.query/, "location is only used without asking when already allowed");
 });

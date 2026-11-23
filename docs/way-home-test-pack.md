@@ -5,6 +5,10 @@ Your home and your area stay on your PC: never write coordinates into Git, pull 
 
 ## 1. One-time setup
 
+**Quickest: local roads (no key).** Add `ROUTING_PROVIDER="local"` to `.env` and restart `npm run dev`. Routes are worked out on your PC from your area's road lines in the database (`npm run db:import-roads`), so nothing leaves your computer. Start and home must both be within 300 m of a road line in your area. This is also what the app uses when no OpenRouteService key is set.
+
+**Or OpenRouteService** (whole trips from anywhere, needs a working key):
+
 1. Get a free OpenRouteService key: create a HeiGIT account at account.heigit.org (OpenRouteService is run by HeiGIT), open the dashboard and copy the key under tokens. The free Standard plan is enough. New keys are long and may start with "eyJ"; that is normal.
 2. Back up `.env` (`Copy-Item .env backup\.env.before-way-home`), then add this line to `.env`:
    ```
