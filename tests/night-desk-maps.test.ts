@@ -18,17 +18,18 @@ test("the layer switches filter by review state and leave examples to their own 
   assert.deepEqual(mapStageCounts(pins, states), { waiting: 2, approved: 1 }, "the example has no state, so it counts as waiting here; examples are counted separately in the panel");
 });
 
-test("the map uses the shared pins, never emoji, and keeps report text out of the pin HTML", () => {
-  assert.match(map, /renderToStaticMarkup\(<HazardMarker category=\{category\} impact=\{impact\} reviewState=\{reviewState\}/);
+test("the map uses the shared pins, never emoji, and keeps report text out of the pins", () => {
+  const pins = read("src/components/maps/HazardPins.tsx");
+  assert.match(pins, /<HazardMarker category=\{point\.category\} impact=\{point\.impact\} reviewState=\{point\.reviewState\}/);
+  assert.doesNotMatch(pins, /description/);
   assert.doesNotMatch(map, /info\.symbol/);
-  assert.match(map, /markerIcon\(hazard\.category, hazard\.impact, reviewStates\[hazard\.id\]/);
-  assert.match(map, /className="map-tiles-quiet"/);
-  assert.match(map, /isolate/, "Leaflet layers stay under the top bar and panels");
+  assert.match(map, /reviewState: reviewStates\[h\.id\] \?\? "unverified"/);
+  assert.match(read("src/components/maps/BaseMap.tsx"), /isolate/, "map layers stay under the top bar and panels");
 });
 
 test("the stage fills the screen with floating panels and stacks them on phones", () => {
   assert.match(read("src/components/management/pages/MapsPage.tsx"), /<ManagementMapStage\/>/);
-  assert.match(stage, /<GeographicReferenceMap layout="fill" popups=\{false\}/);
+  assert.match(stage, /<GeographicReferenceMap serviceArea=\{serviceArea\} roads=\{inspectRoads \? visibleRoads : \[\]\}/);
   assert.match(stage, /lg:absolute lg:bottom-20 lg:left-6 lg:top-6 lg:w-\[320px\]/);
   assert.match(stage, /lg:absolute lg:right-6 lg:top-6/);
   assert.match(stage, /order-1[\s\S]*order-3[\s\S]*order-2/, "phones: map, selected item, layers");

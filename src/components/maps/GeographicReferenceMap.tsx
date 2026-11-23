@@ -1,88 +1,55 @@
 "use client";
 
-import { useMapEvents, MapContainer, TileLayer, CircleMarker, Tooltip, ZoomControl, Polyline, Polygon, useMap, Marker, Popup } from "react-leaflet";
-import { divIcon } from "leaflet";
-import { renderToStaticMarkup } from "react-dom/server";
-import { HAZARD_SYMBOLS } from "@/lib/hazard-symbols";
-import { useEffect } from "react";
-import HazardMarker from "@/components/hazards/HazardMarker";
-import { categoryLabel, reviewStateOf, severityOf } from "@/lib/hazard-presentation";
+import { useEffect, useMemo, useState } from "react";
+import { Layer, Marker, Source, useMap, type MapLayerMouseEvent } from "@vis.gl/react-maplibre";
+import BaseMap from "./BaseMap";
+import HazardPins from "./HazardPins";
+import { reviewStateOf } from "@/lib/hazard-presentation";
 import { bbrReferencePoints, isValidLonLat } from "@/lib/bbr-reference";
-import { roadStyle } from "@/lib/bbr-road-display";
-import {candidateVicinityColor,type CandidateVicinityStroke} from "@/lib/v215-road-vicinity";
+import { candidateVicinityColor, type CandidateVicinityStroke } from "@/lib/v215-road-vicinity";
+import { areaOutline, boundsOf, roadLayerData, type PinPoint } from "@/lib/map-platform";
 import type { RoadFeature } from "@/lib/bbr-roads";
 import type { DemoHazard } from "@/lib/demo-hazards";
-import { DEFAULT_SERVICE_AREA, areaCenter, type ServiceAreaResponse } from "@/lib/service-area";
+import type { ServiceAreaResponse } from "@/lib/service-area";
 
-function FocusSelectedNode({ selectedNodePosition }: { selectedNodePosition: [number, number] | null }) {
-  const map = useMap();
+const referencePoints = {
+  type: "FeatureCollection" as const,
+  features: bbrReferencePoints.features.filter(feature => isValidLonLat(feature.geometry.coordinates))
+    .map(feature => ({ type: "Feature" as const, geometry: feature.geometry, properties: { name: feature.properties.name } })),
+};
+// Road-inspection mode (DESIGN.md section 10): thin ink lines, weight by road class, the selected road in green.
+// MapLibre only allows "zoom" at the top of an expression, so the selected-road width sits inside each stop.
+const ROAD_WIDTH = ["interpolate", ["linear"], ["zoom"],
+  12, ["case", ["get", "selected"], 5, ["match", ["get", "cls"], "major", 2, "local", 1.2, 0.8]],
+  17, ["case", ["get", "selected"], 9, ["match", ["get", "cls"], "major", 6, "local", 4, 2.5]]] as const;
+
+/** Zooms to a node picked in the research sections. */
+function FocusNode({ position }: { position: [number, number] | null }) {
+  const { current: map } = useMap();
+  useEffect(() => { if (map && position) map.flyTo({ center: position, zoom: 17, duration: 500 }); }, [map, position?.[0], position?.[1]]);
+  return null;
+}
+/** Fits a candidate road group when one is picked. */
+function FocusGroup({ roads, group }: { roads: RoadFeature[]; group: number }) {
+  const { current: map } = useMap();
   useEffect(() => {
-    if (!selectedNodePosition) return;
-    const [longitude, latitude] = selectedNodePosition;
-    map.setView([latitude, longitude], 16, { animate: false });
-  }, [map, selectedNodePosition?.[0], selectedNodePosition?.[1]]);
+    if (!map || group === 0) return;
+    const b = boundsOf(roads.flatMap(road => road.geometry.coordinates));
+    if (b) map.fitBounds([[b[0], b[1]], [b[2], b[3]]], { padding: 48, maxZoom: 17, duration: 500 });
+  }, [map, roads, group]);
   return null;
 }
 
-function FocusSelectedGroup({ roads, focusGroup }: { roads: RoadFeature[]; focusGroup: number }) {
-  const map = useMap();
-  useEffect(() => {
-    if (focusGroup === 0 || roads.length === 0) return;
-    const points = roads.flatMap(road => road.geometry.coordinates.map(([lon, lat]) => [lat, lon] as [number, number]));
-    if (points.length > 0) map.fitBounds(points, { padding: [24, 24], maxZoom: 16 });
-  }, [map, roads, focusGroup]);
-  return null;
-}
-
-/** Shows the whole active service area once it is known (only when the area itself changes). */
-function FocusServiceArea({ areaId, bounds }: { areaId: string; bounds: ServiceAreaResponse["bounds"] }) {
-  const map = useMap();
-  useEffect(() => {
-    map.fitBounds([[bounds.south, bounds.west], [bounds.north, bounds.east]], { padding: [16, 16], maxZoom: 16, animate: false });
-  }, [map, areaId]);
-  return null;
-}
-
-function LocationPicker({ onChooseLocation }: {onChooseLocation?: (coordinates:[number,number])=>void}) {
-  useMapEvents({ click(event) { onChooseLocation?.([event.latlng.lng,event.latlng.lat]); } });
-  return null;
-}
-// The same pins as everywhere else (DESIGN.md section 7): glyph = category, colour = severity,
-// outlined while being checked and solid once approved. Built from fixed props only (category,
-// impact, review state), never from report text, so no user HTML reaches the map.
-const iconCache = new Map<string, ReturnType<typeof divIcon>>();
-function markerIcon(category: string, impact: string, reviewState: string, selected: boolean) {
-  const key = [category, impact, reviewState, selected].join("|");
-  let icon = iconCache.get(key);
-  if (!icon) {
-    const size = selected ? 48 : 40;
-    const html = renderToStaticMarkup(<HazardMarker category={category} impact={impact} reviewState={reviewState} selected={selected} size={size} decorative />);
-    icon = divIcon({ className: "hazard-map-pin", html, iconSize: [46 * size / 42, 52 * size / 42], iconAnchor: [23 * size / 42, 44 * size / 42], popupAnchor: [0, -40 * size / 42] });
-    iconCache.set(key, icon);
-  }
-  return icon;
-}
-const features = bbrReferencePoints.features.filter(feature => isValidLonLat(feature.geometry.coordinates));
-
+/**
+ * Management Maps stage map on MapLibre and OpenFreeMap Positron (roadmap 3.1). Draws the service area,
+ * road lines when road-inspection mode is on, the dashed vicinity of approved reports, BBR reference points
+ * and clustered report pins. Clicking a road selects it; while adding a report, clicking the map places it.
+ */
 export default function GeographicReferenceMap({
-  roads = [],
-  vicinityStrokes = [],
-  selectedRoadId,
-  onSelectRoad,
-  focusGroup = 0,
-  selectedNodePosition = null,
-  hazards = [],
-  approvedPhotoIds = [],
-  onSelectHazard = () => {},
-  selectedHazardId = null,
-  onChooseLocation,
-  selectedLocation = null,
-  serviceArea,
-  reviewStates = {},
-  layout = "card",
-  popups = true,
+  roads = [], vicinityStrokes = [], selectedRoadId, onSelectRoad, focusGroup = 0, selectedNodePosition = null, hazards = [],
+  onSelectHazard = () => {}, selectedHazardId = null, onChooseLocation, selectedLocation = null, serviceArea, reviewStates = {}, onVisibleChange,
 }: {
-  serviceArea?: ServiceAreaResponse;
+  serviceArea: ServiceAreaResponse;
   roads?: RoadFeature[];
   vicinityStrokes?: readonly CandidateVicinityStroke[];
   selectedRoadId: string | null;
@@ -90,109 +57,68 @@ export default function GeographicReferenceMap({
   focusGroup?: number;
   selectedNodePosition?: [number, number] | null;
   hazards?: DemoHazard[];
-  approvedPhotoIds?: readonly string[];
   onSelectHazard?: (id: string) => void;
   selectedHazardId?: string | null;
-  onChooseLocation?: (coordinates:[number,number])=>void;
-  selectedLocation?: [number,number] | null;
+  onChooseLocation?: (coordinates: [number, number]) => void;
+  selectedLocation?: [number, number] | null;
   /** Review state per report id, so pins are outlined (needs review) or solid (approved). */
   reviewStates?: Readonly<Record<string, string>>;
-  /** "card": the boxed map on the resident page. "fill": fills its parent (management Maps stage). */
-  layout?: "card" | "fill";
-  /** Pop-up details on the pins. The Maps stage shows details in its own side panel instead. */
-  popups?: boolean;
+  /** Reports inside the current view, for the legend. */
+  onVisibleChange?: (visible: PinPoint[]) => void;
 }) {
-  const fill = layout === "fill";
-  // `isolate` keeps Leaflet's own layers (z-index 400 to 1000) inside the map, so they never cover
-  // the sticky top bar or the floating panels of the Maps stage.
-  return (
-    <div className={fill ? "isolate h-full w-full" : "isolate overflow-hidden rounded-2xl border border-slate-200 shadow-inner"}>
-      <MapContainer
-        center={[(serviceArea?.center ?? areaCenter(DEFAULT_SERVICE_AREA))[1], (serviceArea?.center ?? areaCenter(DEFAULT_SERVICE_AREA))[0]]} zoom={14} minZoom={9} maxZoom={18}
-        scrollWheelZoom={false} zoomControl={false}
-        className={fill ? "h-full w-full bg-slate-100" : "h-[390px] w-full bg-slate-100 sm:h-[520px] lg:h-[570px]"}
-        aria-label="Geographic context near Bandar Bukit Raja; not a flood or road safety map"
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          maxZoom={19}
-          className="map-tiles-quiet"
-        />
-        <ZoomControl position={fill ? "bottomright" : "topright"} />
-        <LocationPicker onChooseLocation={onChooseLocation} />
-        {serviceArea ? <>
-          <FocusServiceArea areaId={serviceArea.area.id} bounds={serviceArea.bounds} />
-          {/* Where reports are accepted. Not a road status; drawn faintly so roads stay readable. */}
-          <Polygon positions={serviceArea.area.rings.map(ring => ring.map(([lon, lat]) => [lat, lon] as [number, number]))} interactive={false}
-            pathOptions={{ color: "#0F1513", weight: 1.5, opacity: 0.45, dashArray: "6 6", fill: false }} />
-        </> : null}
-        {selectedLocation ? <CircleMarker center={[selectedLocation[1],selectedLocation[0]]} radius={10} pathOptions={{color:"#0B7350",fillColor:"#95D2B6",fillOpacity:1,weight:3}}><Tooltip permanent>Draft demo report location</Tooltip></CircleMarker>:null}
-        <FocusSelectedGroup roads={roads} focusGroup={focusGroup} />
-        <FocusSelectedNode selectedNodePosition={selectedNodePosition} />
-        {selectedNodePosition ? <CircleMarker
-          center={[selectedNodePosition[1], selectedNodePosition[0]]} radius={10}
-          pathOptions={{ color: "#b45309", fillColor: "#fbbf24", fillOpacity: 0.9, weight: 3 }}>
-          <Tooltip permanent>Mapped OSM node — review only</Tooltip>
-        </CircleMarker> : null}
-        {roads.map(road => {
-          const selected = selectedRoadId === road.properties.id;
-          return (
-            <Polyline key={road.properties.id}
-              positions={road.geometry.coordinates.map(([lon, lat]) => [lat, lon] as [number, number])}
-              pathOptions={selected ? { color: "#2563eb", weight: 7, opacity: 1 } : roadStyle(road.properties.highway)}
-              eventHandlers={{ click: () => onSelectRoad(road.properties.id) }}>
-              <Tooltip sticky>{road.properties.name} · click for source details</Tooltip>
-            </Polyline>
-          );
-        })}
-        {vicinityStrokes.map(stroke=>(
-          <Polyline key={stroke.reportId+"-"+stroke.wayId}
-            positions={stroke.points.map(([lon,lat])=>[lat,lon] as [number,number])}
-            pathOptions={{color:candidateVicinityColor(stroke.impact),weight:8,opacity:0.92,dashArray:"10 6"}}
-            eventHandlers={{click:()=>onSelectRoad(stroke.wayId)}}>
-            <Tooltip sticky>
-              Fictional human-corroborated report vicinity · {stroke.impact.replaceAll("_"," ")} · about {stroke.approximateMetres} m from unverified OSM line.
-              NOT a verified road obstruction, closure or navigable road status.
-            </Tooltip>
-          </Polyline>
-        ))}
-        {hazards.map(hazard => (
-          <Marker key={hazard.id} position={[hazard.coordinates[1], hazard.coordinates[0]]}
-            icon={markerIcon(hazard.category, hazard.impact, reviewStates[hazard.id] ?? "unverified", selectedHazardId === hazard.id)}
-            eventHandlers={{ click: () => onSelectHazard(hazard.id) }}
-            keyboard
-            zIndexOffset={selectedHazardId === hazard.id ? 1000 : (reviewStates[hazard.id] ?? "unverified") === "unverified" ? 500 : 0}
-            title={`${categoryLabel(hazard.category)}, ${severityOf(hazard.impact).label}, ${reviewStateOf(reviewStates[hazard.id] ?? "unverified").label}. Fictional report; select for details.`}>
-            <Tooltip direction="top" offset={[0, -36]}>{categoryLabel(hazard.category)}, {severityOf(hazard.impact).label.toLowerCase()}</Tooltip>
-            {popups ? <Popup maxWidth={280} minWidth={200} autoPan>
-              <div className="space-y-2 text-sm">
-                <p className="text-xs font-bold uppercase text-amber-900">Fictional report · unverified</p>
-                <p className="font-semibold">{hazard.title}</p>
-                <p className="text-slate-700">{hazard.description}</p>
-                {approvedPhotoIds.includes(hazard.id) ? (
-                  <figure className="rounded-lg border border-teal-200 p-2">
-                    <img src={`/api/v2/hazards/${encodeURIComponent(hazard.id)}/evidence/approved`}
-                      alt={`Approved fictional sample for ${HAZARD_SYMBOLS[hazard.category].label}`}
-                      loading="eager" className="max-h-48 w-full rounded-md object-contain" />
-                    <figcaption className="mt-1 text-xs text-teal-900">Operator-approved sample image · not verified road evidence</figcaption>
-                  </figure>
-                ) : <p className="text-xs text-slate-600">No public-demo-approved photo available.</p>}
-                <p className="text-xs font-medium text-slate-600">Illustrative position only. No live obstruction or closure is confirmed.</p>
-              </div>
-            </Popup> : null}
-          </Marker>
-        ))}
-        {features.map(feature => {
-          const [longitude, latitude] = feature.geometry.coordinates;
-          return (
-            <CircleMarker key={feature.properties.id} center={[latitude, longitude]} radius={8}
-              pathOptions={{ color: "#ffffff", weight: 2, fillColor: "#0B7350", fillOpacity: 1 }}>
-              <Tooltip>{feature.properties.name} · source-linked reference only</Tooltip>
-            </CircleMarker>
-          );
-        })}
-      </MapContainer>
-    </div>
-  );
+  const [hover, setHover] = useState<{ name: string; x: number; y: number } | null>(null);
+  const points: PinPoint[] = useMemo(() => hazards.map(h => ({ id: h.id, category: h.category, impact: h.impact, reviewState: reviewStates[h.id] ?? "unverified", longitude: h.coordinates[0], latitude: h.coordinates[1] })), [hazards, reviewStates]);
+  const roadData = useMemo(() => roadLayerData(roads, selectedRoadId), [roads, selectedRoadId]);
+  const vicinity = useMemo(() => ({
+    type: "FeatureCollection" as const,
+    features: vicinityStrokes.map(s => ({ type: "Feature" as const, geometry: { type: "LineString" as const, coordinates: s.points }, properties: { color: candidateVicinityColor(s.impact), wayId: s.wayId } })),
+  }), [vicinityStrokes]);
+  const b = serviceArea.bounds;
+  const choosing = !!onChooseLocation;
+
+  function click(event: MapLayerMouseEvent) {
+    if (choosing) { onChooseLocation?.([event.lngLat.lng, event.lngLat.lat]); return; }
+    const feature = event.features?.[0];
+    const id = feature?.properties?.id ?? feature?.properties?.wayId;
+    if (typeof id === "string") onSelectRoad(id);
+  }
+  function move(event: MapLayerMouseEvent) {
+    const name = event.features?.[0]?.properties?.name;
+    setHover(typeof name === "string" && !choosing ? { name, x: event.point.x, y: event.point.y } : null);
+  }
+
+  return <>
+    <BaseMap fit={[b.west, b.south, b.east, b.north]} fitKey={serviceArea.area.id} label="Map of the service area with fictional report pins. Not a flood or road safety map."
+      onClick={click} onMouseMove={move} onMouseLeave={() => setHover(null)} interactiveLayerIds={["roads-hit", "vicinity-line"]}
+      cursor={choosing ? "crosshair" : hover ? "pointer" : undefined}>
+      <Source id="area" type="geojson" data={areaOutline(serviceArea.area)}>
+        <Layer id="area-line" type="line" paint={{ "line-color": "#0E1720", "line-width": 1.5, "line-opacity": 0.5, "line-dasharray": [3, 3] }} />
+      </Source>
+      <Source id="roads" type="geojson" data={roadData}>
+        <Layer id="roads-line" type="line" layout={{ "line-cap": "round", "line-join": "round" }}
+          paint={{ "line-color": ["case", ["get", "selected"], "#0B7350", "#1A2129"], "line-opacity": ["case", ["get", "selected"], 1, 0.55],
+            "line-width": ROAD_WIDTH as never }} />
+        {/* Wider invisible copy, so thin lines are easy to click. */}
+        <Layer id="roads-hit" type="line" paint={{ "line-color": "#000", "line-opacity": 0, "line-width": 14 }} />
+      </Source>
+      <Source id="vicinity" type="geojson" data={vicinity}>
+        <Layer id="vicinity-line" type="line" paint={{ "line-color": ["get", "color"], "line-width": 7, "line-opacity": 0.92, "line-dasharray": [1.6, 1] }} />
+      </Source>
+      <Source id="reference-points" type="geojson" data={referencePoints}>
+        <Layer id="reference-points" type="circle" paint={{ "circle-radius": 6, "circle-color": "#0B7350", "circle-stroke-color": "#FFFFFF", "circle-stroke-width": 2 }} />
+      </Source>
+      <HazardPins points={points} selectedId={selectedHazardId} onSelect={onSelectHazard} interactive={!choosing}
+        describe={point => reviewStateOf(point.reviewState).label} onVisibleChange={onVisibleChange} />
+      {selectedLocation ? <Marker longitude={selectedLocation[0]} latitude={selectedLocation[1]} anchor="center">
+        <span role="img" aria-label="Where the new report will go" className="block h-6 w-6 rounded-full border-[3px] border-[#0B7350] bg-[#95D2B6] shadow" />
+      </Marker> : null}
+      {selectedNodePosition ? <Marker longitude={selectedNodePosition[0]} latitude={selectedNodePosition[1]} anchor="center">
+        <span role="img" aria-label="Selected OpenStreetMap node, for review only" className="block h-5 w-5 rounded-full border-[3px] border-[#B45309] bg-[#FBBF24]" />
+      </Marker> : null}
+      <FocusNode position={selectedNodePosition} />
+      <FocusGroup roads={roads} group={focusGroup} />
+    </BaseMap>
+    {hover ? <span aria-hidden="true" className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-[calc(100%+10px)] whitespace-nowrap rounded-lg bg-night px-2.5 py-1 text-caption text-night-text"
+      style={{ left: hover.x, top: hover.y }}>{hover.name}</span> : null}
+  </>;
 }

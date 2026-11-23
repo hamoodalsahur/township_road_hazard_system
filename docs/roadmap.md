@@ -100,8 +100,8 @@ Recommended answer to decision G2: move to **Supabase**, a hosted Postgres datab
 
 | Step | What |
 | --- | --- |
-| 3.1 | Website map moves from Leaflet to MapLibre, with OpenFreeMap's quiet "Positron" style and the new marker set from `DESIGN.md` |
-| 3.2 | Marker clustering, a legend showing only what's on screen, and road-inspection mode |
+| 3.1 | ✅ (23 Nov 2026) Website map moves from Leaflet to MapLibre, with OpenFreeMap's quiet "Positron" style and the new marker set from `DESIGN.md` |
+| 3.2 | ✅ (23 Nov 2026) Marker clustering, a legend showing only what's on screen, and road-inspection mode |
 
 **Done when:** the new map is smooth on a desktop and in the iPhone's browser.
 
@@ -123,8 +123,8 @@ Order follows `DESIGN.md`, section 15. Each step needs mockups approved first.
 | Step | What |
 | --- | --- |
 | 5.1 | **Road closure records.** An operator links a confirmed report or incident to one or more road segments, with a reason, a start time and an end or review time. The closure shows on the map and is audited. |
-| 5.2 | **Report outcome in the public API:** received, being checked, confirmed or not, resolved. Operator notes are never included. |
-| 5.3 | **Lifecycle track** on the website, and "My reports" showing live status |
+| 5.2 | ✅ (done with 4.3, 23 Nov 2026) **Report outcome in the public API:** received, being checked, confirmed or not, resolved. Operator notes are never included. |
+| 5.3 | ✅ (done with 4.3, 23 Nov 2026) **Lifecycle track** on the website, and "My reports" showing live status |
 
 **Done when:** a resident sees their report move through every stage, and a closure appears and disappears on the map at the right times.
 
@@ -190,7 +190,7 @@ Picked up after phase 6. The Expo app keeps working against the API in the meant
 | --- | --- | --- | --- |
 | G1 | Product name | Before any public release | Placeholder "Laluan" in use since 10 Nov 2026 (`src/lib/product.ts`); final name still open |
 | G2 | Move to Supabase (Postgres, accounts, storage) | Phase 2 | Yes |
-| G3 | Background map | Phase 3 | OpenFreeMap "Positron" (free, no key, commercial use allowed) |
+| G3 | Background map | Phase 3 | **Decided 23 Nov 2026: OpenFreeMap "Positron".** OpenFreeMap "Positron" (free, no key, commercial use allowed) |
 | G4 | How the phone app shows the map | Phone app step P.3 | Decided by how it feels on the iPhone |
 | G5 | Operator-confirmed closures may affect routes | Phase 5 | Yes, operator-only, with an end or review date |
 | G6 | Which routing provider (whole trips, owner's choice on 10 Nov 2026) | Phase 6 | OpenRouteService to start, or Valhalla on the owner's PC for privacy. Decide before 6.1. |

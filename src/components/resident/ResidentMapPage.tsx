@@ -8,14 +8,13 @@ import HazardMarker from "@/components/hazards/HazardMarker";
 import { SeverityChip } from "@/components/hazards/HazardChips";
 import { Button } from "@/components/ui/button";
 import { useServiceArea } from "@/hooks/useServiceArea";
-import { loadRoads } from "@/lib/road-loader";
-import type { RoadFeature } from "@/lib/bbr-roads";
 import { categoryLabel } from "@/lib/hazard-presentation";
 import { isInsideServiceArea } from "@/lib/service-area";
 import { agoLabel, residentStateLabel } from "@/lib/resident-reports";
-import type { ResidentMapReport } from "./ResidentLeafletMap";
+import type { ResidentMapReport } from "./ResidentMap";
+import MapLegend from "@/components/maps/MapLegend";
 
-const ResidentLeafletMap = dynamic(() => import("./ResidentLeafletMap"), {
+const ResidentMap = dynamic(() => import("./ResidentMap"), {
   ssr: false,
   loading: () => <div className="flex h-full items-center justify-center bg-slate-100 text-small text-slate-600">Loading the map…</div>,
 });
@@ -25,18 +24,11 @@ type PublicReport = ResidentMapReport & { description: string; createdAt: string
 /** Resident map (roadmap 4.3, mockups 8 and 9): the reports in the area, newest first, with the map beside them. */
 export default function ResidentMapPage() {
   const { data: serviceArea, loaded } = useServiceArea();
-  const [roads, setRoads] = useState<RoadFeature[]>([]);
   const [reports, setReports] = useState<PublicReport[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [legendOpen, setLegendOpen] = useState(false);
-
-  useEffect(() => {
-    if (!loaded) return;
-    let live = true;
-    void loadRoads(serviceArea.area.id).then(result => { if (live) setRoads(result); });
-    return () => { live = false; };
-  }, [loaded, serviceArea.area.id]);
+  const [onScreen, setOnScreen] = useState<ResidentMapReport[]>([]);
 
   const loadReports = useCallback(() => {
     setFailed(false);
@@ -57,11 +49,7 @@ export default function ResidentMapPage() {
   const count = inArea.length;
   const countLine = `${count} ${count === 1 ? "report" : "reports"} in ${serviceArea.area.name}`;
 
-  const legend = <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-small text-slate-700">
-    <span className="inline-flex items-center gap-2"><span aria-hidden="true" className="h-3.5 w-3.5 rounded-full border-[3px] border-slate-900 bg-white" />Being checked</span>
-    <span className="inline-flex items-center gap-2"><span aria-hidden="true" className="h-3.5 w-3.5 rounded-full bg-slate-900" />Confirmed</span>
-    <span>Colour shows how bad it is</span>
-  </div>;
+  const legend = <MapLegend visible={onScreen} audience="resident" />;
 
   const list = reports === null
     ? <p className="p-4 text-body text-slate-600" role="status">Loading reports…</p>
@@ -103,8 +91,8 @@ export default function ResidentMapPage() {
     <div className="relative flex min-h-0 flex-1 flex-col lg:h-[calc(100dvh-59px)] lg:flex-none lg:flex-row">
       {/* Map: fills the phone screen above the sheet; fills the left side on desktop. */}
       <div className="relative h-[calc(100dvh-56px-4rem-env(safe-area-inset-bottom))] lg:h-auto lg:flex-1">
-        <ResidentLeafletMap area={serviceArea} roads={roads} reports={inArea} selectedId={selectedId} onSelect={id => setSelectedId(id)} sheet
-          label={`Map of ${serviceArea.area.name} with fictional road reports`} />
+        {loaded ? <ResidentMap area={serviceArea} reports={inArea} selectedId={selectedId} onSelect={id => setSelectedId(id)} sheet onVisibleChange={setOnScreen}
+          label={`Map of ${serviceArea.area.name} with fictional road reports`} /> : null}
         <div className="pointer-events-none absolute inset-x-3 top-3 z-[500] flex items-start gap-2 lg:inset-x-5 lg:top-5">
           <span className="pointer-events-auto inline-flex h-9 items-center gap-2 rounded-full bg-night px-3 text-small text-night-text shadow-lg">
             <MapTrifoldIcon size={16} className="text-night-mint" aria-hidden="true" />{serviceArea.area.name}

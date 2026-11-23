@@ -14,7 +14,7 @@ export function RoadDetails({ ws }: { ws: MapWorkspace }) {
               <p className="break-words font-semibold">{selectedRoad.properties.name}</p>
               <p>OSM type: <span className="font-medium">{selectedRoad.properties.highway.replaceAll("_", " ")}</span></p>
               <p>Category: {roadCategory(selectedRoad.properties.highway)}</p>
-              <p className="text-caption text-slate-900">Blue means OSM road type only; dashed orange/red nearby sections are fictional report-vicinity indicators and do not establish that this road is blocked.</p>
+              <p className="text-caption text-slate-900">Line thickness shows the OSM road type only; dashed orange/red nearby sections are fictional report-vicinity indicators and do not establish that this road is blocked.</p>
               {reviewFlags.length > 0 ? (
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                   <h4 className="font-semibold text-slate-900">Mapped tags to review</h4>

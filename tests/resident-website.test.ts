@@ -113,11 +113,10 @@ test("the resident site has three pages in the Night Desk frame, and the simulat
   assert.match(read("src/app/resident/mine/page.tsx"), /<ResidentMyReports \/>/);
 });
 
-test("the map shows only reports inside the area, says they are fictional, and reads roads through the shared loader", () => {
+test("the map shows only reports inside the area and says they are fictional", () => {
   const map = read("src/components/resident/ResidentMapPage.tsx");
   assert.match(map, /isInsideServiceArea\(serviceArea\.area, r\.longitude, r\.latitude\)/);
   assert.match(map, /Fictional demo reports\. They are not live road conditions and are not directions\./);
-  assert.match(map, /loadRoads\(serviceArea\.area\.id\)/);
   assert.match(map, /Pins with a ring are still being checked/);
 });
 

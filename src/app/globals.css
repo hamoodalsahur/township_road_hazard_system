@@ -23,13 +23,13 @@ a { text-decoration: none; }
   outline-color: #7FD4AE;
 }
 ::selection { background: #E3F4EC; color: #064E36; }
-.leaflet-container { font-family: inherit; }
+.leaflet-container { font-family: inherit; } /* schematic simulation map only */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
 }
 
-/* Night Desk pins on the Leaflet map, and calmer background tiles so hazards stand out. */
-.hazard-map-pin { background: transparent; border: 0; }
-.leaflet-marker-icon.hazard-map-pin:focus-visible { outline: 3px solid #1F5A94; outline-offset: 2px; border-radius: 10px; }
-.map-tiles-quiet { filter: grayscale(0.85) brightness(1.04) contrast(0.92); }
+/* MapLibre maps (roadmap 3.1): app font for controls and the credit line. */
+.maplibregl-map { font-family: inherit; }
+.maplibregl-ctrl-attrib { font-size: 12px; }
+.maplibregl-ctrl-group button { width: 36px; height: 36px; }

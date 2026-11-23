@@ -45,9 +45,9 @@ The two are connected only through the website's API over the local network. The
 | Resident website: map, report in three steps, My reports | ✅ | Step 4.3 (23 Nov 2026). The simulation lives only under management Maps & Simulation. |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 335 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 342 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
-| Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident website followed in step 4.3 (23 Nov 2026). Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps still use emoji until phase 3. |
+| Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident website followed in step 4.3 (23 Nov 2026). Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps use the same pins since the MapLibre move (roadmap 3.1). |
 | Residents can see the full outcome of a report (including "Resolved") | ✅ | `GET /api/v2/hazards/status` (step 4.3): review state, incident status and last change only |
 | "My reports" on the resident website | ✅ | Ids kept in the browser only (step 4.3) |
 | Real user accounts and sign-in | ❌ | |
@@ -77,6 +77,21 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 23 November 2026: New map platform (roadmap 3.1 and 3.2)
+- **Why:** the OpenStreetMap tiles were busy and their usage policy discourages apps relying on them; overlapping pins were hard to pick; the legend listed things that were not on screen.
+- **What:**
+  - Every website map (resident map, the "Where is it?" picker, management Maps) now uses **MapLibre with OpenFreeMap's "Positron" style**: free, no key, no cookies, credit shown by MapLibre. Packages: `maplibre-gl` 5, `@vis.gl/react-maplibre`, `supercluster`. The schematic simulation keeps Leaflet.
+  - **Clustering:** overlapping pins become a numbered bubble in the colour of the most serious report inside; selecting it zooms in. The selected pin is never hidden in a bubble.
+  - **Legend of what is on screen** on the resident map and management Maps.
+  - **Road lines:** hidden on the resident map (owner's choice; Positron already shows roads). On management Maps, "Inspect road lines" draws the database lines in dark grey by road class; hovering shows the name and clicking selects a road (green).
+  - Pins are now buttons with a spoken name, so they work with the keyboard.
+- **Checked:**
+  - 342 tests pass (new: `map-platform`; four older tests now check the MapLibre files); typecheck and production build pass.
+  - This time the test browser could reach OpenFreeMap, so screenshots show the real background: resident map (phone and desktop), selected report, the picker (inside and outside the area), management Maps with a selected pin, road-inspection mode with a hovered and a selected road, and placing a report.
+  - Two bugs found and fixed in the browser: a road-width style MapLibre refused, and a legend update that could loop.
+  - Positron logs a harmless style warning ("Expected value to be of type number") in the browser console; it comes from the style, not our layers.
+  - Not checked: an iPhone, and real GPS.
 
 ### 23 November 2026: Resident website in Night Desk (roadmap step 4.3)
 - **Why:** step 4.3. The resident page still mixed the map, the flood simulation and a practice form, and residents could not see what happened to their reports.
