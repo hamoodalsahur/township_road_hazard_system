@@ -289,3 +289,16 @@ model RoadClosureRoad {
   @@index([areaId, wayId])
   @@map("road_closure_roads")
 }
+
+/**
+ * Road cleared (24 Nov 2026): an operator marks an approved report resolved, which also ends its road closures.
+ * Its own table, so the copied hazard_reports table keeps the shape of the old SQLite file.
+ */
+model ReportResolution {
+  reportId   String   @id
+  resolvedAt DateTime @default(now())
+  note       String   // operators only, never public
+  resolvedBy String   @default("LOCAL_DEMO_OPERATOR")
+
+  @@map("report_resolutions")
+}

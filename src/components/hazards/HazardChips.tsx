@@ -1,5 +1,5 @@
 "use client";
-import { CheckIcon, XIcon } from "@phosphor-icons/react";
+import { CheckCircleIcon, CheckIcon, XIcon } from "@phosphor-icons/react";
 import { LIFECYCLE_STEPS, lifecycleOf, reviewStateOf, severityOf } from "@/lib/hazard-presentation";
 
 const chip = "inline-flex h-7 shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 text-caption font-medium leading-none";
@@ -57,4 +57,14 @@ export function LifecycleTrack({ reviewState, incidentStatus }: { reviewState: s
       </li>;
     })}
   </ol>;
+}
+
+/**
+ * Road cleared (24 Nov 2026): shown in place of the review chip once a report is resolved.
+ * Neutral grey, like other finished states; chips stay off green (see the incidents tests).
+ */
+export function ResolvedChip() {
+  return <span className={chip + " bg-slate-100 text-slate-800"}>
+    <CheckCircleIcon size={16} weight="fill" aria-hidden="true" />Resolved
+  </span>;
 }

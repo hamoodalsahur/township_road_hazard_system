@@ -18,10 +18,12 @@ export async function GET(request: Request) {
       where: { id: { in: ids }, sourceMode: "simulation" },
       select: { id: true, reviewState: true, reviewedAt: true, createdAt: true, incidentLink: { select: { incident: { select: { status: true, updatedAt: true } } } } },
     });
+    const resolutions = new Map((await prisma.reportResolution.findMany({ where: { reportId: { in: records.map(r => r.id) } }, select: { reportId: true, resolvedAt: true } })).map(r => [r.reportId, r.resolvedAt]));
     const reports: PublicReportStatus[] = records.map(record => {
       const incident = record.incidentLink?.incident ?? null;
-      const times = [record.createdAt, record.reviewedAt, incident?.updatedAt].filter((t): t is Date => t instanceof Date).map(t => t.getTime());
-      return { id: record.id, reviewState: record.reviewState, incidentStatus: incident?.status ?? null, updatedAt: new Date(Math.max(...times)).toISOString() };
+      const resolvedAt = resolutions.get(record.id); // a cleared report reads as resolved
+      const times = [record.createdAt, record.reviewedAt, incident?.updatedAt, resolvedAt].filter((t): t is Date => t instanceof Date).map(t => t.getTime());
+      return { id: record.id, reviewState: record.reviewState, incidentStatus: resolvedAt ? "resolved" : incident?.status ?? null, updatedAt: new Date(Math.max(...times)).toISOString() };
     });
     return NextResponse.json({ reports }, { headers: { "Cache-Control": "no-store" } });
   } catch {

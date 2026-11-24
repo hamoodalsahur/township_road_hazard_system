@@ -31,7 +31,7 @@ test("selection, hover and keyboard focus look different", () => {
 });
 
 test("road condition and review status are separate chips, and review is never green", () => {
-  assert.match(review, /<SeverityChip impact=\{item\.impact\}\/><ReviewStateChip reviewState=\{item\.reviewState\}\/>/);
+  assert.match(review, /<SeverityChip impact=\{item\.impact\}\/>\{item\.resolvedAt\?<ResolvedChip\/>:<ReviewStateChip reviewState=\{item\.reviewState\}\/>\}/);
   const reviewChip = chips.slice(chips.indexOf("export function ReviewStateChip"), chips.indexOf("export function StatusChip"));
   assert.match(reviewChip, /#E8F0FB/);
   assert.doesNotMatch(reviewChip, /teal-|#0B7350/);
