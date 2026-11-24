@@ -78,10 +78,16 @@ Rebuilt on 24 November 2026 (phone PRs #15–#17). Checked with tests, a typeche
 
 Newest first. Each entry: what changed, why, and how it was checked.
 
+### 24 November 2026: Final checks and demo-day checklist
+- **Why:** the owner is presenting from his laptop and asked for loose ends to be tidied.
+- **What:** `docs/demo-day.md`, a one-page checklist covering setup, the five-minute story, and what to do if something goes wrong. The phone app lost its last Expo template parts (phone PR #19).
+- **Checked:** 389 tests, typecheck and the production build pass. The whole story ran end to end through the real APIs on the sandbox area: clear → report sent → approved → road closed → "Your way home is affected" with a detour (+1 min) → road cleared (1 closure ended, status resolved) → clear again, with the report gone from the public map.
+
 ### 24 November 2026: db:migrate also rebuilds the Prisma client
 - **Why:** after pulling Road cleared, the owner ran `npm run db:migrate` ("no pending migrations") but the reports list still failed: the generated Prisma client did not know the new `report_resolutions` table. The error also told him to run `db:push`, which we never use on his database.
 - **What:** `npm run db:migrate` is now `prisma migrate deploy && prisma generate` (stop `npm run dev` first on Windows). The reports API error now points to `npm run db:migrate`.
 - **Checked:** tests and typecheck pass.
+
 ### 24 November 2026: Phone app rebuilt (mobile repository, PRs #15–#17)
 - **Why:** the owner wants the phone in the demo. The app was still the hackathon version, with a hard-coded BBR box (an empty map in the owner's own area), no closures and no way home.
 - **What:** part 1, the Night Desk look and a map of the laptop's area, reports and closures; part 2, the report in three steps and My reports with Resolved; part 3, way home with detours. Shared logic lives in `src/lib/township.ts` in that repository, with the same words and colours as this website.
