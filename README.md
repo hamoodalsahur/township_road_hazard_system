@@ -48,6 +48,8 @@ npm run dev
 
 `npm ci` also prepares the database code (`prisma generate`) automatically. It reads only the schema files and never touches the database. Moving an existing SQLite `dev.db` across, stopping Postgres and recovery are in [docs/database.md](docs/database.md). If sign-in ever says "Could not verify the local demo key", stop the server and run `npm run db:generate`.
 
+**Presenting?** Follow [docs/demo-day.md](docs/demo-day.md): setup, the five-minute story with the phone, and what to do if something goes wrong.
+
 The service area (where reports are accepted) is Bandar Bukit Raja by default. To test somewhere else, see `config/service-areas/README.md`.
 
 Use `npm run db:seed` **only when intentionally creating a fresh fictional demo database**; do not reseed or reset an existing local database. Never commit `.env`, the private local operator key, database files or backups, or report photos.
