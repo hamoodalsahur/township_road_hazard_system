@@ -56,17 +56,17 @@ The two are connected only through the website's API over the local network. The
 
 ### Mobile app (`township_system_mobile`)
 
-These come from that repository's README and docs. I have not re-tested them on a phone.
+Rebuilt on 24 November 2026 (phone PRs #15–#17). Checked with tests, a typecheck, an iPhone bundle build and the real website API; **not yet run on a real iPhone**.
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Choice between sample data and the local website backend, with a connection test | ✅ | |
-| Send a fictional report from the phone to the website | ✅ | |
-| Interactive map with report markers and a "choose point on map" picker | ✅ | Road lines need a local script run against the owner's GeoJSON |
-| Optional sample photo upload after sending a report | ✅ | |
-| "My reports" on the phone | ❌ | |
-| Dark mode | ❌ | The app still uses the Expo template colours |
-| Design revamp | ⏳ | Same direction as the website |
+| Laptop address in Settings, with a connection check | ✅ | Remembered on the phone. Mock data mode removed |
+| Map of the laptop's service area, reports and road closures | ✅ | Night Desk pins and closure lines; refreshes every minute. No more BBR-only box or bundled roads |
+| Report in three steps, with an optional photo | ✅ | Same words and rules as the website; tap the spot on the map |
+| "My reports" on the phone | ✅ | Received → Being checked → Confirmed → Resolved |
+| Way home with detours around closures | ✅ | Home and usual starting place kept on the phone; no "start from where I am" yet |
+| Dark mode | ❌ | |
+| Design revamp | ✅ | Night Desk colours and Barlow fonts |
 
 ## 4. Known problems
 
@@ -77,6 +77,11 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 24 November 2026: Phone app rebuilt (mobile repository, PRs #15–#17)
+- **Why:** the owner wants the phone in the demo. The app was still the hackathon version, with a hard-coded BBR box (an empty map in the owner's own area), no closures and no way home.
+- **What:** part 1, the Night Desk look and a map of the laptop's area, reports and closures; part 2, the report in three steps and My reports with Resolved; part 3, way home with detours. Shared logic lives in `src/lib/township.ts` in that repository, with the same words and colours as this website.
+- **Checked:** 20 node tests there, a typecheck, `expo export --platform ios`, and the parsing run against this website's real API on the sandbox area (area, reports, closures, sending a report, its status, a route). Not yet run on the owner's iPhone.
 
 ### 24 November 2026: Demo polish
 - **Why:** a pass over every screen in the owner's demo flow, chosen by the owner.
