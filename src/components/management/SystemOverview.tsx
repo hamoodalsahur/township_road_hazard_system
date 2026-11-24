@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import {
-  CheckCircleIcon, ExportIcon, InfoIcon, MapPinLineIcon, RoadHorizonIcon, SparkleIcon, StackIcon, WarningIcon, type Icon,
+  CheckCircleIcon, ExportIcon, InfoIcon, MapPinLineIcon, RoadHorizonIcon, StackIcon, WarningIcon, type Icon,
 } from "@phosphor-icons/react";
 import { useServiceArea } from "@/hooks/useServiceArea";
 import { auditActionLabel, auditCsv, auditPhotoPublished, auditReason, type AuditEntry } from "@/lib/system-audit";
@@ -65,7 +65,7 @@ export default function SystemOverview({ operatorKey, reloadToken = 0 }: { opera
 
   const unnamed = manifest ? manifest.roadLines - manifest.namedWayLines : 0;
   return <>
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       <StatusCard icon={MapPinLineIcon} title="Service area" state={!area.loaded ? "loading" : area.failed || area.data.fallbackReason ? "check" : "ok"} value={area.data.area.name}>
         {area.data.fallbackReason ? <>Using the default area: {area.data.fallbackReason}</> : <>Reports outside this area are refused</>}
       </StatusCard>
@@ -76,9 +76,6 @@ export default function SystemOverview({ operatorKey, reloadToken = 0 }: { opera
       <StatusCard icon={RoadHorizonIcon} title="Road data" state={manifest === undefined ? "loading" : !manifest || manifest.roadLines === 0 ? "check" : "ok"}
         value={manifest ? `${manifest.roadLines.toLocaleString()} road lines` : manifest === null ? "Not loaded" : "…"}>
         {manifest ? <>OpenStreetMap, not verified on the ground.{unnamed > 0 ? ` ${unnamed} have no name.` : ""}</> : manifest === null ? <>The local road file is missing or empty</> : null}
-      </StatusCard>
-      <StatusCard icon={SparkleIcon} title="AI help" state="info" value="Optional">
-        Suggests similar reports when a local model is running. A person always decides. <Link href="/management/research" className="font-semibold text-teal-800 hover:underline">AI &amp; Research</Link>
       </StatusCard>
     </div>
 

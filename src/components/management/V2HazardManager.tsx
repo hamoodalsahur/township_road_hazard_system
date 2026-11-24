@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowClockwiseIcon, ArrowsInIcon, BrainIcon, CameraIcon, CaretLeftIcon, CheckIcon, ClipboardTextIcon, EyeIcon, FunnelIcon,
-  CheckCircleIcon,
+  CheckCircleIcon, TrashIcon,
   ImageIcon, LockSimpleIcon, MagnifyingGlassIcon, MagnifyingGlassPlusIcon, WarningCircleIcon, XCircleIcon, XIcon,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
 import HazardMarker from "@/components/hazards/HazardMarker";
 import CloseRoadsDialog, { type ClosureSource } from "@/components/closures/CloseRoadsDialog";
 import RoadClearedDialog from "@/components/closures/RoadClearedDialog";
+import DeleteReportDialog from "@/components/management/DeleteReportDialog";
 import { resolvedMessage } from "@/lib/report-resolution";
 import { closureAfterApproval, type ClosureKind } from "@/lib/road-closures";
 import { ClosureSwatch } from "@/components/closures/ClosureLines";
@@ -38,6 +39,7 @@ export default function V2HazardManager({ operatorKey, onCountsChange, onSummary
 }) {
   const [closing, setClosing] = useState(false); // "Close roads" dialog (roadmap 5.1)
   const [clearing, setClearing] = useState(false); // "Road cleared" dialog
+  const [deleting, setDeleting] = useState(false); // "Delete report" dialog
   // Approve and close: the report just approved, when it says the road is blocked.
   const [afterApprove, setAfterApprove] = useState<{ source: ClosureSource; start: { kind: ClosureKind; reason: string } } | null>(null);
   const [items, setItems] = useState<RecordItem[]>([]);
@@ -362,6 +364,11 @@ export default function V2HazardManager({ operatorKey, onCountsChange, onSummary
                   <p className="text-caption text-slate-600">waiting for review</p>
                 </> : null}
                 <p className="mt-1 font-mono text-caption text-slate-600">ID {selectedReport.id}</p>
+                <Button variant="ghost" size="sm" className="mt-1 text-rose-800 hover:bg-rose-50 hover:text-rose-900" onClick={() => setDeleting(true)}>
+                  <TrashIcon size={16} aria-hidden="true" />Delete…
+                </Button>
+                <DeleteReportDialog open={deleting} onOpenChange={setDeleting} reportId={selectedReport.id} title={categoryLabel(selectedReport.category)} operatorKey={operatorKey}
+                  onDone={removed => { setMessage(`${categoryLabel(selectedReport.category)} report deleted${removed ? `, with ${removed} road ${removed === 1 ? "closure" : "closures"}` : ""}.`); void reload(); }} />
               </div>
             </header>
             <p className="text-body leading-6 text-slate-900">{selectedReport.description}</p>

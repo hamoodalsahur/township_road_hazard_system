@@ -45,7 +45,7 @@ The two are connected only through the website's API over the local network. The
 | Resident website: map, report in three steps, My reports | ✅ | Step 4.3 (23 Nov 2026). The simulation lives only under management Maps & Simulation. |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 389 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 392 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
 | Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident website followed in step 4.3 (23 Nov 2026). Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps use the same pins since the MapLibre move (roadmap 3.1). |
 | Residents can see the full outcome of a report (including "Resolved") | ✅ | `GET /api/v2/hazards/status` (step 4.3): review state, incident status and last change only |
@@ -77,6 +77,11 @@ Rebuilt on 24 November 2026 (phone PRs #15–#17). Checked with tests, a typeche
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 24 November 2026: Delete reports; AI & Research removed
+- **Why:** the owner needed to remove test reports (one named a real person's home) and asked to drop sections he does not use.
+- **What:** every report in Review reports now has **Delete…**. After a confirm step it removes the report from the database for good, with its photo, any road closures made from it, its link to an incident group and its resolution (`DELETE /api/v2/hazards/:id`, operators only, one transaction). The audit history keeps one line ("Report deleted", category only). **AI & Research** is gone from the menu, with its page and its two panels; the System page no longer links to it.
+- **Checked:** 392 tests pass (3 new in `delete-report`). Live on the sandbox: a report with a road closure was deleted; no operator key was refused (403); the report and its closure were gone; deleting again said not found (404).
 
 ### 24 November 2026: Final checks and demo-day checklist
 - **Why:** the owner is presenting from his laptop and asked for loose ends to be tidied.
