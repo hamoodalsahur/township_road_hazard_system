@@ -62,7 +62,7 @@ test("Evidence is a photo grid with storage and checks, and private photos are r
 
 test("System & Audit leads with status cards and a readable action table", () => {
   const overview = read("src/components/management/SystemOverview.tsx");
-  for (const title of ["Service area", "Data consistency", "Road data", "AI help"]) assert.match(overview, new RegExp(`title="${title}"`));
+  for (const title of ["Service area", "Data consistency", "Road data"]) assert.match(overview, new RegExp(`title="${title}"`));
   assert.match(overview, /Operator actions/);
   assert.match(overview, /auditCsv\(audit\)/);
   assert.match(read("src/components/management/pages/SystemPage.tsx"), /<SystemOverview operatorKey=\{operatorKey\} reloadToken=\{runs\} \/>/);
@@ -70,9 +70,8 @@ test("System & Audit leads with status cards and a readable action table", () =>
 
 test("the older panels follow the Night Desk type rules", () => {
   for (const file of ["src/components/management/DemoDataQuality.tsx", "src/components/management/GeoSourceManifest.tsx", "src/components/management/RoadTopologyQuality.tsx",
-    "src/components/management/RoadAccessTags.tsx", "src/components/audit/AuditPanel.tsx", "src/components/management/ResearchExport.tsx",
-    "src/components/management/AiEvaluationWorkbench.tsx", "src/components/management/EvidenceInventory.tsx", "src/components/management/EvidenceConsistency.tsx",
-    "src/components/management/pages/ResearchPage.tsx",
+    "src/components/management/RoadAccessTags.tsx", "src/components/audit/AuditPanel.tsx",
+    "src/components/management/EvidenceInventory.tsx", "src/components/management/EvidenceConsistency.tsx",
     "src/components/maps/ManagementMapStage.tsx", "src/components/maps/MapSharedSections.tsx"]) {
     const source = read(file);
     assert.doesNotMatch(source, /\buppercase\b|font-bold|font-extrabold|lucide-react|violet-|\btext-(xs|sm|lg|xl|2xl)\b/, file);

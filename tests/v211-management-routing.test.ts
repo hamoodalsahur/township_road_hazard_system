@@ -9,7 +9,6 @@ const componentPaths={
   incidents:"src/components/management/pages/IncidentsPage.tsx",
   maps:"src/components/management/pages/MapsPage.tsx",
   evidence:"src/components/management/pages/EvidencePage.tsx",
-  research:"src/components/management/pages/ResearchPage.tsx",
   system:"src/components/management/pages/SystemPage.tsx"
 } as const;
 const retained={
@@ -17,7 +16,6 @@ const retained={
   incidents:["IncidentManager","V2HazardManager","ReportWorkspace"],
   maps:["ManagementMapStage","DemoController","MapWorkspace","ConnectivityPanel"],
   evidence:["EvidenceInventory","EvidenceConsistency"],
-  research:["AiEvaluationWorkbench","ResearchExport"],
   system:["DemoDataQuality","RoadTopologyQuality","GeoSourceManifest","RoadAccessTags","AuditPanel"]
 } as const;
 
@@ -43,7 +41,7 @@ test("all active management workflows remain accessible from their intended sect
    all.add(name);
   }
  }
- assert.equal(all.size,18);
+ assert.equal(all.size,16); // AI & Research (2 tools) removed 24 Nov 2026
  const overview=read(componentPaths.overview);
  assert.match(overview,/\/api\/v2\/incident-oversight/);
  assert.match(overview,/\/api\/v2\/hazards/);
