@@ -12,6 +12,7 @@ import OperatorAuditSummary from "@/components/management/OperatorAuditSummary";
 import TodayTimeline, { type TimelineReport } from "@/components/management/TodayTimeline";
 import HazardMarker from "@/components/hazards/HazardMarker";
 import OverviewMap from "@/components/hazards/OverviewMap";
+import OverviewClosures from "@/components/closures/OverviewClosures";
 import { SeverityChip } from "@/components/hazards/HazardChips";
 import { categoryLabel, formatAge, highestSeverity } from "@/lib/hazard-presentation";
 import { decisionQueue, formatWait, groupLink, groupsUnderReview, reportLink } from "@/lib/overview-queue";
@@ -25,7 +26,7 @@ type OverviewMetrics = { totalReports: number; unverifiedReports: number; active
 type Report = { id: string; category: string; description: string; impact: string; reviewState: string; createdAt: string; longitude: number; latitude: number };
 type Group = { id: string; title: string; category: string; status: string; createdAt: string; reports: { report: { impact?: string } }[] };
 type Today = { received: number; reports: TimelineReport[] } | null;
-type Data = { metrics: OverviewMetrics; today: Today; reports: Report[]; groups: Group[]; audit: AuditLike[] | null; photos: Record<string, string> | null };
+type Data = { metrics: OverviewMetrics; today: Today; reports: Report[]; logReports: Report[]; groups: Group[]; audit: AuditLike[] | null; photos: Record<string, string> | null };
 
 const CARDS = 3;
 const panel = "rounded-xl border border-slate-200 bg-white";
@@ -54,7 +55,7 @@ export default function OverviewPage() {
       const midnight = new Date(startOfLocalDay(Date.now())).toISOString();
       const [oversight, feed, incidents, photos, audit] = await Promise.all([
         fetch(`/api/v2/incident-oversight?since=${encodeURIComponent(midnight)}`, { headers, cache: "no-store" }),
-        fetch("/api/v2/hazards", { cache: "no-store" }),
+        fetch("/api/v2/hazards?include=resolved", { cache: "no-store" }),
         fetch("/api/v2/incidents", { headers, cache: "no-store" }),
         fetch("/api/v2/evidence-states", { headers, cache: "no-store" }).catch(() => null),
         fetch("/api/audit", { headers, cache: "no-store" }).catch(() => null),
@@ -67,7 +68,9 @@ export default function OverviewPage() {
       // Photo markers and the shift log are conveniences; the overview still loads without them.
       const p = photos?.ok ? await photos.json().catch(() => null) as { states?: Record<string, string> } | null : null;
       const log = audit?.ok ? await audit.json().catch(() => null) as { entries?: AuditLike[] } | null : null;
-      setData({ metrics: a.metrics, today: a.today ?? null, reports: b.reports, groups: c.incidents, audit: Array.isArray(log?.entries) ? log.entries : null, photos: p?.states ?? null });
+      // Resolved reports only name entries in the shift log; the queue, counts and map use open reports.
+      const all = b.reports as (Report & { resolvedAt?: string | null })[];
+      setData({ metrics: a.metrics, today: a.today ?? null, reports: all.filter(r => !r.resolvedAt), logReports: all, groups: c.incidents, audit: Array.isArray(log?.entries) ? log.entries : null, photos: p?.states ?? null });
       setNow(Date.now());
     } catch (e) {
       // Old figures are hidden after a failed refresh so nobody acts on them.
@@ -87,7 +90,7 @@ export default function OverviewPage() {
   const groups = data ? groupsUnderReview(data.groups, 3) : null;
   const oldest = queue?.items[0] ?? null;
   const decisions = data?.audit ? decisionsSince(data.audit, since) : null;
-  const log = data ? shiftLog(data.reports.filter(r => Date.parse(r.createdAt) >= since - 24 * 3600_000), data.audit ?? [], 4) : [];
+  const log = data ? shiftLog(data.logReports.filter(r => Date.parse(r.createdAt) >= since - 24 * 3600_000), data.audit ?? [], 4) : [];
   const startLink = queue?.oldestId ? reportLink(queue.oldestId) : "/management/incidents#report-review";
   const waitOf = useCallback((id: string) => {
     const report = data?.reports.find(r => r.id === id);
@@ -183,7 +186,9 @@ export default function OverviewPage() {
           {queue.more ? <p className="mt-3 text-small text-slate-600">{queue.more} more waiting. <Link href="/management/incidents#report-review" className="font-semibold text-teal-800 hover:underline">See them in Incidents</Link></p> : null}
         </section>
 
-        <div className="mt-6 grid items-start gap-3 lg:grid-cols-2">
+        <OverviewClosures operatorKey={operatorKey} className="mt-6" />
+
+        <div className="mt-3 grid items-start gap-3 lg:grid-cols-2">
           <section className={cn(panel, "p-4")} aria-labelledby="groups-under-review">
             <div className="mb-1 flex items-center gap-2"><h2 id="groups-under-review" className="font-display text-heading font-semibold text-slate-900">Groups under review</h2>
               <Link href="/management/incidents#incident-groups" className={cn(textLink, "ml-auto")}>All groups</Link></div>
