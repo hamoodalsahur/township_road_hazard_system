@@ -45,7 +45,7 @@ The two are connected only through the website's API over the local network. The
 | Resident website: map, report in three steps, My reports | ✅ | Step 4.3 (23 Nov 2026). The simulation lives only under management Maps & Simulation. |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 377 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 384 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
 | Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident website followed in step 4.3 (23 Nov 2026). Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps use the same pins since the MapLibre move (roadmap 3.1). |
 | Residents can see the full outcome of a report (including "Resolved") | ✅ | `GET /api/v2/hazards/status` (step 4.3): review state, incident status and last change only |
@@ -77,6 +77,12 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 24 November 2026: Road cleared
+- **Why:** the demo story had no ending. A single report could not be marked resolved (only incident groups could), and closures had to be ended separately.
+- **What:** an approved report has a **Road cleared…** button. With a note (operators only), it marks the report **Resolved** and ends every open closure made from it, in one transaction with audit entries. Resolved reports leave the public map (the review desk still lists them, with a grey Resolved chip and the full progress track), "My reports" shows Resolved, and the resident's way home goes back to the usual route at its next check.
+- **Database:** a new `report_resolutions` table (migration `20261125000000_report_resolutions`). It is a separate table so `hazard_reports` keeps the shape of the old SQLite file. **Run `npm run db:migrate` after pulling.**
+- **Checked:** 384 tests pass (7 new in `road-cleared`). In a real browser on the sandbox area: approve → close 1 road → Road cleared → Mark cleared. The report left the public list, its status read "resolved", and its closure left the public closures.
 
 ### 24 November 2026: Approve and close in one go
 - **Why:** in the owner's demo flow, approving a blocking report and then closing its road were two separate trips through the desk.

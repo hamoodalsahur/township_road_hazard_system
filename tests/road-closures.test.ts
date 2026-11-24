@@ -112,7 +112,7 @@ test("closures appear on the resident map, its list and management Maps, and ope
   assert.match(read("src/components/resident/ResidentMapPage.tsx"), /useClosures\(\)/);
   assert.match(read("src/components/resident/ResidentMap.tsx"), /<ClosureLines closures=\{closures\}/);
   assert.match(read("src/components/maps/GeographicReferenceMap.tsx"), /<ClosureLines closures=\{closures\} \/>/);
-  assert.match(read("src/components/management/V2HazardManager.tsx"), /selectedReport\.reviewState === "corroborated" \? <Button variant="secondary" onClick=\{\(\) => setClosing\(true\)\}>/);
+  assert.match(read("src/components/management/V2HazardManager.tsx"), /selectedReport\.reviewState === "corroborated" && !selectedReport\.resolvedAt \? <>\s*<Button variant="secondary" onClick=\{\(\) => setClosing\(true\)\}>/);
   assert.match(read("src/components/management/IncidentManager.tsx"), /closureSourceProblem\(\{ kind: "incident"/);
   assert.match(read("src/components/management/pages/IncidentsPage.tsx"), /<RoadClosuresPanel operatorKey=\{operatorKey\}/);
   const lines = read("src/components/closures/ClosureLines.tsx");

@@ -3,13 +3,18 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { validateHazardSubmission } from "@/lib/v2-hazard-validation";
 import { loadServiceArea } from "@/lib/service-area-server";
+import { includeResolved } from "@/lib/report-resolution";
 
 export const dynamic = "force-dynamic";
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const withResolved = includeResolved(request.url);
     const records = await prisma.hazardReport.findMany({ where:{sourceMode:"simulation",reviewState:{not:"rejected"}}, orderBy:{createdAt:"desc"}, take:100,
       select:{id:true,category:true,description:true,longitude:true,latitude:true,impact:true,reviewState:true,createdAt:true,sourceMode:true,evidence:{select:{status:true}}} });
-    return NextResponse.json({mode:"simulation", reports:records.filter(x=>x.sourceMode==="simulation"&&x.reviewState!=="rejected").map(({evidence,...report})=>({...report,hasApprovedPhoto:report.reviewState==="corroborated"&&evidence?.status==="approved_public_demo"})), disclaimer:"FICTIONAL geographic report examples. Not verified road conditions or real travel advice."});
+    // Road cleared: resolved reports leave the public map; the review desk asks for them with ?include=resolved.
+    const resolved = new Map((await prisma.reportResolution.findMany({ where: { reportId: { in: records.map(r => r.id) } }, select: { reportId: true, resolvedAt: true } })).map(r => [r.reportId, r.resolvedAt.toISOString()]));
+    const shown = records.filter(x => x.sourceMode === "simulation" && x.reviewState !== "rejected" && (withResolved || !resolved.has(x.id)));
+    return NextResponse.json({mode:"simulation", reports:shown.map(({evidence,...report})=>({...report,resolvedAt:resolved.get(report.id) ?? null,hasApprovedPhoto:report.reviewState==="corroborated"&&evidence?.status==="approved_public_demo"})), disclaimer:"FICTIONAL geographic report examples. Not verified road conditions or real travel advice."});
   } catch {
     return NextResponse.json({error:"Demo hazard database unavailable. Run npm run db:push."},{status:500});
   }

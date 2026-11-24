@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowClockwiseIcon, ArrowsInIcon, BrainIcon, CameraIcon, CaretLeftIcon, CheckIcon, ClipboardTextIcon, EyeIcon, FunnelIcon,
+  CheckCircleIcon,
   ImageIcon, LockSimpleIcon, MagnifyingGlassIcon, MagnifyingGlassPlusIcon, WarningCircleIcon, XCircleIcon, XIcon,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -18,12 +19,14 @@ import {
 } from "@/lib/incident-review-queue";
 import HazardMarker from "@/components/hazards/HazardMarker";
 import CloseRoadsDialog, { type ClosureSource } from "@/components/closures/CloseRoadsDialog";
+import RoadClearedDialog from "@/components/closures/RoadClearedDialog";
+import { resolvedMessage } from "@/lib/report-resolution";
 import { closureAfterApproval, type ClosureKind } from "@/lib/road-closures";
 import { ClosureSwatch } from "@/components/closures/ClosureLines";
 import ReportMiniMap from "@/components/hazards/ReportMiniMap";
-import { LifecycleTrack, ReviewStateChip, SeverityChip } from "@/components/hazards/HazardChips";
+import { LifecycleTrack, ResolvedChip, ReviewStateChip, SeverityChip } from "@/components/hazards/HazardChips";
 
-type RecordItem = { id: string; category: string; description: string; impact: string; reviewState: string; createdAt: string; latitude: number; longitude: number };
+type RecordItem = { id: string; category: string; description: string; impact: string; reviewState: string; createdAt: string; latitude: number; longitude: number; resolvedAt?: string | null };
 type AiResult = { provider: string; model: string; analysed: number; matches: { id: string; similarity: number; category: string }[]; disclaimer: string };
 
 
@@ -34,6 +37,7 @@ export default function V2HazardManager({ operatorKey, onCountsChange, onSummary
   onSummaryChange?: (summary: string) => void;
 }) {
   const [closing, setClosing] = useState(false); // "Close roads" dialog (roadmap 5.1)
+  const [clearing, setClearing] = useState(false); // "Road cleared" dialog
   // Approve and close: the report just approved, when it says the road is blocked.
   const [afterApprove, setAfterApprove] = useState<{ source: ClosureSource; start: { kind: ClosureKind; reason: string } } | null>(null);
   const [items, setItems] = useState<RecordItem[]>([]);
@@ -132,7 +136,7 @@ export default function V2HazardManager({ operatorKey, onCountsChange, onSummary
     setLoading(true); setLoadError("");
     try {
       const [r, photoResponse] = await Promise.all([
-        fetch("/api/v2/hazards", { cache: "no-store" }),
+        fetch("/api/v2/hazards?include=resolved", { cache: "no-store" }),
         fetch("/api/v2/evidence-states", { headers: { "x-demo-operator-key": operatorKey }, cache: "no-store" }),
       ]);
       if (photoResponse.ok) {
@@ -329,7 +333,7 @@ export default function V2HazardManager({ operatorKey, onCountsChange, onSummary
                   </span>
                   <span className="mb-2 mt-1 block truncate text-small text-slate-600">{item.description}</span>
                   <span className="flex flex-wrap items-center gap-2">
-                    <SeverityChip impact={item.impact} /><ReviewStateChip reviewState={item.reviewState} />
+                    <SeverityChip impact={item.impact} />{item.resolvedAt ? <ResolvedChip /> : <ReviewStateChip reviewState={item.reviewState} />}
                     {hasPhoto(item.id) && <span aria-label="Attached sample photo" className="ml-auto inline-flex items-center gap-1 text-caption text-slate-600"><CameraIcon size={14} aria-hidden="true" />Photo</span>}
                   </span>
                 </span>
@@ -350,7 +354,7 @@ export default function V2HazardManager({ operatorKey, onCountsChange, onSummary
               <div className="min-w-0 flex-1">
                 <h2 className="font-display text-title font-semibold text-slate-900">{categoryLabel(selectedReport.category)}</h2>
                 <p className="text-small text-slate-600"><time dateTime={selectedReport.createdAt} title={new Date(selectedReport.createdAt).toLocaleString()}>Reported {formatAgeLong(selectedReport.createdAt, now)}, {reportedAt(selectedReport.createdAt, now)}</time></p>
-                <div className="mt-2 flex flex-wrap gap-2"><SeverityChip impact={selectedReport.impact} /><ReviewStateChip reviewState={selectedReport.reviewState} /></div>
+                <div className="mt-2 flex flex-wrap gap-2"><SeverityChip impact={selectedReport.impact} />{selectedReport.resolvedAt ? <ResolvedChip /> : <ReviewStateChip reviewState={selectedReport.reviewState} />}</div>
               </div>
               <div className="text-right">
                 {selectedReport.reviewState === "unverified" ? <>
@@ -403,7 +407,7 @@ export default function V2HazardManager({ operatorKey, onCountsChange, onSummary
 
             <section aria-labelledby="progress-heading">
               <h3 id="progress-heading" className="mb-2 text-small font-semibold text-slate-600">Progress</h3>
-              <LifecycleTrack reviewState={selectedReport.reviewState} />
+              <LifecycleTrack reviewState={selectedReport.reviewState} incidentStatus={selectedReport.resolvedAt ? "resolved" : undefined} />
             </section>
 
             {selectedReport.reviewState === "unverified" && <section aria-labelledby="support-heading" className="rounded-xl border border-slate-200 p-4">
@@ -455,8 +459,13 @@ export default function V2HazardManager({ operatorKey, onCountsChange, onSummary
               <ShortcutHelp />
             </div>
           </div> : <div className="mt-auto flex flex-wrap items-center gap-3 border-t border-slate-200 px-5 py-4 sm:px-6">
-            <p className="min-w-0 flex-1 text-small text-slate-600">Decision recorded in the audit history. Approval does not change any road status.{selectedReport.reviewState === "corroborated" ? " To close roads, choose them yourself." : ""}</p>
-            {selectedReport.reviewState === "corroborated" ? <Button variant="secondary" onClick={() => setClosing(true)}><ClosureSwatch />Close roads…</Button> : null}
+            <p className="min-w-0 flex-1 text-small text-slate-600">Decision recorded in the audit history. {selectedReport.resolvedAt ? "Resolved: the road was cleared and its closures ended." : <>Approval does not change any road status.{selectedReport.reviewState === "corroborated" ? " When the road is clear again, mark it cleared." : ""}</>}</p>
+            {selectedReport.reviewState === "corroborated" && !selectedReport.resolvedAt ? <>
+              <Button variant="secondary" onClick={() => setClosing(true)}><ClosureSwatch />Close roads…</Button>
+              <Button variant="secondary" onClick={() => setClearing(true)}><CheckCircleIcon size={16} weight="bold" aria-hidden="true" />Road cleared…</Button>
+              <RoadClearedDialog open={clearing} onOpenChange={setClearing} reportId={selectedReport.id} title={categoryLabel(selectedReport.category)} operatorKey={operatorKey}
+                onDone={ended => { setMessage(resolvedMessage(categoryLabel(selectedReport.category), ended)); void reload({ id: selectedReport.id }); }} />
+            </> : null}
             {selectedReport.reviewState === "corroborated" ? <CloseRoadsDialog open={closing} onOpenChange={setClosing} operatorKey={operatorKey}
               source={{ kind: "report", id: selectedReport.id, title: categoryLabel(selectedReport.category), summary: selectedReport.description, category: selectedReport.category, impact: selectedReport.impact, points: [[selectedReport.longitude, selectedReport.latitude]] }} /> : null}
           </div>}
