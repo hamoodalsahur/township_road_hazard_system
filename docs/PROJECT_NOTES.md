@@ -78,6 +78,11 @@ These come from that repository's README and docs. I have not re-tested them on 
 
 Newest first. Each entry: what changed, why, and how it was checked.
 
+### 24 November 2026: db:migrate also rebuilds the Prisma client
+- **Why:** after pulling Road cleared, the owner ran `npm run db:migrate` ("no pending migrations") but the reports list still failed: the generated Prisma client did not know the new `report_resolutions` table. The error also told him to run `db:push`, which we never use on his database.
+- **What:** `npm run db:migrate` is now `prisma migrate deploy && prisma generate` (stop `npm run dev` first on Windows). The reports API error now points to `npm run db:migrate`.
+- **Checked:** tests and typecheck pass.
+
 ### 24 November 2026: Demo polish
 - **Why:** a pass over every screen in the owner's demo flow, chosen by the owner.
 - **What:**

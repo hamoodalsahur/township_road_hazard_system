@@ -48,7 +48,8 @@ test(".env.example has no password and no SQLite address", () => {
 test("scripts only apply migrations and never reset or push", () => {
   const scripts = (JSON.parse(read("package.json")) as { scripts: Record<string, string> }).scripts;
   assert.equal(scripts["db:push"], undefined);
-  assert.equal(scripts["db:migrate"], "prisma migrate deploy");
+  // Since 24 Nov 2026 it also rebuilds the Prisma client, so a pulled schema change never leaves the client stale.
+  assert.equal(scripts["db:migrate"], "prisma migrate deploy && prisma generate");
   assert.equal(scripts["db:copy-from-sqlite"], "tsx scripts/copy-sqlite-to-postgres.ts");
   for (const [name, command] of Object.entries(scripts)) assert.doesNotMatch(command, /migrate reset|db push|--force-reset|down -v/, name);
 });
