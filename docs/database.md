@@ -9,7 +9,7 @@ Since 22 November 2026 (roadmap step 2.2) the app stores its data in **Postgres 
 | Start the database (Docker Desktop must be open) | `npm run db:up` |
 | Check it is running ("healthy") | `docker compose ps` |
 | Stop it (data is kept) | `npm run db:down` |
-| Apply new migrations after a `git pull` | `npm run db:migrate` |
+| Apply new migrations after a `git pull` (stop `npm run dev` first; it also rebuilds the Prisma client) | `npm run db:migrate` |
 | Browse the data | `npm run db:studio` |
 | Copy your area's road lines into the database | `npm run db:import-roads` |
 

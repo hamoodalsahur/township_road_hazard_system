@@ -12,7 +12,7 @@
     "db:generate": "prisma generate",
     "db:up": "docker compose up -d",
     "db:down": "docker compose stop",
-    "db:migrate": "prisma migrate deploy",
+    "db:migrate": "prisma migrate deploy && prisma generate",
     "db:migrate:new": "prisma migrate dev --create-only",
     "db:copy-from-sqlite": "tsx scripts/copy-sqlite-to-postgres.ts",
     "db:import-roads": "tsx scripts/import-roads-to-db.ts",
