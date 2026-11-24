@@ -45,7 +45,7 @@ The two are connected only through the website's API over the local network. The
 | Resident website: map, report in three steps, My reports | ✅ | Step 4.3 (23 Nov 2026). The simulation lives only under management Maps & Simulation. |
 | Schematic flood simulation and connectivity checker | ✅ | Fictional network, separate from the real map |
 | Optional local AI similarity suggestions (Ollama) | ✅ | Advisory only; never acts on its own |
-| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 384 tests pass |
+| Automated tests and GitHub checks (tests, typecheck, build) | ✅ | 389 tests pass |
 | Public browser-only judge demo | Retired | Removed on 10 Nov 2026 (roadmap step 0.5). The road file it carried is kept at `data/bbr-roads-reference.geojson`. |
 | Design revamp | ⏳ | Direction in `docs/DESIGN.md`: **Night Desk**, chosen 21 Nov 2026. Done on every management page (21 and 22 Nov 2026). The resident website followed in step 4.3 (23 Nov 2026). Step 1.1 done (colours, font, corners). Overview and Incidents rebuilt (step 4.2). Hazard markers now use Phosphor glyph pins on the Incidents screen; the maps use the same pins since the MapLibre move (roadmap 3.1). |
 | Residents can see the full outcome of a report (including "Resolved") | ✅ | `GET /api/v2/hazards/status` (step 4.3): review state, incident status and last change only |
@@ -77,6 +77,16 @@ These come from that repository's README and docs. I have not re-tested them on 
 ## 5. Change log
 
 Newest first. Each entry: what changed, why, and how it was checked.
+
+### 24 November 2026: Demo polish
+- **Why:** a pass over every screen in the owner's demo flow, chosen by the owner.
+- **What:**
+  - The Next.js dev "N" badge is hidden (`devIndicators: false`); it covered the resident tab bar and map legends.
+  - The operator key now stays for **one browser tab** (sessionStorage), so a refresh keeps you signed in. It is checked again on load and forgotten on logout or when the tab closes; never localStorage or a cookie. This relaxes the earlier "memory only" rule, with the owner's agreement; the test now checks this instead.
+  - Headings focused by script (tabindex -1) no longer show a mint box on the navy header ("What did you see?").
+  - The Overview shift log names resolved reports again ("Approved: Flooding", not "A report"); the queue, counts and map still use open reports only.
+  - New **Roads closed now** card on the Overview: each active closure, with End (reason prefilled, audited by the same API) and a link to all closures.
+- **Checked:** 389 tests pass (5 new in `demo-polish`). In a real browser: signed in, refreshed and stayed signed in; the Overview card and its End form; the report heading without the box; the phone tab bar without the badge.
 
 ### 24 November 2026: Road cleared
 - **Why:** the demo story had no ending. A single report could not be marked resolved (only incident groups could), and closures had to be ended separately.

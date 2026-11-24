@@ -19,7 +19,8 @@ a { text-decoration: none; }
   outline-offset: 3px;
 }
 /* On the navy chrome the jade ring is too dark to see, so focus turns mint there (Night Desk). */
-:where(.bg-night, .bg-night-bar, .bg-night-raised) :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+/* Headings focused by script (tabindex=-1) get no ring: they are not something to press. */
+:where(.bg-night, .bg-night-bar, .bg-night-raised) :where(a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])):focus-visible {
   outline-color: #7FD4AE;
 }
 ::selection { background: #E3F4EC; color: #064E36; }

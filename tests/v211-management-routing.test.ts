@@ -58,7 +58,9 @@ test("operator navigation stays within persistent management layout and original
  assert.match(shell,/\/api\/audit/);
  assert.match(shell,/x-demo-operator-key/);
  assert.match(shell,/OperatorKeyContext\.Provider/);
- assert.doesNotMatch(shell,/localStorage|sessionStorage|document\.cookie/);
+ // Since 24 Nov 2026 the key may stay for one tab (sessionStorage), checked again on load and forgotten on logout; never localStorage or a cookie.
+ assert.doesNotMatch(shell,/localStorage|document\.cookie/);
+ assert.match(shell,/sessionStorage\.removeItem\(TAB_KEY\)/);
  assert.doesNotMatch(landing,/ManagementControls/);
 });
 test("private image approval and fictional/Osm disclaimers remain in the same established workflows",()=>{

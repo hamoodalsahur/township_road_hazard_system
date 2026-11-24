@@ -26,6 +26,9 @@ export function useManagementOperatorKey():string{
   return key;
 }
 
+/** sessionStorage name for the operator key: this tab only. */
+const TAB_KEY="laluan.operatorKey.tab";
+
 export default function ManagementShell({children}:{children:ReactNode}){
   const pathname=usePathname();
   const active=managementSectionFromPath(pathname);
@@ -33,6 +36,19 @@ export default function ManagementShell({children}:{children:ReactNode}){
   const [operatorKey,setOperatorKey]=useState("");
   const [error,setError]=useState("");
   const [checking,setChecking]=useState(false);
+
+  // Stay signed in on refresh (24 Nov 2026): the key is kept for this browser tab only (sessionStorage),
+  // never kept beyond the tab. Closing the tab or logging out forgets it; it is checked again on load.
+  useEffect(()=>{
+    let saved:string|null=null;
+    try{saved=sessionStorage.getItem(TAB_KEY);}catch{/* storage blocked: sign in as before */}
+    if(!saved)return;
+    let live=true;
+    fetch("/api/audit",{headers:{"x-demo-operator-key":saved},cache:"no-store"})
+      .then(r=>{if(!live)return;if(r.ok)setOperatorKey(saved!);else{try{sessionStorage.removeItem(TAB_KEY);}catch{}}})
+      .catch(()=>{});
+    return ()=>{live=false;};
+  },[]);
 
   async function login(event:FormEvent<HTMLFormElement>){
     event.preventDefault();
@@ -45,6 +61,7 @@ export default function ManagementShell({children}:{children:ReactNode}){
         ?"Incorrect demo password. Please try again."
         :"Could not verify the local demo key. Check the development server.");
       setOperatorKey(password);
+      try{sessionStorage.setItem(TAB_KEY,password);}catch{/* still signed in until refresh */}
       setPassword("");
     }catch(cause){
       setError(cause instanceof Error?cause.message:"Unable to sign in");
@@ -52,6 +69,7 @@ export default function ManagementShell({children}:{children:ReactNode}){
   }
 
   function logout(){
+    try{sessionStorage.removeItem(TAB_KEY);}catch{}
     setOperatorKey("");
     setPassword("");
     setError("");
@@ -173,7 +191,7 @@ export default function ManagementShell({children}:{children:ReactNode}){
               {checking?"Verifying…":"Log in"}
             </Button>
           </form>
-          <p className="mt-4 text-center text-caption text-slate-600">The local demo key is held in memory only. Refreshing requires signing in again.</p>
+          <p className="mt-4 text-center text-caption text-slate-600">Kept for this browser tab only, so a refresh keeps you signed in. Closing the tab or logging out forgets it.</p>
         </section>
       </div>}
   </div>;
