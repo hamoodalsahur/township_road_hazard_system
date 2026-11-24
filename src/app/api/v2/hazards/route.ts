@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     const shown = records.filter(x => x.sourceMode === "simulation" && x.reviewState !== "rejected" && (withResolved || !resolved.has(x.id)));
     return NextResponse.json({mode:"simulation", reports:shown.map(({evidence,...report})=>({...report,resolvedAt:resolved.get(report.id) ?? null,hasApprovedPhoto:report.reviewState==="corroborated"&&evidence?.status==="approved_public_demo"})), disclaimer:"FICTIONAL geographic report examples. Not verified road conditions or real travel advice."});
   } catch {
-    return NextResponse.json({error:"Demo hazard database unavailable. Run npm run db:push."},{status:500});
+    return NextResponse.json({error:"Reports are unavailable. Check that Postgres is running; after pulling an update, stop npm run dev and run npm run db:migrate."},{status:500});
   }
 }
 export async function POST(request:Request) {

@@ -78,6 +78,10 @@ Rebuilt on 24 November 2026 (phone PRs #15–#17). Checked with tests, a typeche
 
 Newest first. Each entry: what changed, why, and how it was checked.
 
+### 24 November 2026: db:migrate also rebuilds the Prisma client
+- **Why:** after pulling Road cleared, the owner ran `npm run db:migrate` ("no pending migrations") but the reports list still failed: the generated Prisma client did not know the new `report_resolutions` table. The error also told him to run `db:push`, which we never use on his database.
+- **What:** `npm run db:migrate` is now `prisma migrate deploy && prisma generate` (stop `npm run dev` first on Windows). The reports API error now points to `npm run db:migrate`.
+- **Checked:** tests and typecheck pass.
 ### 24 November 2026: Phone app rebuilt (mobile repository, PRs #15–#17)
 - **Why:** the owner wants the phone in the demo. The app was still the hackathon version, with a hard-coded BBR box (an empty map in the owner's own area), no closures and no way home.
 - **What:** part 1, the Night Desk look and a map of the laptop's area, reports and closures; part 2, the report in three steps and My reports with Resolved; part 3, way home with detours. Shared logic lives in `src/lib/township.ts` in that repository, with the same words and colours as this website.
