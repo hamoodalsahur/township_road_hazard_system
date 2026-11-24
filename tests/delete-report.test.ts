@@ -26,7 +26,7 @@ test("the review desk asks before deleting and says what goes with it", () => {
 });
 
 test("AI & Research is gone from the operator menu and its page", () => {
-  assert.equal(MANAGEMENT_SECTIONS.some(s => s.href === "/management/research"), false);
+  assert.equal(MANAGEMENT_SECTIONS.some(s => (s.href as string) === "/management/research"), false);
   assert.equal(existsSync("src/app/management/research/page.tsx"), false);
   assert.doesNotMatch(read("src/components/management/SystemOverview.tsx"), /management\/research/);
 });
